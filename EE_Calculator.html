@@ -468,6 +468,9 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
   .tabs button:hover { color: var(--a-ink); border-color: var(--a-line-strong); }
   .tabs button[aria-selected="true"] { background: var(--a-bg-accent); color: var(--a-on-accent); border-color: var(--a-bg-accent); }
   .tabs button:focus-visible { outline: 2px solid var(--a-focus); outline-offset: 2px; }
+  .serieswrap { margin-left: auto; display: flex; align-items: center; gap: .45rem; font-size: var(--a-text-xs); color: var(--a-ink-secondary); }
+  .serieswrap select { font: inherit; font-family: var(--a-font-mono); color: var(--a-ink); background: var(--a-bg); border: var(--a-border) solid var(--a-line-strong); border-radius: var(--a-radius-sm); padding: .3rem .45rem; }
+  .serieswrap select:focus-visible { outline: 2px solid var(--a-focus); outline-offset: 1px; }
   .panel { display: none; padding-bottom: 3rem; }
   .panel.active { display: block; }
   .panel h2 { font-family: var(--a-font-display); margin: 0 0 .3rem; }
@@ -517,6 +520,13 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
   <button role="tab" data-tab="rc" aria-selected="false">RC Filter</button>
   <button role="tab" data-tab="react" aria-selected="false">Reactance</button>
   <button role="tab" data-tab="led" aria-selected="false">LED Resistor</button>
+  <span class="serieswrap"><label for="g-series">E-series</label>
+    <select id="g-series">
+      <option value="E12">E12 (10 %)</option>
+      <option value="E24">E24 (5 %)</option>
+      <option value="E96" selected>E96 (1 %)</option>
+    </select>
+  </span>
 </nav>
 </div>
 
@@ -552,14 +562,16 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
 
 <section class="panel" id="panel-div">
   <h2>Resistor Divider</h2>
-  <p class="hint">V<sub>out</sub> = V<sub>in</sub> &middot; R2 / (R1 + R2), with R1 on top and R2 to ground. The finder searches standard E-series values for the pair closest to a target output.</p>
+  <p class="hint">R1 on top, R2 to ground; unloaded, V<sub>out</sub> = V<sub>in</sub> &middot; R2 / (R1 + R2). The solver fills in whichever of the four values is missing; the finder searches standard E-series values for the pair closest to a target output.</p>
   <div class="card">
-    <h3>Divider calculator</h3>
+    <h3>Divider solver</h3>
     <div class="cardrow">
     <div class="fields">
       <div class="field"><label for="div-vin">V<sub>in</sub> (V)</label><input id="div-vin" inputmode="decimal" placeholder="e.g. 12"></div>
+      <div class="field"><label for="div-vout">V<sub>out</sub> (V)</label><input id="div-vout" inputmode="decimal" placeholder="e.g. 3.3"></div>
       <div class="field"><label for="div-r1">R1 &mdash; top (&Omega;)</label><input id="div-r1" inputmode="decimal" placeholder="e.g. 10k"></div>
       <div class="field"><label for="div-r2">R2 &mdash; bottom (&Omega;)</label><input id="div-r2" inputmode="decimal" placeholder="e.g. 4k7"></div>
+      <div class="field"><label for="div-iload">Load current at midpoint (A, optional)</label><input id="div-iload" inputmode="decimal" placeholder="e.g. 50u"></div>
     </div>
     <svg class="schem" width="210" height="235" viewBox="0 0 210 235" role="img" aria-label="Resistor divider: R1 from Vin to the midpoint, R2 from the midpoint to ground, optional load current out of the midpoint">
       <circle class="wire" cx="60" cy="18" r="3.5"/>
@@ -584,32 +596,8 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
     </svg>
     </div>
     <dl class="results" id="div-out"></dl>
+    <p class="note">Fill in any three of V<sub>in</sub>, V<sub>out</sub>, R1 and R2 &mdash; the fourth is calculated as soon as enough is entered, and a solved resistor gets a nearest-standard-value suggestion. The load is a constant current drawn out of the midpoint, so R1 carries the R2 current plus the load; leave it empty for an unloaded divider.</p>
     <button class="reset" data-reset="div">Reset</button>
-  </div>
-  <div class="card">
-    <h3>Design one leg</h3>
-    <div class="fields">
-      <div class="field"><label for="dsn-vin">V<sub>in</sub> (V)</label><input id="dsn-vin" inputmode="decimal" placeholder="e.g. 12"></div>
-      <div class="field"><label for="dsn-vout">Target V<sub>out</sub> (V)</label><input id="dsn-vout" inputmode="decimal" placeholder="e.g. 3.3"></div>
-      <div class="field"><label for="dsn-known">Known leg</label>
-        <select id="dsn-known">
-          <option value="R1" selected>R1 (top)</option>
-          <option value="R2">R2 (bottom)</option>
-        </select>
-      </div>
-      <div class="field"><label for="dsn-rknown">Known value (&Omega;)</label><input id="dsn-rknown" inputmode="decimal" placeholder="e.g. 10k"></div>
-      <div class="field"><label for="dsn-iload">Load current at midpoint (A, optional)</label><input id="dsn-iload" inputmode="decimal" placeholder="e.g. 50u"></div>
-      <div class="field"><label for="dsn-series">Suggest from</label>
-        <select id="dsn-series">
-          <option value="E12">E12 (10 %)</option>
-          <option value="E24" selected>E24 (5 %)</option>
-          <option value="E96">E96 (1 %)</option>
-        </select>
-      </div>
-    </div>
-    <dl class="results" id="dsn-out"></dl>
-    <p class="note">The load is modelled as a constant current drawn out of the midpoint, so the top leg carries the R2 current plus the load. Leave it empty for an unloaded divider.</p>
-    <button class="reset" data-reset="dsn">Reset</button>
   </div>
   <div class="card">
     <h3>Resistor finder</h3>
@@ -617,13 +605,6 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
       <div class="field"><label for="fnd-vin">V<sub>in</sub> (V)</label><input id="fnd-vin" inputmode="decimal" placeholder="e.g. 12"></div>
       <div class="field"><label for="fnd-vout">Target V<sub>out</sub> (V)</label><input id="fnd-vout" inputmode="decimal" placeholder="e.g. 3.3"></div>
       <div class="field"><label for="fnd-rtot">Total R &asymp; (&Omega;, optional)</label><input id="fnd-rtot" inputmode="decimal" placeholder="e.g. 100k"></div>
-      <div class="field"><label for="fnd-series">Series</label>
-        <select id="fnd-series">
-          <option value="E12">E12 (10 %)</option>
-          <option value="E24" selected>E24 (5 %)</option>
-          <option value="E96">E96 (1 %)</option>
-        </select>
-      </div>
     </div>
     <div class="tablewrap"><table class="finder" id="fnd-table" hidden>
       <thead><tr><th>R1 (top)</th><th>R2 (bottom)</th><th>V<sub>out</sub></th><th>Error</th><th>Current</th><th>Total R</th></tr></thead>
@@ -731,7 +712,7 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
 
 <section class="panel" id="panel-led">
   <h2>LED Series Resistor</h2>
-  <p class="hint">R = (V<sub>supply</sub> &minus; V<sub>f</sub>) / I<sub>f</sub>. The suggestion is the next E24 value up, so the LED runs at or below the requested current.</p>
+  <p class="hint">R = (V<sub>supply</sub> &minus; V<sub>f</sub>) / I<sub>f</sub>. The suggestion is the next value up in the E-series chosen at the top, so the LED runs at or below the requested current.</p>
   <div class="card">
     <div class="cardrow">
     <div class="fields">
@@ -871,67 +852,68 @@ function solveOhm(a, b) {
 
 /* ---------- resistor divider ---------- */
 
-function calcDiv() {
-  const vin = val("div-vin"), r1 = val("div-r1"), r2 = val("div-r2");
-  if (![vin, r1, r2].every(isFinite)) { render("div-out", []); return; }
-  if (r1 + r2 <= 0) { render("div-out", [["", "R1 + R2 must be positive.", "err"]]); return; }
-  const vout = vin * r2 / (r1 + r2), i = vin / (r1 + r2);
-  render("div-out", [
-    ["V<sub>out</sub>", fmt(vout, "V")],
-    ["Ratio V<sub>out</sub>/V<sub>in</sub>", (r2 / (r1 + r2)).toPrecision(4)],
-    ["Current", fmt(i, "A")],
-    ["P in R1", fmt(i * i * r1, "W")],
-    ["P in R2", fmt(i * i * r2, "W")],
-    ["Total power", fmt(vin * i, "W")]
-  ]);
-}
-
-/* Design one leg: Vin, target Vout, one known resistor, optional load current
-   drawn from the midpoint. KCL at the midpoint: I(R1) = I(R2) + Iload, so
-   R1 = (Vin-Vout)/(Vout/R2 + IL) and R2 = Vout/((Vin-Vout)/R1 - IL).
-   With both legs fixed the loaded output is Vout = (Vin - R1*IL)/(1 + R1/R2). */
-function calcDesign() {
-  const vin = val("dsn-vin"), vout = val("dsn-vout"), rk = val("dsn-rknown");
-  const ilRaw = val("dsn-iload");
+/* Unified divider solver: any three of Vin, Vout, R1, R2 determine the fourth.
+   Optional constant load current IL drawn out of the midpoint; KCL there gives
+   I(R1) = I(R2) + IL, so with both legs fixed Vout = (Vin - R1*IL)/(1 + R1/R2),
+   R2 = Vout/((Vin-Vout)/R1 - IL), R1 = (Vin-Vout)/(Vout/R2 + IL), and
+   Vin = Vout + R1*(Vout/R2 + IL). */
+function calcDivider() {
+  const vin = val("div-vin"), vout = val("div-vout"), r1 = val("div-r1"), r2 = val("div-r2");
+  const ilRaw = val("div-iload");
   const il = isFinite(ilRaw) ? ilRaw : 0;
-  if (![vin, vout, rk].every(isFinite)) { render("dsn-out", []); return; }
-  if (!(vin > 0) || !(vout > 0) || vout >= vin) { render("dsn-out", [["", "Needs 0 < Vout < Vin.", "err"]]); return; }
-  if (!(rk > 0)) { render("dsn-out", [["", "The known resistor must be positive.", "err"]]); return; }
-  if (il < 0) { render("dsn-out", [["", "Load current must be zero or positive.", "err"]]); return; }
-  const topKnown = document.getElementById("dsn-known").value === "R1";
-  let r1, r2;
-  if (topKnown) {
-    r1 = rk;
-    const i2 = (vin - vout) / r1 - il;      // current left for the bottom leg
-    if (i2 <= 0) {
-      render("dsn-out", [["", "The load alone drops " + fmt(il * r1, "V") + " across R1 — Vout is unreachable. Use a smaller R1 or less load.", "err"]]);
-      return;
+  const have = { Vin: isFinite(vin), Vout: isFinite(vout), R1: isFinite(r1), R2: isFinite(r2) };
+  const count = Object.values(have).filter(Boolean).length;
+  if (count < 3) {
+    render("div-out", count ? [["", "Enter " + (3 - count) + " more value" + (count === 2 ? "" : "s") + " — any three of V<sub>in</sub>, V<sub>out</sub>, R1, R2.", ""]] : []);
+    return;
+  }
+  if (il < 0) { render("div-out", [["", "Load current must be zero or positive.", "err"]]); return; }
+  if ((have.R1 && !(r1 > 0)) || (have.R2 && !(r2 > 0))) { render("div-out", [["", "Resistor values must be positive.", "err"]]); return; }
+
+  const rows = [];
+  let solve = count === 4 ? "Vout" : Object.keys(have).find(function (k) { return !have[k]; });
+  if (count === 4) rows.push(["", "All four values entered — treating V<sub>out</sub> as the one to check.", "warn"]);
+
+  // Solve the missing quantity; sr1/sr2/svin/svout become the operating point.
+  let sr1 = r1, sr2 = r2, svin = vin, svout = vout;
+  const series = document.getElementById("g-series").value;
+  if (solve === "R1" || solve === "R2") {
+    if (!(vin > 0) || !(vout > 0) || vout >= vin) { render("div-out", [["", "Solving a resistor needs 0 < V<sub>out</sub> < V<sub>in</sub>.", "err"]]); return; }
+    let exact;
+    if (solve === "R2") {
+      const i2 = (vin - vout) / r1 - il;
+      if (i2 <= 0) { render("div-out", [["", "The load alone drops " + fmt(il * r1, "V") + " across R1 — V<sub>out</sub> is unreachable. Use a smaller R1 or less load.", "err"]]); return; }
+      exact = vout / i2;
+    } else {
+      exact = (vin - vout) / (vout / r2 + il);
     }
-    r2 = vout / i2;
-  } else {
-    r2 = rk;
-    r1 = (vin - vout) / (vout / r2 + il);
+    const std = snap(seriesValues(series, -1, 7), exact);   // 100 mohm .. 97.6 Mohm
+    if (solve === "R1") sr1 = std; else sr2 = std;
+    rows.push(["Exact " + solve, fmt(exact, "Ω")]);
+    rows.push(["Nearest " + series, fmt(std, "Ω")]);
+    svout = (svin - sr1 * il) / (1 + sr1 / sr2);
+    rows.push(["V<sub>out</sub> with " + series + " value", fmt(svout, "V") + " (" + ((svout - vout) / vout * 100).toFixed(3) + " %)"]);
+  } else if (solve === "Vout") {
+    svout = (vin - r1 * il) / (1 + r1 / r2);
+    if (svout <= 0) { render("div-out", [["", "The load pulls the midpoint to zero — V<sub>out</sub> would be negative.", "err"]]); return; }
+    rows.push(["V<sub>out</sub>", fmt(svout, "V")]);
+  } else {                                                  // solve Vin
+    if (!(vout > 0)) { render("div-out", [["", "V<sub>out</sub> must be positive.", "err"]]); return; }
+    svin = vout + r1 * (vout / r2 + il);
+    rows.push(["Required V<sub>in</sub>", fmt(svin, "V")]);
   }
-  const series = document.getElementById("dsn-series").value;
-  const values = seriesValues(series, -1, 7);          // 100 mohm .. 97.6 Mohm
-  const rCalc = topKnown ? r2 : r1;                    // the computed leg
-  const rStd = snap(values, rCalc);
-  const sr1 = topKnown ? r1 : rStd, sr2 = topKnown ? rStd : r2;
-  const voStd = (vin - sr1 * il) / (1 + sr1 / sr2);
-  const i1 = (vin - voStd) / sr1, i2s = voStd / sr2;
-  const rows = [
-    ["Exact " + (topKnown ? "R2" : "R1"), fmt(rCalc, "Ω")],
-    ["Nearest " + series, fmt(rStd, "Ω")],
-    ["V<sub>out</sub> with " + series + " value", fmt(voStd, "V") + " (" + ((voStd - vout) / vout * 100).toFixed(3) + " %)"],
-    ["Current in R1", fmt(i1, "A")],
-    ["Current in R2", fmt(i2s, "A")],
-    ["P in R1 / R2", fmt(i1 * i1 * sr1, "W") + " / " + fmt(i2s * i2s * sr2, "W")]
-  ];
+
+  const i1 = (svin - svout) / sr1, i2 = svout / sr2;
+  rows.push(["Ratio V<sub>out</sub>/V<sub>in</sub>", (svout / svin).toPrecision(4)]);
+  rows.push(["Current in R1", fmt(i1, "A")]);
+  rows.push(["Current in R2", fmt(i2, "A")]);
+  rows.push(["P in R1 / R2", fmt(i1 * i1 * sr1, "W") + " / " + fmt(i2 * i2 * sr2, "W")]);
+  rows.push(["Total power from V<sub>in</sub>", fmt(svin * i1, "W")]);
   if (il > 0) {
-    const ratio = i2s / il;
-    rows.push(["Bleed / load ratio", ratio.toPrecision(3) + (ratio < 10 ? " — a soft divider; Vout moves if the load varies" : "")]);
+    const ratio = i2 / il;
+    rows.push(["Bleed / load ratio", ratio.toPrecision(3) + (ratio < 10 ? " — a soft divider; V<sub>out</sub> moves if the load varies" : "")]);
   }
-  render("dsn-out", rows);
+  render("div-out", rows);
 }
 
 function calcFinder() {
@@ -944,7 +926,7 @@ function calcFinder() {
     note.className = "note err";
     return;
   }
-  const series = document.getElementById("fnd-series").value;
+  const series = document.getElementById("g-series").value;
   const values = seriesValues(series, 1, 6);          // 10 ohm .. 9.76 Mohm
   const targetTot = isFinite(rtot) && rtot > 0 ? rtot : NaN;
   const k = vout / (vin - vout);                       // ideal R2/R1
@@ -1032,14 +1014,15 @@ function calcLED() {
   if (vs <= vf) { render("led-out", [["", "Supply must exceed the LED forward voltage.", "err"]]); return; }
   if (iF <= 0) { render("led-out", [["", "Forward current must be positive.", "err"]]); return; }
   const r = (vs - vf) / iF;
-  const e24 = seriesValues("E24", -1, 7);
-  let std = e24[e24.length - 1];
-  for (const v of e24) if (v >= r) { std = v; break; }
+  const series = document.getElementById("g-series").value;
+  const vals = seriesValues(series, -1, 7);
+  let std = vals[vals.length - 1];
+  for (const v of vals) if (v >= r) { std = v; break; }
   const iStd = (vs - vf) / std;
   render("led-out", [
     ["Exact resistor", fmt(r, "\u03a9")],
-    ["Next E24 up", fmt(std, "\u03a9")],
-    ["Current with E24 value", fmt(iStd, "A")],
+    ["Next " + series + " up", fmt(std, "\u03a9")],
+    ["Current with " + series + " value", fmt(iStd, "A")],
     ["Resistor power", fmt(iStd * iStd * std, "W")],
     ["LED power", fmt(vf * iStd, "W")]
   ]);
@@ -1049,9 +1032,8 @@ function calcLED() {
 
 const CALCS = {
   ohm: { calc: calcOhm, inputs: ["ohm-v","ohm-i","ohm-r","ohm-p"] },
-  div: { calc: calcDiv, inputs: ["div-vin","div-r1","div-r2"] },
-  dsn: { calc: calcDesign, inputs: ["dsn-vin","dsn-vout","dsn-known","dsn-rknown","dsn-iload","dsn-series"] },
-  fnd: { calc: calcFinder, inputs: ["fnd-vin","fnd-vout","fnd-rtot","fnd-series"] },
+  div: { calc: calcDivider, inputs: ["div-vin","div-vout","div-r1","div-r2","div-iload"] },
+  fnd: { calc: calcFinder, inputs: ["fnd-vin","fnd-vout","fnd-rtot"] },
   sp:  { calc: calcSP, inputs: ["sp-list"] },
   rc:  { calc: calcRC, inputs: ["rc-r","rc-c","rc-f"] },
   re:  { calc: calcReact, inputs: ["re-f","re-c","re-l"] },
@@ -1066,6 +1048,11 @@ for (const key in CALCS) {
     el.addEventListener("change", c.calc);
   }
 }
+
+// the top-level E-series setting feeds every calculator that suggests standard values
+document.getElementById("g-series").addEventListener("change", function () {
+  calcDivider(); calcFinder(); calcLED();
+});
 
 document.querySelectorAll("button.reset").forEach(function (btn) {
   btn.addEventListener("click", function () {
