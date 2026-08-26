@@ -1,0 +1,5 @@
+# User project data never leaves the machine and is never committed
+/user_data/
+
+# pixi environment
+/.pixi/

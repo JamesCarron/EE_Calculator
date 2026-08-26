@@ -1,0 +1,12 @@
+[workspace]
+authors = ["jamescarron-auterion <james.carron@auterion.com>"]
+channels = ["conda-forge"]
+name = "EE_Calculator"
+platforms = ["win-64"]
+version = "0.1.0"
+
+[tasks]
+build = "python build_page.py"
+
+[dependencies]
+python = "3.12.*"
