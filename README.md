@@ -1,6 +1,6 @@
 # EE Calculator
 
-A single self-contained HTML page (`EE_Calculator.html`) with tabs for simple electronics calculations: Ohm's law and power, resistor dividers (a unified solver — enter any three of Vin, Vout, R1, R2 plus an optional midpoint load current and it solves the fourth, with E-series suggestions for solved resistors — and an E-series pair finder), series/parallel resistance, RC filter cutoff, reactance, and LED series resistors. Each tab carries an inline SVG schematic of the circuit topology, drawn with house-token colors so it follows light/dark theme.
+A single self-contained HTML page (`EE_Calculator.html`) with tabs for simple electronics calculations: Ohm's law and power, resistor dividers (one solver: enter any three of Vin, Vout, R1, R2 — or just the two voltages — plus optional total resistance and midpoint load current; it solves whatever is missing, suggests E-series values, and searches the best standard pairs when both legs are open), series/parallel resistance, RC filter cutoff, reactance, and LED series resistors. Each tab carries an inline SVG schematic of the circuit topology, drawn with house-token colors so it follows light/dark theme.
 
 All calculator logic runs client-side in the page — it works offline, opened straight from the filesystem, with no server and no network access. Python is only the build harness: `build_page.py` assembles the page and inlines the Auterion house stylesheet and fonts so the file stays self-contained.
 

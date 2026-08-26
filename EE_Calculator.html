@@ -562,7 +562,7 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
 
 <section class="panel" id="panel-div">
   <h2>Resistor Divider</h2>
-  <p class="hint">R1 on top, R2 to ground; unloaded, V<sub>out</sub> = V<sub>in</sub> &middot; R2 / (R1 + R2). The solver fills in whichever of the four values is missing; the finder searches standard E-series values for the pair closest to a target output.</p>
+  <p class="hint">R1 on top, R2 to ground; unloaded, V<sub>out</sub> = V<sub>in</sub> &middot; R2 / (R1 + R2). The solver fills in whatever is missing as soon as it has enough &mdash; give it three of the four values, or just the two voltages to search standard E-series pairs.</p>
   <div class="card">
     <h3>Divider solver</h3>
     <div class="cardrow">
@@ -571,6 +571,7 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
       <div class="field"><label for="div-vout">V<sub>out</sub> (V)</label><input id="div-vout" inputmode="decimal" placeholder="e.g. 3.3"></div>
       <div class="field"><label for="div-r1">R1 &mdash; top (&Omega;)</label><input id="div-r1" inputmode="decimal" placeholder="e.g. 10k"></div>
       <div class="field"><label for="div-r2">R2 &mdash; bottom (&Omega;)</label><input id="div-r2" inputmode="decimal" placeholder="e.g. 4k7"></div>
+      <div class="field"><label for="div-rtot">Total R1&#8202;+&#8202;R2 (&Omega;, optional)</label><input id="div-rtot" inputmode="decimal" placeholder="e.g. 100k"></div>
       <div class="field"><label for="div-iload">Load current at midpoint (A, optional)</label><input id="div-iload" inputmode="decimal" placeholder="e.g. 50u"></div>
     </div>
     <svg class="schem" width="210" height="235" viewBox="0 0 210 235" role="img" aria-label="Resistor divider: R1 from Vin to the midpoint, R2 from the midpoint to ground, optional load current out of the midpoint">
@@ -596,22 +597,13 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
     </svg>
     </div>
     <dl class="results" id="div-out"></dl>
-    <p class="note">Fill in any three of V<sub>in</sub>, V<sub>out</sub>, R1 and R2 &mdash; the fourth is calculated as soon as enough is entered, and a solved resistor gets a nearest-standard-value suggestion. The load is a constant current drawn out of the midpoint, so R1 carries the R2 current plus the load; leave it empty for an unloaded divider.</p>
-    <button class="reset" data-reset="div">Reset</button>
-  </div>
-  <div class="card">
-    <h3>Resistor finder</h3>
-    <div class="fields">
-      <div class="field"><label for="fnd-vin">V<sub>in</sub> (V)</label><input id="fnd-vin" inputmode="decimal" placeholder="e.g. 12"></div>
-      <div class="field"><label for="fnd-vout">Target V<sub>out</sub> (V)</label><input id="fnd-vout" inputmode="decimal" placeholder="e.g. 3.3"></div>
-      <div class="field"><label for="fnd-rtot">Total R &asymp; (&Omega;, optional)</label><input id="fnd-rtot" inputmode="decimal" placeholder="e.g. 100k"></div>
-    </div>
-    <div class="tablewrap"><table class="finder" id="fnd-table" hidden>
-      <thead><tr><th>R1 (top)</th><th>R2 (bottom)</th><th>V<sub>out</sub></th><th>Error</th><th>Current</th><th>Total R</th></tr></thead>
-      <tbody id="fnd-body"></tbody>
+    <div class="tablewrap"><table class="finder" id="div-table" hidden>
+      <thead><tr><th>R1 (top)</th><th>R2 (bottom)</th><th>V<sub>out</sub></th><th>Error</th><th>Current in R1</th><th>Total R</th></tr></thead>
+      <tbody id="div-body"></tbody>
     </table></div>
-    <p class="note" id="fnd-note"></p>
-    <button class="reset" data-reset="fnd">Reset</button>
+    <p class="note" id="div-note"></p>
+    <p class="note">Fill in any three of V<sub>in</sub>, V<sub>out</sub>, R1 and R2 &mdash; the fourth is calculated as soon as enough is entered, and a solved resistor gets a nearest-standard-value suggestion. With only V<sub>in</sub> and V<sub>out</sub>, the best standard-value pairs are searched instead (total R, if given, sets the exact solution and steers the search; with one leg known it stands in for the other). The load is a constant current drawn out of the midpoint, so R1 carries the R2 current plus the load; leave it empty for an unloaded divider.</p>
+    <button class="reset" data-reset="div">Reset</button>
   </div>
 </section>
 
@@ -856,27 +848,80 @@ function solveOhm(a, b) {
    Optional constant load current IL drawn out of the midpoint; KCL there gives
    I(R1) = I(R2) + IL, so with both legs fixed Vout = (Vin - R1*IL)/(1 + R1/R2),
    R2 = Vout/((Vin-Vout)/R1 - IL), R1 = (Vin-Vout)/(Vout/R2 + IL), and
-   Vin = Vout + R1*(Vout/R2 + IL). */
+   Vin = Vout + R1*(Vout/R2 + IL).
+   Optional total resistance T = R1+R2: with only Vin and Vout it makes both
+   legs solvable (IL=0: R1 = (Vin-Vout)*T/Vin; IL>0: IL*R1^2 - (Vin+IL*T)*R1
+   + (Vin-Vout)*T = 0, physical root is the smaller one), and with one leg
+   known it stands in for the other. Vin+Vout alone also trigger a search of
+   E-series pairs, steered toward T when given. */
 function calcDivider() {
-  const vin = val("div-vin"), vout = val("div-vout"), r1 = val("div-r1"), r2 = val("div-r2");
-  const ilRaw = val("div-iload");
+  const vin = val("div-vin"), vout = val("div-vout");
+  let r1 = val("div-r1"), r2 = val("div-r2");
+  const ilRaw = val("div-iload"), rtotRaw = val("div-rtot");
   const il = isFinite(ilRaw) ? ilRaw : 0;
+  const rtot = isFinite(rtotRaw) && rtotRaw > 0 ? rtotRaw : NaN;
+  const table = document.getElementById("div-table"), note = document.getElementById("div-note");
+  table.hidden = true; note.textContent = ""; note.className = "note";
+  if (il < 0) { render("div-out", [["", "Load current must be zero or positive.", "err"]]); return; }
+  if ((isFinite(r1) && !(r1 > 0)) || (isFinite(r2) && !(r2 > 0))) { render("div-out", [["", "Resistor values must be positive.", "err"]]); return; }
+  const rows = [];
+  const series = document.getElementById("g-series").value;
+
+  // Total R can stand in for a missing leg when the other is known.
+  let legFromTotal = false;
+  if (isFinite(rtot) && isFinite(r1) !== isFinite(r2)) {
+    legFromTotal = true;
+    if (isFinite(r1)) {
+      if (rtot <= r1) { render("div-out", [["", "Total R must exceed R1.", "err"]]); return; }
+      r2 = rtot - r1; rows.push(["R2 from total", fmt(r2, "Ω")]);
+    } else {
+      if (rtot <= r2) { render("div-out", [["", "Total R must exceed R2.", "err"]]); return; }
+      r1 = rtot - r2; rows.push(["R1 from total", fmt(r1, "Ω")]);
+    }
+  }
+
   const have = { Vin: isFinite(vin), Vout: isFinite(vout), R1: isFinite(r1), R2: isFinite(r2) };
   const count = Object.values(have).filter(Boolean).length;
-  if (count < 3) {
-    render("div-out", count ? [["", "Enter " + (3 - count) + " more value" + (count === 2 ? "" : "s") + " — any three of V<sub>in</sub>, V<sub>out</sub>, R1, R2.", ""]] : []);
+
+  // Only the two voltages: exact legs from total R (when given) + E-series pair search.
+  if (count === 2 && have.Vin && have.Vout) {
+    if (!(vin > 0) || !(vout > 0) || vout >= vin) { render("div-out", [["", "Needs 0 < V<sub>out</sub> < V<sub>in</sub> — a plain divider can only step down.", "err"]]); return; }
+    if (isFinite(rtot)) {
+      let er1;
+      if (il > 0) {
+        const disc = Math.pow(vin + il * rtot, 2) - 4 * il * (vin - vout) * rtot;
+        er1 = (vin + il * rtot - Math.sqrt(disc)) / (2 * il);
+      } else {
+        er1 = (vin - vout) * rtot / vin;
+      }
+      const er2 = rtot - er1;
+      if (!isFinite(er1) || !(er1 > 0) || !(er2 > 0)) {
+        rows.push(["", "No exact solution at this total — the load current is too large for it. Lower the total R or the load.", "err"]);
+      } else {
+        rows.push(["Exact R1 / R2 for this total", fmt(er1, "Ω") + " / " + fmt(er2, "Ω")]);
+        const i1 = (vin - vout) / er1;
+        rows.push(["Current in R1 / R2", fmt(i1, "A") + " / " + fmt(i1 - il, "A")]);
+        if (il > 0) {
+          const ratio = (i1 - il) / il;
+          rows.push(["Bleed / load ratio", ratio.toPrecision(3) + (ratio < 10 ? " — a soft divider; V<sub>out</sub> moves if the load varies" : "")]);
+        }
+      }
+    }
+    pairSearch(vin, vout, rtot, il, series);
+    render("div-out", rows);
     return;
   }
-  if (il < 0) { render("div-out", [["", "Load current must be zero or positive.", "err"]]); return; }
-  if ((have.R1 && !(r1 > 0)) || (have.R2 && !(r2 > 0))) { render("div-out", [["", "Resistor values must be positive.", "err"]]); return; }
 
-  const rows = [];
+  if (count < 3) {
+    render("div-out", count ? [["", "Enter " + (3 - count) + " more value" + (count === 2 ? "" : "s") + " — any three of V<sub>in</sub>, V<sub>out</sub>, R1, R2, or just the two voltages for a pair search.", ""]] : []);
+    return;
+  }
+  if (!legFromTotal && isFinite(rtot) && have.R1 && have.R2) rows.push(["", "Total R ignored — both legs are already set.", "warn"]);
   let solve = count === 4 ? "Vout" : Object.keys(have).find(function (k) { return !have[k]; });
   if (count === 4) rows.push(["", "All four values entered — treating V<sub>out</sub> as the one to check.", "warn"]);
 
   // Solve the missing quantity; sr1/sr2/svin/svout become the operating point.
   let sr1 = r1, sr2 = r2, svin = vin, svout = vout;
-  const series = document.getElementById("g-series").value;
   if (solve === "R1" || solve === "R2") {
     if (!(vin > 0) || !(vout > 0) || vout >= vin) { render("div-out", [["", "Solving a resistor needs 0 < V<sub>out</sub> < V<sub>in</sub>.", "err"]]); return; }
     let exact;
@@ -908,6 +953,7 @@ function calcDivider() {
   rows.push(["Current in R1", fmt(i1, "A")]);
   rows.push(["Current in R2", fmt(i2, "A")]);
   rows.push(["P in R1 / R2", fmt(i1 * i1 * sr1, "W") + " / " + fmt(i2 * i2 * sr2, "W")]);
+  rows.push(["Total R1&#8202;+&#8202;R2", fmt(sr1 + sr2, "Ω")]);
   rows.push(["Total power from V<sub>in</sub>", fmt(svin * i1, "W")]);
   if (il > 0) {
     const ratio = i2 / il;
@@ -916,27 +962,27 @@ function calcDivider() {
   render("div-out", rows);
 }
 
-function calcFinder() {
-  const vin = val("fnd-vin"), vout = val("fnd-vout"), rtot = val("fnd-rtot");
-  const table = document.getElementById("fnd-table"), note = document.getElementById("fnd-note");
-  table.hidden = true; note.textContent = ""; note.className = "note";
-  if (!isFinite(vin) || !isFinite(vout)) return;
-  if (!(vin > 0) || !(vout > 0) || vout >= vin) {
-    note.textContent = "Needs 0 < Vout < Vin \u2014 a plain divider can only step down.";
-    note.className = "note err";
-    return;
-  }
-  const series = document.getElementById("g-series").value;
+/* Search E-series pairs for Vin -> Vout, honoring the load current: for each
+   series R1, the ideal R2 = Vout/((Vin-Vout)/R1 - IL), snapped to the series.
+   Ranked by loaded-Vout error, then log-distance of R1+R2 from the target
+   total when one is given. Writes the divider card's table + note. */
+function pairSearch(vin, vout, rtot, il, series) {
+  const table = document.getElementById("div-table"), note = document.getElementById("div-note");
   const values = seriesValues(series, 1, 6);          // 10 ohm .. 9.76 Mohm
-  const targetTot = isFinite(rtot) && rtot > 0 ? rtot : NaN;
-  const k = vout / (vin - vout);                       // ideal R2/R1
   const cands = [];
   for (const r1 of values) {
-    const r2 = snap(values, r1 * k);
-    const vo = vin * r2 / (r1 + r2);
+    const i2 = (vin - vout) / r1 - il;
+    if (i2 <= 0) continue;                             // load eats all the R1 current
+    const r2 = snap(values, vout / i2);
+    const vo = (vin - r1 * il) / (1 + r1 / r2);
     const errRel = Math.abs(vo - vout) / vout;
-    const totPenalty = isFinite(targetTot) ? Math.abs(Math.log10((r1 + r2) / targetTot)) : 0;
+    const totPenalty = isFinite(rtot) ? Math.abs(Math.log10((r1 + r2) / rtot)) : 0;
     cands.push({ r1: r1, r2: r2, vo: vo, err: errRel, score: errRel * 100 + totPenalty });
+  }
+  if (!cands.length) {
+    note.textContent = "No workable pair \u2014 the load current is too large for this Vin/Vout in the searched range.";
+    note.className = "note err";
+    return;
   }
   cands.sort(function (a, b) { return a.score - b.score; });
   const seen = new Set(), top = [];
@@ -946,15 +992,15 @@ function calcFinder() {
     seen.add(key); top.push(c);
     if (top.length === 5) break;
   }
-  document.getElementById("fnd-body").innerHTML = top.map(function (c) {
-    const i = vin / (c.r1 + c.r2);
+  document.getElementById("div-body").innerHTML = top.map(function (c) {
+    const i1 = (vin - c.vo) / c.r1;
     return "<tr><td>" + fmt(c.r1, "\u03a9") + "</td><td>" + fmt(c.r2, "\u03a9") + "</td><td>" +
       fmt(c.vo, "V") + "</td><td>" + (c.err * 100).toFixed(3) + " %</td><td>" +
-      fmt(i, "A") + "</td><td>" + fmt(c.r1 + c.r2, "\u03a9") + "</td></tr>";
+      fmt(i1, "A") + "</td><td>" + fmt(c.r1 + c.r2, "\u03a9") + "</td></tr>";
   }).join("");
   table.hidden = false;
-  note.textContent = "Best " + series + " pairs, ranked by Vout error" +
-    (isFinite(targetTot) ? ", then closeness to the requested total resistance." : ". Enter a total resistance to steer divider current.");
+  note.textContent = "Best " + series + " pairs" + (il > 0 ? " (load included)" : "") + ", ranked by Vout error" +
+    (isFinite(rtot) ? ", then closeness to the requested total resistance." : ". Enter a total resistance to steer divider current.");
 }
 
 /* ---------- series / parallel ---------- */
@@ -1032,8 +1078,7 @@ function calcLED() {
 
 const CALCS = {
   ohm: { calc: calcOhm, inputs: ["ohm-v","ohm-i","ohm-r","ohm-p"] },
-  div: { calc: calcDivider, inputs: ["div-vin","div-vout","div-r1","div-r2","div-iload"] },
-  fnd: { calc: calcFinder, inputs: ["fnd-vin","fnd-vout","fnd-rtot"] },
+  div: { calc: calcDivider, inputs: ["div-vin","div-vout","div-r1","div-r2","div-rtot","div-iload"] },
   sp:  { calc: calcSP, inputs: ["sp-list"] },
   rc:  { calc: calcRC, inputs: ["rc-r","rc-c","rc-f"] },
   re:  { calc: calcReact, inputs: ["re-f","re-c","re-l"] },
@@ -1051,7 +1096,7 @@ for (const key in CALCS) {
 
 // the top-level E-series setting feeds every calculator that suggests standard values
 document.getElementById("g-series").addEventListener("change", function () {
-  calcDivider(); calcFinder(); calcLED();
+  calcDivider(); calcLED();
 });
 
 document.querySelectorAll("button.reset").forEach(function (btn) {
