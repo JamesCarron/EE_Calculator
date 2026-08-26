@@ -474,6 +474,13 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
   .panel p.hint { color: var(--a-ink-secondary); font-size: var(--a-text-sm); margin: 0 0 1.2rem; max-width: var(--a-measure); }
   .card { background: var(--a-bg-panel); border: var(--a-border) solid var(--a-line); border-radius: var(--a-radius); padding: 1.1rem 1.25rem 1.25rem; margin-bottom: 1rem; }
   .card h3 { margin: 0 0 .8rem; font-size: var(--a-text-body); }
+  .cardrow { display: flex; flex-wrap: wrap; gap: 1rem 2.5rem; align-items: flex-start; }
+  .cardrow .fields { flex: 1 1 20rem; }
+  svg.schem { color: var(--a-ink-secondary); flex: 0 0 auto; max-width: 100%; }
+  svg.schem .wire { fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+  svg.schem .dot { fill: currentColor; stroke: none; }
+  svg.schem .opt { stroke-dasharray: 4 3; }
+  svg.schem text { fill: currentColor; stroke: none; font-family: var(--a-font-mono); font-size: 11px; }
   .fields { display: flex; flex-wrap: wrap; gap: .9rem 1.2rem; }
   .field { display: flex; flex-direction: column; gap: .25rem; }
   .field label { font-size: var(--a-text-xs); color: var(--a-ink-secondary); }
@@ -519,11 +526,24 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
   <h2>Ohm&rsquo;s Law &amp; Power</h2>
   <p class="hint">Fill in any two of the four values; the other two are calculated. Inputs accept SI suffixes (<code>4k7</code>, <code>10m</code>, <code>2.2M</code>).</p>
   <div class="card">
+    <div class="cardrow">
     <div class="fields">
       <div class="field"><label for="ohm-v">Voltage V (V)</label><input id="ohm-v" inputmode="decimal" placeholder="e.g. 12"></div>
       <div class="field"><label for="ohm-i">Current I (A)</label><input id="ohm-i" inputmode="decimal" placeholder="e.g. 20m"></div>
       <div class="field"><label for="ohm-r">Resistance R (&Omega;)</label><input id="ohm-r" inputmode="decimal" placeholder="e.g. 4k7"></div>
       <div class="field"><label for="ohm-p">Power P (W)</label><input id="ohm-p" inputmode="decimal" placeholder="e.g. 250m"></div>
+    </div>
+    <svg class="schem" width="210" height="130" viewBox="0 0 210 130" role="img" aria-label="Voltage source driving a resistor">
+      <circle class="wire" cx="35" cy="65" r="14"/>
+      <text x="31" y="69">V</text>
+      <path class="wire" d="M35 51 V25 H160 V45"/>
+      <path class="wire" d="M160 85 V105 H35 V79"/>
+      <rect class="wire" x="149" y="45" width="22" height="40"/>
+      <text x="180" y="69">R</text>
+      <path class="dot" d="M92 20 L104 25 L92 30 Z"/>
+      <text x="86" y="14">I</text>
+      <text x="60" y="122">P = V&#183;I</text>
+    </svg>
     </div>
     <dl class="results" id="ohm-out"></dl>
     <button class="reset" data-reset="ohm">Reset</button>
@@ -535,13 +555,61 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
   <p class="hint">V<sub>out</sub> = V<sub>in</sub> &middot; R2 / (R1 + R2), with R1 on top and R2 to ground. The finder searches standard E-series values for the pair closest to a target output.</p>
   <div class="card">
     <h3>Divider calculator</h3>
+    <div class="cardrow">
     <div class="fields">
       <div class="field"><label for="div-vin">V<sub>in</sub> (V)</label><input id="div-vin" inputmode="decimal" placeholder="e.g. 12"></div>
       <div class="field"><label for="div-r1">R1 &mdash; top (&Omega;)</label><input id="div-r1" inputmode="decimal" placeholder="e.g. 10k"></div>
       <div class="field"><label for="div-r2">R2 &mdash; bottom (&Omega;)</label><input id="div-r2" inputmode="decimal" placeholder="e.g. 4k7"></div>
     </div>
+    <svg class="schem" width="210" height="235" viewBox="0 0 210 235" role="img" aria-label="Resistor divider: R1 from Vin to the midpoint, R2 from the midpoint to ground, optional load current out of the midpoint">
+      <circle class="wire" cx="60" cy="18" r="3.5"/>
+      <text x="72" y="22">Vin</text>
+      <path class="wire" d="M60 21.5 V45"/>
+      <rect class="wire" x="49" y="45" width="22" height="46"/>
+      <text x="80" y="72">R1</text>
+      <path class="wire" d="M60 91 V115"/>
+      <circle class="dot" cx="60" cy="115" r="3"/>
+      <path class="wire" d="M60 115 H130"/>
+      <circle class="wire" cx="133.5" cy="115" r="3.5"/>
+      <text x="144" y="119">Vout</text>
+      <path class="wire opt" d="M100 115 V148"/>
+      <path class="dot" d="M96 146 L100 156 L104 146 Z"/>
+      <text x="108" y="150">I load</text>
+      <text x="108" y="163">(optional)</text>
+      <path class="wire" d="M60 115 V133"/>
+      <rect class="wire" x="49" y="133" width="22" height="46"/>
+      <text x="80" y="160">R2</text>
+      <path class="wire" d="M60 179 V202"/>
+      <path class="wire" d="M46 202 H74 M51 209 H69 M56 216 H64"/>
+    </svg>
+    </div>
     <dl class="results" id="div-out"></dl>
     <button class="reset" data-reset="div">Reset</button>
+  </div>
+  <div class="card">
+    <h3>Design one leg</h3>
+    <div class="fields">
+      <div class="field"><label for="dsn-vin">V<sub>in</sub> (V)</label><input id="dsn-vin" inputmode="decimal" placeholder="e.g. 12"></div>
+      <div class="field"><label for="dsn-vout">Target V<sub>out</sub> (V)</label><input id="dsn-vout" inputmode="decimal" placeholder="e.g. 3.3"></div>
+      <div class="field"><label for="dsn-known">Known leg</label>
+        <select id="dsn-known">
+          <option value="R1" selected>R1 (top)</option>
+          <option value="R2">R2 (bottom)</option>
+        </select>
+      </div>
+      <div class="field"><label for="dsn-rknown">Known value (&Omega;)</label><input id="dsn-rknown" inputmode="decimal" placeholder="e.g. 10k"></div>
+      <div class="field"><label for="dsn-iload">Load current at midpoint (A, optional)</label><input id="dsn-iload" inputmode="decimal" placeholder="e.g. 50u"></div>
+      <div class="field"><label for="dsn-series">Suggest from</label>
+        <select id="dsn-series">
+          <option value="E12">E12 (10 %)</option>
+          <option value="E24" selected>E24 (5 %)</option>
+          <option value="E96">E96 (1 %)</option>
+        </select>
+      </div>
+    </div>
+    <dl class="results" id="dsn-out"></dl>
+    <p class="note">The load is modelled as a constant current drawn out of the midpoint, so the top leg carries the R2 current plus the load. Leave it empty for an unloaded divider.</p>
+    <button class="reset" data-reset="dsn">Reset</button>
   </div>
   <div class="card">
     <h3>Resistor finder</h3>
@@ -570,8 +638,29 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
   <h2>Series / Parallel Resistance</h2>
   <p class="hint">Enter resistor values separated by commas, spaces, or new lines. Both combinations are calculated at once. Works for inductors too; for capacitors the two results swap.</p>
   <div class="card">
+    <div class="cardrow">
     <div class="fields">
       <div class="field" style="flex:1 1 100%"><label for="sp-list">Values (&Omega;)</label><textarea id="sp-list" rows="3" placeholder="e.g. 10k, 4k7, 1k"></textarea></div>
+    </div>
+    <svg class="schem" width="260" height="125" viewBox="0 0 260 125" role="img" aria-label="Resistors in series and in parallel">
+      <path class="wire" d="M8 40 H26"/>
+      <rect class="wire" x="26" y="32" width="34" height="16"/>
+      <text x="35" y="27">R1</text>
+      <path class="wire" d="M60 40 H76"/>
+      <rect class="wire" x="76" y="32" width="34" height="16"/>
+      <text x="85" y="27">R2</text>
+      <path class="wire" d="M110 40 H128"/>
+      <text x="42" y="72">Series</text>
+      <path class="wire" d="M205 12 V22 M205 22 H180 V35 M205 22 H230 V35"/>
+      <circle class="dot" cx="205" cy="22" r="2.5"/>
+      <rect class="wire" x="171" y="35" width="18" height="42"/>
+      <rect class="wire" x="221" y="35" width="18" height="42"/>
+      <text x="163" y="30">R1</text>
+      <text x="228" y="30">R2</text>
+      <path class="wire" d="M180 77 V90 H230 V77 M205 90 V100"/>
+      <circle class="dot" cx="205" cy="90" r="2.5"/>
+      <text x="181" y="118">Parallel</text>
+    </svg>
     </div>
     <dl class="results" id="sp-out"></dl>
     <button class="reset" data-reset="sp">Reset</button>
@@ -582,10 +671,30 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
   <h2>RC Filter Cutoff</h2>
   <p class="hint">f<sub>c</sub> = 1 / (2&pi;RC), the &minus;3 dB point of a first-order RC low-pass or high-pass. Fill in any two values.</p>
   <div class="card">
+    <div class="cardrow">
     <div class="fields">
       <div class="field"><label for="rc-r">R (&Omega;)</label><input id="rc-r" inputmode="decimal" placeholder="e.g. 10k"></div>
       <div class="field"><label for="rc-c">C (F)</label><input id="rc-c" inputmode="decimal" placeholder="e.g. 100n"></div>
       <div class="field"><label for="rc-f">f<sub>c</sub> (Hz)</label><input id="rc-f" inputmode="decimal" placeholder="e.g. 1k"></div>
+    </div>
+    <svg class="schem" width="230" height="150" viewBox="0 0 230 150" role="img" aria-label="RC low-pass: series R from Vin to Vout, C from Vout to ground">
+      <circle class="wire" cx="18" cy="40" r="3.5"/>
+      <text x="8" y="26">Vin</text>
+      <path class="wire" d="M21.5 40 H58"/>
+      <rect class="wire" x="58" y="32" width="40" height="16"/>
+      <text x="72" y="27">R</text>
+      <path class="wire" d="M98 40 H140"/>
+      <circle class="dot" cx="140" cy="40" r="3"/>
+      <path class="wire" d="M140 40 H172"/>
+      <circle class="wire" cx="175.5" cy="40" r="3.5"/>
+      <text x="186" y="44">Vout</text>
+      <path class="wire" d="M140 40 V72"/>
+      <path class="wire" d="M126 72 H154 M126 82 H154"/>
+      <text x="162" y="82">C</text>
+      <path class="wire" d="M140 82 V106"/>
+      <path class="wire" d="M126 106 H154 M131 113 H149 M136 120 H144"/>
+      <text x="8" y="142">Swap R and C for a high-pass; same f<tspan dy="3" font-size="9">c</tspan><tspan dy="-3">.</tspan></text>
+    </svg>
     </div>
     <dl class="results" id="rc-out"></dl>
     <button class="reset" data-reset="rc">Reset</button>
@@ -596,10 +705,24 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
   <h2>Reactance</h2>
   <p class="hint">X<sub>C</sub> = 1 / (2&pi;fC) and X<sub>L</sub> = 2&pi;fL at the given frequency. Enter a frequency plus a capacitance and/or an inductance.</p>
   <div class="card">
+    <div class="cardrow">
     <div class="fields">
       <div class="field"><label for="re-f">Frequency f (Hz)</label><input id="re-f" inputmode="decimal" placeholder="e.g. 100k"></div>
       <div class="field"><label for="re-c">Capacitance C (F)</label><input id="re-c" inputmode="decimal" placeholder="e.g. 10n"></div>
       <div class="field"><label for="re-l">Inductance L (H)</label><input id="re-l" inputmode="decimal" placeholder="e.g. 22u"></div>
+    </div>
+    <svg class="schem" width="250" height="105" viewBox="0 0 250 105" role="img" aria-label="Capacitor and inductor symbols">
+      <path class="wire" d="M12 40 H48"/>
+      <path class="wire" d="M48 24 V56 M58 24 V56"/>
+      <path class="wire" d="M58 40 H94"/>
+      <text x="48" y="16">C</text>
+      <text x="16" y="80">X<tspan dy="3" font-size="9">C</tspan><tspan dy="-3"> = 1/(2&#960;fC)</tspan></text>
+      <path class="wire" d="M140 40 H155"/>
+      <path class="wire" d="M155 40 A7.5 7.5 0 0 1 170 40 A7.5 7.5 0 0 1 185 40 A7.5 7.5 0 0 1 200 40 A7.5 7.5 0 0 1 215 40"/>
+      <path class="wire" d="M215 40 H230"/>
+      <text x="181" y="16">L</text>
+      <text x="150" y="80">X<tspan dy="3" font-size="9">L</tspan><tspan dy="-3"> = 2&#960;fL</tspan></text>
+    </svg>
     </div>
     <dl class="results" id="re-out"></dl>
     <button class="reset" data-reset="re">Reset</button>
@@ -610,10 +733,28 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
   <h2>LED Series Resistor</h2>
   <p class="hint">R = (V<sub>supply</sub> &minus; V<sub>f</sub>) / I<sub>f</sub>. The suggestion is the next E24 value up, so the LED runs at or below the requested current.</p>
   <div class="card">
+    <div class="cardrow">
     <div class="fields">
       <div class="field"><label for="led-vs">V<sub>supply</sub> (V)</label><input id="led-vs" inputmode="decimal" placeholder="e.g. 5"></div>
       <div class="field"><label for="led-vf">LED V<sub>f</sub> (V)</label><input id="led-vf" inputmode="decimal" placeholder="e.g. 2.1"></div>
       <div class="field"><label for="led-if">LED I<sub>f</sub> (A)</label><input id="led-if" inputmode="decimal" placeholder="e.g. 10m"></div>
+    </div>
+    <svg class="schem" width="250" height="125" viewBox="0 0 250 125" role="img" aria-label="Supply, series resistor, LED to ground">
+      <circle class="wire" cx="18" cy="45" r="3.5"/>
+      <text x="8" y="30">Vs</text>
+      <path class="wire" d="M21.5 45 H50"/>
+      <rect class="wire" x="50" y="37" width="40" height="16"/>
+      <text x="64" y="32">R</text>
+      <path class="wire" d="M90 45 H128"/>
+      <path class="wire" d="M128 31 L128 59 L154 45 Z"/>
+      <path class="wire" d="M154 31 V59"/>
+      <path class="wire" d="M146 26 L157 15 M153 29 L164 18"/>
+      <path class="dot" d="M157 15 L159 21 L163 17 Z"/>
+      <path class="dot" d="M164 18 L166 24 L170 20 Z"/>
+      <text x="126" y="76">LED</text>
+      <path class="wire" d="M154 45 H190 V80"/>
+      <path class="wire" d="M176 80 H204 M181 87 H199 M186 94 H194"/>
+    </svg>
     </div>
     <dl class="results" id="led-out"></dl>
     <button class="reset" data-reset="led">Reset</button>
@@ -745,6 +886,54 @@ function calcDiv() {
   ]);
 }
 
+/* Design one leg: Vin, target Vout, one known resistor, optional load current
+   drawn from the midpoint. KCL at the midpoint: I(R1) = I(R2) + Iload, so
+   R1 = (Vin-Vout)/(Vout/R2 + IL) and R2 = Vout/((Vin-Vout)/R1 - IL).
+   With both legs fixed the loaded output is Vout = (Vin - R1*IL)/(1 + R1/R2). */
+function calcDesign() {
+  const vin = val("dsn-vin"), vout = val("dsn-vout"), rk = val("dsn-rknown");
+  const ilRaw = val("dsn-iload");
+  const il = isFinite(ilRaw) ? ilRaw : 0;
+  if (![vin, vout, rk].every(isFinite)) { render("dsn-out", []); return; }
+  if (!(vin > 0) || !(vout > 0) || vout >= vin) { render("dsn-out", [["", "Needs 0 < Vout < Vin.", "err"]]); return; }
+  if (!(rk > 0)) { render("dsn-out", [["", "The known resistor must be positive.", "err"]]); return; }
+  if (il < 0) { render("dsn-out", [["", "Load current must be zero or positive.", "err"]]); return; }
+  const topKnown = document.getElementById("dsn-known").value === "R1";
+  let r1, r2;
+  if (topKnown) {
+    r1 = rk;
+    const i2 = (vin - vout) / r1 - il;      // current left for the bottom leg
+    if (i2 <= 0) {
+      render("dsn-out", [["", "The load alone drops " + fmt(il * r1, "V") + " across R1 — Vout is unreachable. Use a smaller R1 or less load.", "err"]]);
+      return;
+    }
+    r2 = vout / i2;
+  } else {
+    r2 = rk;
+    r1 = (vin - vout) / (vout / r2 + il);
+  }
+  const series = document.getElementById("dsn-series").value;
+  const values = seriesValues(series, -1, 7);          // 100 mohm .. 97.6 Mohm
+  const rCalc = topKnown ? r2 : r1;                    // the computed leg
+  const rStd = snap(values, rCalc);
+  const sr1 = topKnown ? r1 : rStd, sr2 = topKnown ? rStd : r2;
+  const voStd = (vin - sr1 * il) / (1 + sr1 / sr2);
+  const i1 = (vin - voStd) / sr1, i2s = voStd / sr2;
+  const rows = [
+    ["Exact " + (topKnown ? "R2" : "R1"), fmt(rCalc, "Ω")],
+    ["Nearest " + series, fmt(rStd, "Ω")],
+    ["V<sub>out</sub> with " + series + " value", fmt(voStd, "V") + " (" + ((voStd - vout) / vout * 100).toFixed(3) + " %)"],
+    ["Current in R1", fmt(i1, "A")],
+    ["Current in R2", fmt(i2s, "A")],
+    ["P in R1 / R2", fmt(i1 * i1 * sr1, "W") + " / " + fmt(i2s * i2s * sr2, "W")]
+  ];
+  if (il > 0) {
+    const ratio = i2s / il;
+    rows.push(["Bleed / load ratio", ratio.toPrecision(3) + (ratio < 10 ? " — a soft divider; Vout moves if the load varies" : "")]);
+  }
+  render("dsn-out", rows);
+}
+
 function calcFinder() {
   const vin = val("fnd-vin"), vout = val("fnd-vout"), rtot = val("fnd-rtot");
   const table = document.getElementById("fnd-table"), note = document.getElementById("fnd-note");
@@ -861,6 +1050,7 @@ function calcLED() {
 const CALCS = {
   ohm: { calc: calcOhm, inputs: ["ohm-v","ohm-i","ohm-r","ohm-p"] },
   div: { calc: calcDiv, inputs: ["div-vin","div-r1","div-r2"] },
+  dsn: { calc: calcDesign, inputs: ["dsn-vin","dsn-vout","dsn-known","dsn-rknown","dsn-iload","dsn-series"] },
   fnd: { calc: calcFinder, inputs: ["fnd-vin","fnd-vout","fnd-rtot","fnd-series"] },
   sp:  { calc: calcSP, inputs: ["sp-list"] },
   rc:  { calc: calcRC, inputs: ["rc-r","rc-c","rc-f"] },
