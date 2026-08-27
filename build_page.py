@@ -88,6 +88,10 @@ HTML = r"""<!doctype html>
   <button role="tab" data-tab="rc" aria-selected="false">RC Filter</button>
   <button role="tab" data-tab="react" aria-selected="false">Reactance</button>
   <button role="tab" data-tab="led" aria-selected="false">LED Resistor</button>
+  <button role="tab" data-tab="pcb" aria-selected="false">PCB Power</button>
+  <button role="tab" data-tab="z" aria-selected="false">Impedance</button>
+  <button role="tab" data-tab="xtal" aria-selected="false">Crystal</button>
+  <button role="tab" data-tab="util" aria-selected="false">Utilities</button>
   <span class="serieswrap"><label for="g-series">E-series</label>
     <select id="g-series">
       <option value="E12">E12 (10 %)</option>
@@ -302,6 +306,206 @@ HTML = r"""<!doctype html>
   </div>
 </section>
 
+<section class="panel" id="panel-pcb">
+  <h2>PCB Power</h2>
+  <p class="hint">Copper sizing for current. Dimension fields take mm by default and accept <code>mil</code>, <code>um</code> and <code>in</code> suffixes (e.g. <code>10mil</code>).</p>
+  <div class="card">
+    <h3>Trace width &harr; current (IPC-2221)</h3>
+    <div class="cardrow">
+    <div class="fields">
+      <div class="field"><label for="tw-i">Current (A)</label><input id="tw-i" inputmode="decimal" placeholder="e.g. 3"></div>
+      <div class="field"><label for="tw-w">Trace width (mm)</label><input id="tw-w" inputmode="decimal" placeholder="or e.g. 20mil"></div>
+      <div class="field"><label for="tw-dt">Temp rise (&deg;C)</label><input id="tw-dt" inputmode="decimal" placeholder="10"></div>
+      <div class="field"><label for="tw-oz">Copper</label>
+        <select id="tw-oz"><option value="17.5">0.5 oz (17.5 &micro;m)</option><option value="35" selected>1 oz (35 &micro;m)</option><option value="70">2 oz (70 &micro;m)</option><option value="105">3 oz (105 &micro;m)</option></select>
+      </div>
+      <div class="field"><label for="tw-layer">Layer</label>
+        <select id="tw-layer"><option value="ext" selected>External</option><option value="int">Internal</option></select>
+      </div>
+      <div class="field"><label for="tw-len">Length (mm, optional)</label><input id="tw-len" inputmode="decimal" placeholder="e.g. 50"></div>
+      <div class="field"><label for="tw-ta">Ambient (&deg;C)</label><input id="tw-ta" inputmode="decimal" placeholder="25"></div>
+    </div>
+    <svg class="schem" width="230" height="110" viewBox="0 0 230 110" role="img" aria-label="Trace cross-section on a board">
+      <rect class="wire" x="20" y="55" width="190" height="28"/>
+      <path class="dot" d="M85 38 H145 V52 H85 Z"/>
+      <path class="wire" d="M85 24 V34 M145 24 V34 M85 29 H145"/>
+      <text x="106" y="18">w</text>
+      <path class="wire" d="M158 38 H166 M158 52 H166 M162 38 V52"/>
+      <text x="171" y="49">t</text>
+      <text x="24" y="74">substrate</text>
+    </svg>
+    </div>
+    <dl class="results" id="tw-out"></dl>
+    <p class="note">IPC-2221: I = k&middot;&Delta;T<sup>0.44</sup>&middot;A<sup>0.725</sup> (k = 0.048 external, 0.024 internal, A in mil&sup2;). Enter current to get width, width to get max current, or both to check margin. Blank temp rise defaults to 10 &deg;C, ambient to 25 &deg;C. IPC-2152 allows somewhat more; this is the conservative classic.</p>
+    <button class="reset" data-reset="tw">Reset</button>
+  </div>
+  <div class="card">
+    <h3>Via</h3>
+    <div class="cardrow">
+    <div class="fields">
+      <div class="field"><label for="via-d">Drill diameter (mm)</label><input id="via-d" inputmode="decimal" placeholder="e.g. 0.3"></div>
+      <div class="field"><label for="via-tp">Plating (&micro;m)</label><input id="via-tp" inputmode="decimal" placeholder="25"></div>
+      <div class="field"><label for="via-h">Board thickness (mm)</label><input id="via-h" inputmode="decimal" placeholder="1.6"></div>
+      <div class="field"><label for="via-dt">Temp rise (&deg;C)</label><input id="via-dt" inputmode="decimal" placeholder="10"></div>
+      <div class="field"><label for="via-pad">Pad dia (mm, optional)</label><input id="via-pad" inputmode="decimal" placeholder="e.g. 0.6"></div>
+      <div class="field"><label for="via-anti">Antipad dia (mm, optional)</label><input id="via-anti" inputmode="decimal" placeholder="e.g. 1.0"></div>
+      <div class="field"><label for="via-er">&epsilon;<sub>r</sub></label><input id="via-er" inputmode="decimal" placeholder="4.3"></div>
+    </div>
+    <svg class="schem" width="180" height="140" viewBox="0 0 180 140" role="img" aria-label="Via barrel cross-section">
+      <rect class="wire" x="20" y="30" width="140" height="80"/>
+      <path class="wire" d="M70 20 V120 M110 20 V120"/>
+      <path class="wire" d="M76 20 V120 M104 20 V120"/>
+      <path class="wire" d="M55 20 H76 M104 20 H125 M55 120 H76 M104 120 H125"/>
+      <text x="128" y="76">plating</text>
+      <path class="wire opt" d="M76 68 H104"/>
+      <text x="82" y="62">drill</text>
+    </svg>
+    </div>
+    <dl class="results" id="via-out"></dl>
+    <p class="note">Ampacity uses the IPC-2221 internal-layer constant on the barrel cross-section; L and C are the classic first-order via formulas (C needs pad and antipad diameters). Blank plating/thickness default to 25 &micro;m and 1.6 mm.</p>
+    <button class="reset" data-reset="via">Reset</button>
+  </div>
+  <div class="card">
+    <h3>Fusing current (Onderdonk)</h3>
+    <div class="fields">
+      <div class="field"><label for="fu-w">Trace width (mm)</label><input id="fu-w" inputmode="decimal" placeholder="e.g. 1"></div>
+      <div class="field"><label for="fu-oz">Copper</label>
+        <select id="fu-oz"><option value="17.5">0.5 oz (17.5 &micro;m)</option><option value="35" selected>1 oz (35 &micro;m)</option><option value="70">2 oz (70 &micro;m)</option><option value="105">3 oz (105 &micro;m)</option></select>
+      </div>
+      <div class="field"><label for="fu-t">Fault duration (s)</label><input id="fu-t" inputmode="decimal" placeholder="e.g. 1"></div>
+      <div class="field"><label for="fu-ta">Ambient (&deg;C)</label><input id="fu-ta" inputmode="decimal" placeholder="25"></div>
+    </div>
+    <dl class="results" id="fu-out"></dl>
+    <p class="note">Onderdonk&rsquo;s equation, copper melting at 1083 &deg;C, adiabatic &mdash; valid for events up to a few seconds; longer events shed heat and survive more.</p>
+    <button class="reset" data-reset="fu">Reset</button>
+  </div>
+  <div class="card">
+    <h3>Conductor spacing (IPC-2221 Table 6-1)</h3>
+    <div class="fields">
+      <div class="field"><label for="sp-v">Peak voltage between conductors (V)</label><input id="sp-v" inputmode="decimal" placeholder="e.g. 48"></div>
+    </div>
+    <dl class="results" id="spc-out"></dl>
+    <p class="note">Minimum spacing per environment. B1 internal layers; B2 external uncoated &le;3050 m; B3 external uncoated &gt;3050 m; B4 external with permanent polymer coating; A5 external conformal coated; A6 external component leads uncoated; A7 component leads conformal coated.</p>
+    <button class="reset" data-reset="spc">Reset</button>
+  </div>
+</section>
+
+<section class="panel" id="panel-z">
+  <h2>Impedance</h2>
+  <p class="hint">First-order IPC-2141 formulas &mdash; good to a few percent inside their validity range. For a real stackup, confirm with the fab&rsquo;s field solver.</p>
+  <div class="card">
+    <h3>Single-ended Z<sub>0</sub></h3>
+    <div class="cardrow">
+    <div class="fields">
+      <div class="field"><label for="z-struct">Structure</label>
+        <select id="z-struct"><option value="ms" selected>Microstrip (outer layer)</option><option value="sl">Stripline (inner layer)</option></select>
+      </div>
+      <div class="field"><label for="z-w">Trace width (mm)</label><input id="z-w" inputmode="decimal" placeholder="e.g. 0.3"></div>
+      <div class="field"><label for="z-h" id="z-hlabel">Dielectric height h (mm)</label><input id="z-h" inputmode="decimal" placeholder="e.g. 0.2"></div>
+      <div class="field"><label for="z-oz">Copper</label>
+        <select id="z-oz"><option value="17.5">0.5 oz (17.5 &micro;m)</option><option value="35" selected>1 oz (35 &micro;m)</option><option value="70">2 oz (70 &micro;m)</option></select>
+      </div>
+      <div class="field"><label for="z-er">&epsilon;<sub>r</sub></label><input id="z-er" inputmode="decimal" placeholder="4.3"></div>
+    </div>
+    <svg class="schem" width="230" height="120" viewBox="0 0 230 120" role="img" aria-label="Microstrip and stripline cross-sections">
+      <rect class="wire" x="15" y="45" width="90" height="30"/>
+      <path class="dot" d="M40 34 H80 V44 H40 Z"/>
+      <path class="wire" d="M15 76 H105" stroke-width="3"/>
+      <text x="30" y="102">microstrip</text>
+      <rect class="wire" x="125" y="35" width="90" height="50"/>
+      <path class="dot" d="M150 55 H190 V64 H150 Z"/>
+      <path class="wire" d="M125 34 H215" stroke-width="3"/>
+      <path class="wire" d="M125 86 H215" stroke-width="3"/>
+      <text x="142" y="102">stripline</text>
+    </svg>
+    </div>
+    <dl class="results" id="z-out"></dl>
+    <button class="reset" data-reset="z">Reset</button>
+  </div>
+  <div class="card">
+    <h3>Wavelength &amp; critical length</h3>
+    <div class="fields">
+      <div class="field"><label for="wl-f">Frequency (Hz)</label><input id="wl-f" inputmode="decimal" placeholder="e.g. 100M"></div>
+      <div class="field"><label for="wl-tr">Rise time (s)</label><input id="wl-tr" inputmode="decimal" placeholder="or e.g. 2n"></div>
+      <div class="field"><label for="wl-eeff">&epsilon;<sub>eff</sub></label><input id="wl-eeff" inputmode="decimal" placeholder="3.3 (microstrip FR4)"></div>
+    </div>
+    <dl class="results" id="wl-out"></dl>
+    <p class="note">Enter a frequency for wavelength fractions, or a rise time for the knee frequency (0.35/t<sub>r</sub>) and the critical length beyond which a trace behaves as a transmission line (t<sub>r</sub>/2 of propagation delay). &epsilon;<sub>eff</sub> defaults to 3.3; stripline in FR4 is &asymp; &epsilon;<sub>r</sub>.</p>
+    <button class="reset" data-reset="wl">Reset</button>
+  </div>
+</section>
+
+<section class="panel" id="panel-xtal">
+  <h2>Crystal</h2>
+  <p class="hint">Pierce-oscillator load capacitance and frequency-tolerance arithmetic.</p>
+  <div class="card">
+    <h3>Load capacitance</h3>
+    <div class="cardrow">
+    <div class="fields">
+      <div class="field"><label for="xc-cl">Crystal C<sub>L</sub> spec (F)</label><input id="xc-cl" inputmode="decimal" placeholder="e.g. 12p"></div>
+      <div class="field"><label for="xc-c1">C1 (F)</label><input id="xc-c1" inputmode="decimal" placeholder="e.g. 18p"></div>
+      <div class="field"><label for="xc-c2">C2 (F)</label><input id="xc-c2" inputmode="decimal" placeholder="e.g. 18p"></div>
+      <div class="field"><label for="xc-cs">Stray C (F)</label><input id="xc-cs" inputmode="decimal" placeholder="3p"></div>
+    </div>
+    <svg class="schem" width="220" height="130" viewBox="0 0 220 130" role="img" aria-label="Crystal with two load capacitors to ground">
+      <path class="wire" d="M40 30 H180"/>
+      <rect class="wire" x="95" y="20" width="30" height="20"/>
+      <path class="wire" d="M88 15 V45 M132 15 V45"/>
+      <text x="98" y="60">XTAL</text>
+      <path class="wire" d="M60 30 V62 M48 62 H72 M48 72 H72 M60 72 V92 M48 92 H72 M53 99 H67 M58 106 H62"/>
+      <text x="26" y="72">C1</text>
+      <path class="wire" d="M160 30 V62 M148 62 H172 M148 72 H172 M160 72 V92 M148 92 H172 M153 99 H167 M158 106 H162"/>
+      <text x="178" y="72">C2</text>
+    </svg>
+    </div>
+    <dl class="results" id="xc-out"></dl>
+    <p class="note">C<sub>L</sub> = C1&middot;C2/(C1+C2) + C<sub>stray</sub>. Give C1 and C2 to check the load the crystal sees, or just the C<sub>L</sub> spec to get the required C1 = C2. Stray defaults to 3 pF (pads + pins).</p>
+    <button class="reset" data-reset="xc">Reset</button>
+  </div>
+  <div class="card">
+    <h3>Frequency error (ppm)</h3>
+    <div class="fields">
+      <div class="field"><label for="pp-f">Frequency (Hz)</label><input id="pp-f" inputmode="decimal" placeholder="e.g. 16M"></div>
+      <div class="field"><label for="pp-ppm">Tolerance (ppm)</label><input id="pp-ppm" inputmode="decimal" placeholder="e.g. 20"></div>
+      <div class="field"><label for="pp-df">&Delta;f (Hz)</label><input id="pp-df" inputmode="decimal" placeholder="or e.g. 320"></div>
+    </div>
+    <dl class="results" id="pp-out"></dl>
+    <button class="reset" data-reset="pp">Reset</button>
+  </div>
+</section>
+
+<section class="panel" id="panel-util">
+  <h2>Utilities</h2>
+  <p class="hint">Wire data and everyday conversions.</p>
+  <div class="card">
+    <h3>AWG wire</h3>
+    <div class="fields">
+      <div class="field"><label for="awg-n">AWG (40 &hellip; 0000 or 4/0)</label><input id="awg-n" placeholder="e.g. 18"></div>
+    </div>
+    <dl class="results" id="awg-out"></dl>
+    <p class="note">Solid copper at 20 &deg;C. The two ampacities are the classic handbook rules of thumb: &ldquo;chassis wiring&rdquo; (short runs in free air) and &ldquo;power transmission&rdquo; (bundled, conservative) &mdash; insulation rating and bundling govern real limits.</p>
+    <button class="reset" data-reset="awg">Reset</button>
+  </div>
+  <div class="card">
+    <h3>Conversions</h3>
+    <div class="fields">
+      <div class="field"><label for="cv-mm">mm</label><input id="cv-mm" inputmode="decimal" placeholder="e.g. 0.254"></div>
+      <div class="field"><label for="cv-mil">mil</label><input id="cv-mil" inputmode="decimal" placeholder="e.g. 10"></div>
+    </div>
+    <div class="fields" style="margin-top:.9rem">
+      <div class="field"><label for="cv-c">&deg;C</label><input id="cv-c" inputmode="decimal" placeholder="e.g. 25"></div>
+      <div class="field"><label for="cv-f">&deg;F</label><input id="cv-f" inputmode="decimal" placeholder="e.g. 77"></div>
+    </div>
+    <div class="fields" style="margin-top:.9rem">
+      <div class="field"><label for="cv-db">dB</label><input id="cv-db" inputmode="decimal" placeholder="e.g. 6"></div>
+      <div class="field"><label for="cv-vr">Voltage ratio</label><input id="cv-vr" inputmode="decimal" placeholder="e.g. 2"></div>
+      <div class="field"><label for="cv-pr">Power ratio</label><input id="cv-pr" inputmode="decimal" placeholder="e.g. 4"></div>
+    </div>
+    <p class="note">Edit either side of a pair; the rest follows. dB assumes 20&middot;log<sub>10</sub> for voltage and 10&middot;log<sub>10</sub> for power.</p>
+    <button class="reset" data-reset="cv">Reset</button>
+  </div>
+</section>
+
 </main>
 
 <footer class="site"><div class="wrap">EE Calculator &mdash; all calculation runs locally in this page; nothing leaves your machine.</div></footer>
@@ -373,10 +577,13 @@ const E96 = [1.00,1.02,1.05,1.07,1.10,1.13,1.15,1.18,1.21,1.24,1.27,1.30,1.33,1.
              8.66,8.87,9.09,9.31,9.53,9.76];
 const SERIES = { E12: E12, E24: E24, E96: E96 };
 
+/* Decade-scaled series values. toPrecision(3) clears float noise without
+   destroying small decades — the base values carry at most 3 significant
+   digits, so this is exact for pF as well as Mohm. */
 function seriesValues(name, decMin, decMax) {
   const base = SERIES[name], out = [];
   for (let d = decMin; d <= decMax; d++)
-    for (const b of base) out.push(Math.round(b * Math.pow(10, d) * 100) / 100);
+    for (const b of base) out.push(Number((b * Math.pow(10, d)).toPrecision(3)));
   return out;
 }
 
@@ -642,7 +849,272 @@ function calcLED() {
   ]);
 }
 
-/* ---------- wiring ---------- */
+/* ---------- PCB power ---------- */
+
+const MIL = 0.0254;                                    // mm per mil
+const RHO20 = 1.724e-8, ALPHA = 0.00393;               // copper, SI
+
+/* Dimension fields: plain numbers are mm; mil / um / in suffixes accepted. */
+function parseDimMM(s) {
+  s = String(s == null ? "" : s).trim();
+  const m = s.match(/^([-+]?[\d.]+(?:[eE][-+]?\d+)?)\s*(mm|mils?|um|µm|in(?:ch)?|")?$/i);
+  if (!m) return NaN;
+  const unit = (m[2] || "mm").toLowerCase();
+  const mult = { mm: 1, mil: MIL, mils: MIL, um: 1e-3, "µm": 1e-3, "in": 25.4, inch: 25.4, '"': 25.4 };
+  return parseFloat(m[1]) * mult[unit];
+}
+
+function valDim(id) {
+  const el = document.getElementById(id);
+  const raw = el.value.trim();
+  const v = raw ? parseDimMM(raw) : NaN;
+  el.classList.toggle("bad", raw !== "" && !isFinite(v));
+  return v;
+}
+
+/* IPC-2221: I = k * dT^0.44 * A^0.725, A in mil^2 */
+function ipcCurrent(aMil2, dT, k) { return k * Math.pow(dT, 0.44) * Math.pow(aMil2, 0.725); }
+function ipcArea(i, dT, k) { return Math.pow(i / (k * Math.pow(dT, 0.44)), 1 / 0.725); }
+
+function traceR(wMM, tMM, lenMM, tempC) {
+  const rho = RHO20 * (1 + ALPHA * (tempC - 20));
+  return rho * (lenMM / 1000) / ((wMM / 1000) * (tMM / 1000));
+}
+
+function calcTrace() {
+  const i = val("tw-i"), w = valDim("tw-w"), lenMM = valDim("tw-len");
+  const dtRaw = val("tw-dt"), taRaw = val("tw-ta");
+  const dT = isFinite(dtRaw) && dtRaw > 0 ? dtRaw : 10;
+  const ta = isFinite(taRaw) ? taRaw : 25;
+  const tMM = parseFloat(document.getElementById("tw-oz").value) / 1000;
+  const k = document.getElementById("tw-layer").value === "ext" ? 0.048 : 0.024;
+  if (!isFinite(i) && !isFinite(w)) { render("tw-out", []); return; }
+  const rows = [];
+  let wMM = w, iVal = i;
+  if (isFinite(i) && !isFinite(w)) {
+    if (!(i > 0)) { render("tw-out", [["", "Current must be positive.", "err"]]); return; }
+    const aMil2 = ipcArea(i, dT, k);
+    wMM = (aMil2 / (tMM / MIL)) * MIL;
+    rows.push(["Required width", fmt(wMM / 1000, "m") + " (" + (wMM / MIL).toFixed(1) + " mil)"]);
+  } else if (isFinite(w) && !isFinite(i)) {
+    if (!(w > 0)) { render("tw-out", [["", "Width must be positive.", "err"]]); return; }
+    iVal = ipcCurrent((w / MIL) * (tMM / MIL), dT, k);
+    rows.push(["Max current at &Delta;T " + dT + " &deg;C", fmt(iVal, "A")]);
+  } else {
+    const imax = ipcCurrent((w / MIL) * (tMM / MIL), dT, k);
+    rows.push(["Max current at &Delta;T " + dT + " &deg;C", fmt(imax, "A")]);
+    rows.push(["Margin at " + fmt(i, "A"), ((imax / i - 1) * 100).toFixed(1) + " %" + (imax < i ? " — undersized" : ""), imax < i ? "err" : ""]);
+  }
+  if (isFinite(lenMM) && lenMM > 0 && isFinite(iVal) && iVal > 0 && isFinite(wMM)) {
+    const r = traceR(wMM, tMM, lenMM, ta + dT);
+    rows.push(["Resistance at " + (ta + dT).toFixed(0) + " &deg;C", fmt(r, "Ω")]);
+    rows.push(["Voltage drop / power", fmt(iVal * r, "V") + " / " + fmt(iVal * iVal * r, "W")]);
+  }
+  render("tw-out", rows);
+}
+
+function calcVia() {
+  const d = valDim("via-d");
+  const tpRaw = val("via-tp"), hRaw = valDim("via-h"), dtRaw = val("via-dt"), erRaw = val("via-er");
+  if (!isFinite(d) || !(d > 0)) { render("via-out", []); return; }
+  const tp = (isFinite(tpRaw) && tpRaw > 0 ? tpRaw : 25) / 1000;   // um -> mm
+  const h = isFinite(hRaw) && hRaw > 0 ? hRaw : 1.6;
+  const dT = isFinite(dtRaw) && dtRaw > 0 ? dtRaw : 10;
+  const er = isFinite(erRaw) && erRaw > 0 ? erRaw : 4.3;
+  const aMM2 = Math.PI * tp * (d + tp);                            // barrel cross-section
+  const aMil2 = aMM2 / (MIL * MIL);
+  const iCap = ipcCurrent(aMil2, dT, 0.024);
+  const r = RHO20 * (h / 1000) / (aMM2 * 1e-6);
+  const lNH = 5.08 * (h / 25.4) * (Math.log(4 * h / d) + 1);
+  const theta = (h / 1000) / (390 * aMM2 * 1e-6);
+  const rows = [
+    ["Barrel cross-section", aMM2.toPrecision(3) + " mm&sup2;"],
+    ["Current at &Delta;T " + dT + " &deg;C", fmt(iCap, "A")],
+    ["DC resistance", fmt(r, "Ω")],
+    ["Inductance", lNH.toPrecision(3) + " nH"],
+    ["Thermal resistance", theta.toFixed(1) + " K/W"]
+  ];
+  const pad = valDim("via-pad"), anti = valDim("via-anti");
+  if (isFinite(pad) && isFinite(anti)) {
+    if (anti > pad && pad > 0) {
+      const cPF = 1.41 * er * (h / 25.4) * (pad / 25.4) / ((anti - pad) / 25.4);
+      rows.push(["Capacitance", cPF.toPrecision(3) + " pF"]);
+    } else {
+      rows.push(["", "Antipad must be larger than pad for the capacitance estimate.", "warn"]);
+    }
+  }
+  render("via-out", rows);
+}
+
+/* Onderdonk: 33*(I/A_cmil)^2 * t = log10(1 + (Tm-Ta)/(234+Ta)), Tm = 1083 C */
+function calcFuse() {
+  const w = valDim("fu-w"), t = val("fu-t"), taRaw = val("fu-ta");
+  if (!isFinite(w) || !isFinite(t)) { render("fu-out", []); return; }
+  if (!(w > 0) || !(t > 0)) { render("fu-out", [["", "Width and duration must be positive.", "err"]]); return; }
+  const ta = isFinite(taRaw) ? taRaw : 25;
+  const tMM = parseFloat(document.getElementById("fu-oz").value) / 1000;
+  const aMil2 = (w / MIL) * (tMM / MIL);
+  const aCmil = aMil2 * 4 / Math.PI;
+  const iFuse = aCmil * Math.sqrt(Math.log10(1 + (1083 - ta) / (234 + ta)) / (33 * t));
+  render("fu-out", [
+    ["Cross-section", aMil2.toFixed(1) + " mil&sup2; (" + (aMil2 * MIL * MIL).toPrecision(3) + " mm&sup2;)"],
+    ["Fusing current for " + fmt(t, "s"), fmt(iFuse, "A")],
+    ["", "Design fault currents well below this — the trace is at its melting point.", "warn"]
+  ]);
+}
+
+/* IPC-2221 Table 6-1, spacing in mm per voltage band; last entry is mm/V above 500 V. */
+const SPACING = {
+  B1: { name: "B1 — internal layers", v: [0.05, 0.05, 0.1, 0.1, 0.2, 0.2, 0.2, 0.2, 0.25], perV: 0.0025 },
+  B2: { name: "B2 — external, uncoated, &le;3050 m", v: [0.1, 0.1, 0.6, 0.6, 0.6, 1.25, 1.25, 1.25, 2.5], perV: 0.005 },
+  B3: { name: "B3 — external, uncoated, &gt;3050 m", v: [0.1, 0.1, 0.6, 1.5, 3.2, 3.2, 6.4, 12.5, 12.5], perV: 0.025 },
+  B4: { name: "B4 — external, polymer coated", v: [0.05, 0.05, 0.13, 0.13, 0.4, 0.4, 0.4, 0.4, 0.8], perV: 0.00305 },
+  A5: { name: "A5 — external, conformal coated", v: [0.13, 0.13, 0.13, 0.13, 0.4, 0.4, 0.4, 0.4, 0.8], perV: 0.00305 },
+  A6: { name: "A6 — component leads, uncoated", v: [0.13, 0.25, 0.4, 0.5, 0.5, 0.8, 0.8, 0.8, 1.5], perV: 0.00305 },
+  A7: { name: "A7 — component leads, conformal coated", v: [0.13, 0.13, 0.13, 0.13, 0.4, 0.4, 0.4, 0.4, 0.8], perV: 0.00305 }
+};
+const SPACING_BANDS = [15, 30, 50, 100, 150, 170, 250, 300, 500];
+
+function calcSpacing() {
+  const v = val("sp-v");
+  if (!isFinite(v) || !(v > 0)) { render("spc-out", []); return; }
+  const rows = [];
+  let band = SPACING_BANDS.findIndex(function (b) { return v <= b; });
+  for (const key in SPACING) {
+    const e = SPACING[key];
+    const mm = band === -1 ? e.v[8] + (v - 500) * e.perV : e.v[band];
+    rows.push([e.name, mm.toFixed(2) + " mm (" + (mm / MIL).toFixed(0) + " mil)"]);
+  }
+  render("spc-out", rows);
+}
+
+/* ---------- impedance ---------- */
+
+function calcZ() {
+  const w = valDim("z-w"), h = valDim("z-h");
+  const erRaw = val("z-er");
+  const er = isFinite(erRaw) && erRaw > 1 ? erRaw : 4.3;
+  const t = parseFloat(document.getElementById("z-oz").value) / 1000;
+  const ms = document.getElementById("z-struct").value === "ms";
+  document.getElementById("z-hlabel").innerHTML = ms ? "Dielectric height h (mm)" : "Plane-to-plane b (mm)";
+  if (!isFinite(w) || !isFinite(h) || !(w > 0) || !(h > 0)) { render("z-out", []); return; }
+  const rows = [];
+  let z0, eeff;
+  if (ms) {
+    z0 = 87 / Math.sqrt(er + 1.41) * Math.log(5.98 * h / (0.8 * w + t));
+    eeff = (er + 1) / 2 + (er - 1) / 2 / Math.sqrt(1 + 12 * h / w);
+    if (w / h < 0.1 || w / h > 2.0 || er > 15) rows.push(["", "Outside the formula's validity range (0.1 < w/h < 2, &epsilon;<sub>r</sub> < 15) — treat with suspicion.", "warn"]);
+  } else {
+    z0 = 60 / Math.sqrt(er) * Math.log(1.9 * h / (0.8 * w + t));
+    eeff = er;
+    if (w / h > 0.35 || t / h > 0.25) rows.push(["", "Outside the formula's validity range (w/b < 0.35, t/b < 0.25) — treat with suspicion.", "warn"]);
+  }
+  if (!(z0 > 0)) { render("z-out", [["", "Geometry gives no real impedance — the trace is too wide for this height.", "err"]]); return; }
+  rows.push(["Z<sub>0</sub>", z0.toFixed(1) + " Ω"]);
+  rows.push(["&epsilon;<sub>eff</sub>", eeff.toFixed(2)]);
+  rows.push(["Propagation delay", (3.336 * Math.sqrt(eeff)).toFixed(2) + " ps/mm (" + (Math.sqrt(eeff) / 0.29979).toFixed(2) + " ns/m)"]);
+  render("z-out", rows);
+}
+
+function calcWave() {
+  const f = val("wl-f"), tr = val("wl-tr"), eRaw = val("wl-eeff");
+  const eeff = isFinite(eRaw) && eRaw >= 1 ? eRaw : 3.3;
+  const vp = 299792458 / Math.sqrt(eeff);
+  const rows = [];
+  if (isFinite(f) && f > 0) {
+    const lam = vp / f;
+    rows.push(["Wavelength &lambda;", fmt(lam, "m")]);
+    rows.push(["&lambda;/4 &middot; &lambda;/10 &middot; &lambda;/20", fmt(lam / 4, "m") + " · " + fmt(lam / 10, "m") + " · " + fmt(lam / 20, "m")]);
+  }
+  if (isFinite(tr) && tr > 0) {
+    rows.push(["Knee frequency 0.35/t<sub>r</sub>", fmt(0.35 / tr, "Hz")]);
+    rows.push(["Critical length", fmt(tr * vp / 2, "m") + " — shorter traces need no termination"]);
+  }
+  render("wl-out", rows);
+}
+
+/* ---------- crystal ---------- */
+
+function calcXtal() {
+  const cl = val("xc-cl"), c1 = val("xc-c1"), c2 = val("xc-c2"), csRaw = val("xc-cs");
+  const cs = isFinite(csRaw) && csRaw >= 0 ? csRaw : 3e-12;
+  const rows = [];
+  if (isFinite(c1) && isFinite(c2) && c1 > 0 && c2 > 0) {
+    const clAct = c1 * c2 / (c1 + c2) + cs;
+    rows.push(["C<sub>L</sub> the crystal sees", fmt(clAct, "F")]);
+    if (isFinite(cl) && cl > 0) {
+      const err = (clAct - cl) / cl * 100;
+      rows.push(["vs. spec " + fmt(cl, "F"), err.toFixed(1) + " %" + (Math.abs(err) > 10 ? " — retune C1/C2" : ""), Math.abs(err) > 10 ? "warn" : ""]);
+    }
+  } else if (isFinite(cl) && cl > 0) {
+    const c = 2 * (cl - cs);
+    if (c <= 0) { render("xc-out", [["", "Stray capacitance already exceeds the C<sub>L</sub> spec.", "err"]]); return; }
+    rows.push(["Required C1 = C2", fmt(c, "F")]);
+    rows.push(["Nearest E12 value", fmt(snap(seriesValues("E12", -12, -10), c), "F")]);
+  }
+  render("xc-out", rows);
+}
+
+function calcPPM() {
+  const f = val("pp-f"), ppm = val("pp-ppm"), df = val("pp-df");
+  const rows = [];
+  let p = ppm;
+  if (isFinite(f) && f > 0 && isFinite(ppm)) {
+    rows.push(["&Delta;f at " + fmt(f, "Hz"), "&plusmn;" + fmt(f * ppm * 1e-6, "Hz")]);
+  } else if (isFinite(f) && f > 0 && isFinite(df)) {
+    p = df / f * 1e6;
+    rows.push(["Tolerance", "&plusmn;" + p.toPrecision(3) + " ppm"]);
+  } else if (!isFinite(ppm)) { render("pp-out", []); return; }
+  if (isFinite(p)) {
+    rows.push(["Clock drift", "&plusmn;" + (p * 0.0864).toPrecision(3) + " s/day, &plusmn;" + (p * 0.0864 * 365.25 / 60).toPrecision(3) + " min/year"]);
+  }
+  render("pp-out", rows);
+}
+
+/* ---------- utilities ---------- */
+
+const AWG_CHASSIS = { "-3": 380, "-2": 328, "-1": 283, 0: 245, 1: 211, 2: 181, 3: 158, 4: 135, 5: 118, 6: 101, 7: 89, 8: 73, 9: 64, 10: 55, 11: 47, 12: 41, 13: 35, 14: 32, 15: 28, 16: 22, 17: 19, 18: 16, 19: 14, 20: 11, 21: 9, 22: 7, 23: 4.7, 24: 3.5, 25: 2.7, 26: 2.2, 27: 1.7, 28: 1.4, 29: 1.2, 30: 0.86, 31: 0.7, 32: 0.53, 33: 0.43, 34: 0.33, 35: 0.27, 36: 0.21, 37: 0.17, 38: 0.13, 39: 0.11, 40: 0.09 };
+const AWG_POWER = { "-3": 302, "-2": 239, "-1": 190, 0: 150, 1: 119, 2: 94, 3: 75, 4: 60, 5: 47, 6: 37, 7: 30, 8: 24, 9: 19, 10: 15, 11: 12, 12: 9.3, 13: 7.4, 14: 5.9, 15: 4.7, 16: 3.7, 17: 2.9, 18: 2.3, 19: 1.8, 20: 1.5, 21: 1.2, 22: 0.92, 23: 0.729, 24: 0.577, 25: 0.457, 26: 0.361, 27: 0.288, 28: 0.226, 29: 0.182, 30: 0.142, 31: 0.113, 32: 0.091, 33: 0.072, 34: 0.056, 35: 0.044, 36: 0.035, 37: 0.0289, 38: 0.0228, 39: 0.0175, 40: 0.0137 };
+
+function calcAWG() {
+  const raw = document.getElementById("awg-n").value.trim();
+  if (!raw) { render("awg-out", []); return; }
+  let n;
+  let m = raw.match(/^(\d)\/0$/);                       // 2/0, 3/0, 4/0
+  if (m) n = 1 - parseInt(m[1], 10);
+  else if (/^0+$/.test(raw)) n = 1 - raw.length;        // 0, 00, 000, 0000
+  else n = parseInt(raw, 10);
+  const el = document.getElementById("awg-n");
+  const ok = Number.isInteger(n) && n >= -3 && n <= 40;
+  el.classList.toggle("bad", !ok);
+  if (!ok) { render("awg-out", [["", "AWG 40 down to 0000 (4/0).", "err"]]); return; }
+  const dMM = 0.127 * Math.pow(92, (36 - n) / 39);
+  const aMM2 = Math.PI / 4 * dMM * dMM;
+  const rPerM = RHO20 / (aMM2 * 1e-6);
+  render("awg-out", [
+    ["Diameter", dMM.toFixed(3) + " mm (" + (dMM / MIL).toFixed(1) + " mil)"],
+    ["Area", aMM2.toPrecision(3) + " mm&sup2;"],
+    ["Resistance", fmt(rPerM, "Ω") + "/m (" + fmt(rPerM * 1000, "Ω") + "/km)"],
+    ["Ampacity — chassis wiring", fmt(AWG_CHASSIS[n], "A")],
+    ["Ampacity — power transmission", fmt(AWG_POWER[n], "A")]
+  ]);
+}
+
+/* Conversion pairs: editing either field fills the other(s). */
+function wirePair(specs) {
+  // specs: [[id, toCanonical, fromCanonical], ...] sharing one canonical value
+  specs.forEach(function (s) {
+    document.getElementById(s[0]).addEventListener("input", function () {
+      const v = parseVal(this.value);
+      this.classList.toggle("bad", this.value.trim() !== "" && !isFinite(v));
+      if (!isFinite(v)) return;
+      const canon = s[1](v);
+      specs.forEach(function (o) {
+        if (o[0] !== s[0]) document.getElementById(o[0]).value = +o[2](canon).toPrecision(6);
+      });
+    });
+  });
+}
 
 const CALCS = {
   ohm: { calc: calcOhm, inputs: ["ohm-v","ohm-i","ohm-r","ohm-p"] },
@@ -650,7 +1122,17 @@ const CALCS = {
   sp:  { calc: calcSP, inputs: ["sp-list"] },
   rc:  { calc: calcRC, inputs: ["rc-r","rc-c","rc-f"] },
   re:  { calc: calcReact, inputs: ["re-f","re-c","re-l"] },
-  led: { calc: calcLED, inputs: ["led-vs","led-vf","led-if"] }
+  led: { calc: calcLED, inputs: ["led-vs","led-vf","led-if"] },
+  tw:  { calc: calcTrace, inputs: ["tw-i","tw-w","tw-dt","tw-oz","tw-layer","tw-len","tw-ta"] },
+  via: { calc: calcVia, inputs: ["via-d","via-tp","via-h","via-dt","via-pad","via-anti","via-er"] },
+  fu:  { calc: calcFuse, inputs: ["fu-w","fu-oz","fu-t","fu-ta"] },
+  spc: { calc: calcSpacing, inputs: ["sp-v"] },
+  z:   { calc: calcZ, inputs: ["z-struct","z-w","z-h","z-oz","z-er"] },
+  wl:  { calc: calcWave, inputs: ["wl-f","wl-tr","wl-eeff"] },
+  xc:  { calc: calcXtal, inputs: ["xc-cl","xc-c1","xc-c2","xc-cs"] },
+  pp:  { calc: calcPPM, inputs: ["pp-f","pp-ppm","pp-df"] },
+  awg: { calc: calcAWG, inputs: ["awg-n"] },
+  cv:  { calc: function () {}, inputs: ["cv-mm","cv-mil","cv-c","cv-f","cv-db","cv-vr","cv-pr"] }
 };
 
 for (const key in CALCS) {
@@ -666,6 +1148,14 @@ for (const key in CALCS) {
 document.getElementById("g-series").addEventListener("change", function () {
   calcDivider(); calcLED();
 });
+
+const id = function (x) { return x; };
+wirePair([["cv-mm", id, id], ["cv-mil", function (v) { return v * MIL; }, function (c) { return c / MIL; }]]);
+wirePair([["cv-c", id, id],
+          ["cv-f", function (v) { return (v - 32) * 5 / 9; }, function (c) { return c * 9 / 5 + 32; }]]);
+wirePair([["cv-db", id, id],
+          ["cv-vr", function (v) { return 20 * Math.log10(v); }, function (c) { return Math.pow(10, c / 20); }],
+          ["cv-pr", function (v) { return 10 * Math.log10(v); }, function (c) { return Math.pow(10, c / 10); }]]);
 
 document.querySelectorAll("button.reset").forEach(function (btn) {
   btn.addEventListener("click", function () {
