@@ -24,11 +24,22 @@ The tool carries no organisation branding: the header, docstrings, README, `pixi
 
 Nothing is outstanding and nothing is blocked. Every decision that came up during the build was put to the owner and answered; those answers are in **Key decisions** below, with the reasoning, so a later reader inherits them rather than reopening them.
 
-## Planned additions
+## Saturn-inspired additions — built
 
-A feature comparison against the Saturn PCB Toolkit is in `Saturn_Feature_Comparison.md`, and the resulting specification is in `Implementation_Plan.md`. The owner selected junction temperature, wire voltage drop, capacitor/inductor series-parallel, and the via extras (impedance, resonant frequency, aspect ratio); a second group is specified to the same depth and awaits a go-ahead. Nothing has been implemented yet.
+Implemented 2026-09-10 in six stages, each tested before the next. The tool went from 8 tabs and 19 cards to **seven tabs and 29 cards**.
 
-Two pieces of prepared work sit in `C:\Auterion\Tools\claude\scratch\`: `eecalc_formula_check.py` computes and reference-checks every formula in the plan, and `eecalc_planned_tests.js` holds the test vectors, written before the features exist so they can be run at any stage — unbuilt items skip, and a failure always means something is built wrongly.
+1. **Regrouping** — Fundamentals, Resistors, Filters & Resonance, PCB Copper, PCB Signal, Power & Thermal, Utilities. Cards were extracted by reset id and reassembled with an assertion that each is placed exactly once, and sub-tab handling was generalised so any panel can carry them.
+2. **Nine new cards** — junction temperature, capacitor self-resonance, plane capacitance, PDN target impedance, attenuator pads, effective permittivity, differential pairs, LC/RL with Q, battery energy.
+3. **Extensions** — capacitors and inductors in series/parallel, via aspect ratio and stub resonance, Onderdonk multiplier, wavelength period and fraction, wire voltage drop, rectangular/polar and degrees/radians, dBm chain.
+4. **Impedance rebuilt on Hammerstad–Jensen** with Kirschning–Jansen dispersion, five structures, and per-unit-length L and C.
+5. **Conductor properties** — required against achievable current, current density, skin depth as a fraction of the copper.
+6. **Shared settings strip** for copper weight, temperature rise and ambient.
+
+Roughly 165 assertions across six suites, all green, plus a browser check confirming no runtime errors and that a global copper change propagates correctly (1 oz → 2 oz moves trace ampacity 2.39 → 3.95 A, the expected 2^0.725 scaling).
+
+**Bugs caught during the build, before they shipped.** The attenuator pad-loss functions were wrong until tested against the identity that exact parts must return the design attenuation. The differential even-mode impedance used a relation that failed Z₀ = √(Z_odd·Z_even). The crystal frequency window printed "16 MHz … 16 MHz" because four significant figures cannot resolve 20 ppm. Each was found by an assertion rather than by inspection, which is the argument for the limit-and-identity test policy over single worked values.
+
+**Excluded, and why**: substrate library and etch factor (dropped by the owner; Er stays a manual entry and the Tg warning is therefore impossible), plane and parallel-conductor ampacity modifiers (IPC-2152 multipliers are meaningless on an IPC-2221 base), padstack, embedded resistors, planar inductors, crosstalk, drill and thread tables, send-to actions, print/export.
 
 ## Key decisions
 

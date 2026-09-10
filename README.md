@@ -1,39 +1,44 @@
 # EE Calculator
 
-A single self-contained HTML page (`EE_Calculator.html`) with tabs for everyday electronics and PCB calculations. Each tab carries an inline SVG schematic of the circuit topology, drawn with theme tokens so it follows light and dark.
+A single self-contained HTML page (`EE_Calculator.html`) with 29 calculators across seven tabs, for everyday electronics and PCB work. It opens straight from the filesystem — no server, no network, nothing leaves the machine.
 
-Where a tab is a solver, it writes its answer **into the relevant input box** and highlights it, rather than repeating it in a separate results list — so the card always reads as one filled-in form. Type into a highlighted box and it becomes an input again, and whatever is now missing is solved instead. Every card also has a **Copy results** button that puts its inputs and results on the clipboard as clean text for pasting into a document.
+Where a card is a solver it writes its answer **into the relevant input box** and highlights it, rather than repeating it in a separate results list, so the card reads as one filled-in form. Type into a highlighted box and it becomes an input again, and whatever is now missing is solved instead. Every card has a **Copy results** button that puts its inputs and results on the clipboard as clean text.
 
-**Ohm's Law** — enter any two of V, I, R, P; the other two are filled in.
+Copper weight, temperature rise and ambient sit in one **shared strip** under the tab bar, because they describe the board rather than any single calculation. The E-series used for standard-value suggestions lives on the Resistors tab and defaults to E96.
 
-**Resistors** (sub-tabs, and the only tab that shows the E-series selector, default E96)
+## Tabs
 
-- *Divider* — one solver: enter any three of Vin, Vout, R1, R2, or just the two voltages, plus optional total resistance and midpoint load current. It fills in whatever is missing, suggests the nearest E-series value, and searches the best standard pairs when both legs are open.
-- *Series / Parallel* — both combinations of a list of values at once.
-- *LED Resistor* — solves the series resistor from the forward current, or the current from a resistor you already have.
-- *Accuracy* — what tolerance, TCR and ageing do to a divider's ratio: exact worst case, RSS, the Vout window, and how much of the error cancels if the two legs track.
+**Fundamentals** — Ohm's law and power (any two of V, I, R, P) · series/parallel for resistors, capacitors and inductors, with per-element voltage and power.
 
-**RC Filter** — cutoff, with any two of R, C, f filled in from the third.
+**Resistors** — divider solver (any three of Vin, Vout, R1, R2, or just the two voltages, plus optional total resistance and midpoint load current) · LED series resistor, solving either direction · PI, T and L attenuator pads · accuracy, showing what tolerance, TCR and ageing do to a divider's ratio.
 
-**Reactance** — X_C, X_L and LC resonance.
+**Filters & Resonance** — RC cutoff · LC and RL resonance with Q, bandwidth and damping · reactance and LC resonance · crystal load capacitance · frequency error in ppm with the resulting frequency window.
 
-**PCB** — trace width ↔ current (IPC-2221, with resistance, drop and power over a given length), via properties (ampacity, DC resistance, inductance, capacitance, thermal resistance), fusing current (Onderdonk), and the IPC-2221 Table 6-1 conductor-spacing bands for all seven environments.
+**PCB Copper** — trace current, showing what the design draws next to what the copper can carry, with current density, skin depth and the width needed if it falls short · via properties including lumped impedance, aspect ratio, parallel count and stub resonance · Onderdonk fusing current · IPC-2221 conductor spacing across all seven environments at once.
 
-**Impedance** — single-ended microstrip and stripline Z₀ (IPC-2141 first-order, with validity-range warnings), ε_eff and propagation delay; wavelength, knee frequency and critical trace length.
+**PCB Signal** — impedance for five structures (bare and covered microstrip, centred and offset stripline, grounded coplanar) with per-unit-length L and C · differential pairs against a target band · effective permittivity with dispersion · wavelength, knee frequency and critical length.
 
-**Crystal** — Pierce load capacitance (solve C1/C2 from the C_L spec, or the load a given pair presents) and ppm ↔ Hz with clock drift.
+**Power & Thermal** — junction temperature through a θ chain, with headroom, maximum power and the heatsink you would need · capacitor impedance with ESL and ESR, giving self-resonance · plane capacitance · PDN target impedance.
 
-**Utilities** — AWG wire table (diameter, area, resistance, both handbook ampacities); number bases (decimal, hex, binary, octal, arbitrary size, with two's complement at each standard width); ratio units (%, ppm, ppb, decimal); and mm/mil, °C/°F, dB/ratio conversions.
+**Utilities** — AWG wire with run length, load current and voltage drop · battery energy, C-rate and runtime · number bases · ratio units · mm/mil, °C/°F, dB, rectangular/polar and degrees/radians · dBm chain.
 
-All calculator logic runs client-side in the page — it works offline, opened straight from the filesystem, with no server and no network access. Python is only the build harness: `build_page.py` assembles the page and `theme_inline.py` inlines the stylesheet and its two webfonts so the file stays self-contained.
+## Models and their limits
+
+Impedance uses **Hammerstad–Jensen** throughout, with **Kirschning–Jansen** dispersion when a frequency is given, so Zo, ε_eff, propagation delay and the per-unit-length L and C all agree — √(L/C) returns Zo. Geometry outside the model's 0.01 ≤ w/h ≤ 100 range is refused rather than computed, because the formula breaks down there rather than merely losing accuracy.
+
+Current capacity uses **IPC-2221**, whose equation is freely published, rather than IPC-2152, whose data sits behind a paywall. IPC-2152 permits somewhat more current, so this errs conservative; each result names the method and constant it used.
+
+Covered microstrip gives the **fully covered limit and the bare value as a bracket** rather than interpolating to a finite mask thickness, because any curve between the two would be invented rather than sourced. Offset stripline is normalised against the centred case, without which the IPC expression reports a *higher* impedance for an off-centre trace than a centred one.
+
+Differential pair and coplanar figures come from empirical fits. Each card prints its validity window; treat the results as a starting geometry and have the fabricator field-solve the real stackup.
 
 ## Use
 
-Open `EE_Calculator.html` in a browser, or run `EE_Calculator.bat`, which rebuilds the page (when pixi is available) and opens it.
+Open `EE_Calculator.html`, or run `EE_Calculator.bat`, which rebuilds the page when pixi is available and opens it.
 
-Values accept SI suffixes: `4k7`, `10n`, `2.2M`, `100u` all parse as expected. Dimension fields on the PCB and Impedance tabs are millimetres by default and also take `mil`, `um` and `in` suffixes.
+Values accept SI suffixes — `4k7`, `10n`, `2.2M`, `100u` all parse. Dimension fields on the PCB tabs are millimetres by default and also take `mil`, `um` and `in`.
 
-Deep links open a tab directly: `EE_Calculator.html#pcb`, `#res-acc`, `#util`.
+Deep links open a tab directly: `#copper`, `#signal`, `#res-acc`, `#pwr`.
 
 ## Build
 
@@ -41,11 +46,16 @@ Deep links open a tab directly: `EE_Calculator.html#pcb`, `#res-acc`, `#util`.
 pixi run build
 ```
 
-Everything the build needs is inside this folder — `theme/` holds the stylesheet and the two webfonts. If `theme_inline.py` is missing the page is still written, unstyled, with a warning.
+Everything the build needs is in this folder; `theme/` holds the stylesheet and its two webfonts, inlined at build time by `theme_inline.py`.
 
 ## Layout
 
 - `build_page.py` — page generator; the HTML/CSS/JS template lives here.
-- `theme_inline.py`, `theme/` — stylesheet and webfonts, inlined at build time.
+- `theme_inline.py`, `theme/` — stylesheet and webfonts.
 - `EE_Calculator.html` — generated output, committed so the tool works without pixi.
-- `user_data/` — local user files; never committed (gitignored).
+- `Implementation_Plan.md`, `Implementation_Checklist.md`, `Saturn_Feature_Comparison.md`, `SaturnPCB/` — the design record.
+- `user_data/` — local files; never committed.
+
+## Tests
+
+The verification harness lives in `C:\Auterion\Tools\claude\scratch\`: `eecalc_mkharness.py` extracts the page's JavaScript and wraps it in a DOM stub whose `value` and `classList` are real, and the `eecalc_*_tests.js` files run against it under node. Roughly 165 assertions cover every calculator, including limit identities and sign checks rather than only worked values. `eecalc_formula_check.py` and `eecalc_hj_kj_check.py` verify the formulas themselves against published reference values.
