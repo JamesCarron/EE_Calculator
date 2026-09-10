@@ -475,7 +475,11 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
     <h3>Series / parallel</h3>
     <div class="cardrow">
     <div class="fields">
-      <div class="field" style="flex:1 1 100%"><label for="sp-list">Values (&Omega;)</label><textarea id="sp-list" rows="3" placeholder="e.g. 10k, 4k7, 1k"></textarea></div>
+      <div class="field"><label for="sp-type">Component</label>
+        <select id="sp-type"><option value="R" selected>Resistors (&Omega;)</option><option value="C">Capacitors (F)</option><option value="L">Inductors (H)</option></select>
+      </div>
+      <div class="field"><label for="sp-v">Applied voltage (V, optional)</label><input id="sp-v" inputmode="decimal" placeholder="e.g. 12"></div>
+      <div class="field" style="flex:1 1 100%"><label for="sp-list">Values</label><textarea id="sp-list" rows="3" placeholder="e.g. 10k, 4k7, 1k"></textarea></div>
     </div>
     <svg class="schem" width="260" height="125" viewBox="0 0 260 125" role="img" aria-label="Resistors in series and in parallel">
       <path class="wire" d="M8 40 H26"/>
@@ -821,6 +825,10 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
       <div class="field"><label for="via-pad">Pad dia (mm, optional)</label><input id="via-pad" inputmode="decimal" placeholder="e.g. 0.6"></div>
       <div class="field"><label for="via-anti">Antipad dia (mm, optional)</label><input id="via-anti" inputmode="decimal" placeholder="e.g. 1.0"></div>
       <div class="field"><label for="via-er">&epsilon;<sub>r</sub></label><input id="via-er" inputmode="decimal" placeholder="4.3"></div>
+      <div class="field"><label for="via-i">Current (A, optional)</label><input id="via-i" inputmode="decimal" placeholder="e.g. 3"></div>
+      <div class="field"><label for="via-n">Vias in parallel</label><input id="via-n" inputmode="numeric" placeholder="1"></div>
+      <div class="field"><label for="via-arlimit">Aspect ratio limit</label><input id="via-arlimit" inputmode="decimal" placeholder="10"></div>
+      <div class="field"><label for="via-stub">Stub length (mm, optional)</label><input id="via-stub" inputmode="decimal" placeholder="e.g. 1.2"></div>
     </div>
     <svg class="schem" width="180" height="140" viewBox="0 0 180 140" role="img" aria-label="Via barrel cross-section">
       <rect class="wire" x="20" y="30" width="140" height="80"/>
@@ -845,6 +853,7 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
       </div>
       <div class="field"><label for="fu-t">Fault duration (s)</label><input id="fu-t" inputmode="decimal" placeholder="e.g. 1"></div>
       <div class="field"><label for="fu-ta">Ambient (&deg;C)</label><input id="fu-ta" inputmode="decimal" placeholder="25"></div>
+      <div class="field"><label for="fu-k">Onderdonk multiplier</label><input id="fu-k" inputmode="decimal" placeholder="1"></div>
     </div>
     <dl class="results" id="fu-out"></dl>
     <p class="note">Onderdonk&rsquo;s equation, copper melting at 1083 &deg;C, adiabatic &mdash; valid for events up to a few seconds; longer events shed heat and survive more.</p>
@@ -954,6 +963,10 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
       <div class="field"><label for="wl-f">Frequency (Hz)</label><input id="wl-f" inputmode="decimal" placeholder="e.g. 100M"></div>
       <div class="field"><label for="wl-tr">Rise time (s)</label><input id="wl-tr" inputmode="decimal" placeholder="or e.g. 2n"></div>
       <div class="field"><label for="wl-eeff">&epsilon;<sub>eff</sub></label><input id="wl-eeff" inputmode="decimal" placeholder="3.3 (microstrip FR4)"></div>
+      <div class="field"><label for="wl-period">or period (s)</label><input id="wl-period" inputmode="decimal" placeholder="e.g. 10n"></div>
+      <div class="field"><label for="wl-div">Fraction of &lambda;</label>
+        <select id="wl-div"><option value="1">full &lambda;</option><option value="2">&lambda;/2</option><option value="4" selected>&lambda;/4</option><option value="8">&lambda;/8</option><option value="10">&lambda;/10</option><option value="16">&lambda;/16</option><option value="20">&lambda;/20</option></select>
+      </div>
     </div>
     <dl class="results" id="wl-out"></dl>
     <p class="note">Enter a frequency for wavelength fractions, or a rise time for the knee frequency (0.35/t<sub>r</sub>) and the critical length beyond which a trace behaves as a transmission line (t<sub>r</sub>/2 of propagation delay). &epsilon;<sub>eff</sub> defaults to 3.3; stripline in FR4 is &asymp; &epsilon;<sub>r</sub>.</p>
@@ -1055,6 +1068,13 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
     <h3>AWG wire</h3>
     <div class="fields">
       <div class="field"><label for="awg-n">AWG (40 &hellip; 0000 or 4/0)</label><input id="awg-n" placeholder="e.g. 18"></div>
+      <div class="field"><label for="awg-len">Run length (m)</label><input id="awg-len" inputmode="decimal" placeholder="e.g. 0.5"></div>
+      <div class="field"><label for="awg-return">Conductors</label>
+        <select id="awg-return"><option value="2" selected>Round trip (out and back)</option><option value="1">One way</option></select>
+      </div>
+      <div class="field"><label for="awg-i">Load current (A)</label><input id="awg-i" inputmode="decimal" placeholder="e.g. 40"></div>
+      <div class="field"><label for="awg-temp">Conductor temp (&deg;C)</label><input id="awg-temp" inputmode="decimal" placeholder="20"></div>
+      <div class="field"><label for="awg-vsupply">Supply voltage (V, optional)</label><input id="awg-vsupply" inputmode="decimal" placeholder="e.g. 22.2"></div>
     </div>
     <dl class="results" id="awg-out"></dl>
     <p class="note">Solid copper at 20 &deg;C. The two ampacities are the classic handbook rules of thumb: &ldquo;chassis wiring&rdquo; (short runs in free air) and &ldquo;power transmission&rdquo; (bundled, conservative) &mdash; insulation rating and bundling govern real limits.</p>
@@ -1115,8 +1135,30 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
       <div class="field"><label for="cv-vr">Voltage ratio</label><input id="cv-vr" inputmode="decimal" placeholder="e.g. 2"></div>
       <div class="field"><label for="cv-pr">Power ratio</label><input id="cv-pr" inputmode="decimal" placeholder="e.g. 4"></div>
     </div>
+    <div class="fields" style="margin-top:.9rem">
+      <div class="field"><label for="cv-re">Real</label><input id="cv-re" inputmode="decimal" placeholder="e.g. 3"></div>
+      <div class="field"><label for="cv-im">Imaginary (j)</label><input id="cv-im" inputmode="decimal" placeholder="e.g. 4"></div>
+      <div class="field"><label for="cv-mag">Magnitude</label><input id="cv-mag" inputmode="decimal" placeholder="e.g. 5"></div>
+      <div class="field"><label for="cv-ang">Angle (&deg;)</label><input id="cv-ang" inputmode="decimal" placeholder="e.g. 53.13"></div>
+    </div>
+    <div class="fields" style="margin-top:.9rem">
+      <div class="field"><label for="cv-deg">Degrees</label><input id="cv-deg" inputmode="decimal" placeholder="e.g. 90"></div>
+      <div class="field"><label for="cv-rad">Radians</label><input id="cv-rad" inputmode="decimal" placeholder="e.g. 1.5708"></div>
+    </div>
     <p class="note">Edit either side of a pair; the rest follows. dB assumes 20&middot;log<sub>10</sub> for voltage and 10&middot;log<sub>10</sub> for power.</p>
     <button class="reset" data-reset="cv">Reset</button>
+  </div>
+  <div class="card">
+    <h3>dBm chain</h3>
+    <div class="fields">
+      <div class="field"><label for="db-in">Input level (dBm)</label><input id="db-in" inputmode="decimal" placeholder="e.g. -60"></div>
+      <div class="field"><label for="db-gain">Gain (dB)</label><input id="db-gain" inputmode="decimal" placeholder="e.g. 23"></div>
+      <div class="field"><label for="db-att">Attenuation (dB)</label><input id="db-att" inputmode="decimal" placeholder="e.g. 10"></div>
+      <div class="field"><label for="db-z">System impedance (&Omega;)</label><input id="db-z" inputmode="decimal" placeholder="50"></div>
+    </div>
+    <dl class="results" id="db-out"></dl>
+    <p class="note">The bench arrangement: a level in, an amplifier, an attenuator, then the measurement. Voltages are RMS into the stated impedance, where 0 dBm is 1 mW.</p>
+    <button class="reset" data-reset="db">Reset</button>
   </div>
 </section>
 
@@ -1482,18 +1524,34 @@ function pairSearch(vin, vout, rtot, il, series) {
 
 function calcSP() {
   const raw = document.getElementById("sp-list").value.trim();
+  const type = document.getElementById("sp-type").value;
+  const UNIT = { R: "\u03a9", C: "F", L: "H" }[type];
   if (!raw) { render("sp-out", []); return; }
   const parts = raw.split(/[\s,;]+/).filter(Boolean);
   const vals = parts.map(parseVal);
-  const bad = parts.filter(function (p, i) { return !isFinite(vals[i]) || vals[i] <= 0; });
+  const bad = parts.filter(function (x, i) { return !isFinite(vals[i]) || vals[i] <= 0; });
   if (bad.length) { render("sp-out", [["", "Could not read: " + bad.join(", "), "err"]]); return; }
-  const series = vals.reduce(function (a, b) { return a + b; }, 0);
-  const parallel = 1 / vals.reduce(function (a, b) { return a + 1 / b; }, 0);
-  render("sp-out", [
-    ["Values", vals.length + ""],
-    ["Series", fmt(series, "\u03a9")],
-    ["Parallel", fmt(parallel, "\u03a9")]
-  ]);
+  const sum = vals.reduce(function (a, b) { return a + b; }, 0);
+  const recip = 1 / vals.reduce(function (a, b) { return a + 1 / b; }, 0);
+  /* Capacitors are the mirror image of resistors and inductors: charge divides
+     where current would add, so series and parallel swap. */
+  const ser = type === "C" ? recip : sum;
+  const par = type === "C" ? sum : recip;
+  const rows = [["Values", vals.length + ""],
+                ["Series", fmt(ser, UNIT)],
+                ["Parallel", fmt(par, UNIT)]];
+  if (type === "C") rows.push(["", "Capacitors invert: they add in parallel and divide in series.", ""]);
+  const v = val("sp-v");
+  if (type === "R" && isFinite(v) && v > 0) {
+    const iSer = v / sum;
+    rows.push(["Series string at " + fmt(v, "V"), fmt(iSer, "A") + " through every element, " + fmt(v * iSer, "W") + " total"]);
+    vals.forEach(function (r, i) {
+      rows.push(["&nbsp;&nbsp;element " + (i + 1) + " (" + fmt(r, "\u03a9") + ")",
+                 fmt(iSer * r, "V") + ", " + fmt(iSer * iSer * r, "W")]);
+    });
+    rows.push(["Parallel bank at " + fmt(v, "V"), fmt(v / par, "A") + " total, " + fmt(v * v / par, "W") + " total"]);
+  }
+  render("sp-out", rows);
 }
 
 /* ---------- RC filter ---------- */
@@ -1740,11 +1798,40 @@ function calcVia() {
     ["Inductance", lNH.toPrecision(3) + " nH"],
     ["Thermal resistance", theta.toFixed(1) + " K/W"]
   ];
+  /* L and C are already in hand, so the lumped figures are arithmetic. They are
+     labelled as lumped deliberately: a through via is electrically short well
+     past 10 GHz, so √(L/C) is a number to compare against the trace impedance,
+     not a characteristic impedance the structure really has. */
+  const nVia = Math.max(1, Math.round(numOr("via-n", 1, 1) || 1));
+  const iVia = val("via-i");
+  const arLimit = numOr("via-arlimit", 10, 0.1);
+  const stub = valDim("via-stub");
+  const ar = h / d;
+  rows.push(["Aspect ratio", ar.toFixed(2) + " : 1" +
+             (isFinite(arLimit) && ar > arLimit ? " — above the " + arLimit + ":1 limit, ask your fabricator" : ""),
+             isFinite(arLimit) && ar > arLimit ? "warn" : ""]);
+  if (nVia > 1) {
+    rows.push([nVia + " vias in parallel",
+               fmt(r / nVia, "Ω") + ", " + (theta / nVia).toFixed(1) + " K/W, " + fmt(iCap * nVia, "A")]);
+    rows.push(["", "Resistance and thermal resistance divide by n, but inductance does not — mutual coupling between nearby vias means loop inductance falls far more slowly.", ""]);
+  }
+  if (isFinite(iVia) && iVia > 0) {
+    const rEff = r / nVia;
+    rows.push(["At " + fmt(iVia, "A"), fmt(iVia * rEff, "V") + " drop, " + fmt(iVia * iVia * rEff, "W") + " dissipated"]);
+  }
+  if (isFinite(stub) && stub > 0) {
+    rows.push(["Stub quarter-wave null", fmt(299792458 / (4 * (stub / 1000) * Math.sqrt(er)), "Hz") +
+               " — keep the signal's usable bandwidth well below this"]);
+  }
   const pad = valDim("via-pad"), anti = valDim("via-anti");
   if (isFinite(pad) && isFinite(anti)) {
     if (anti > pad && pad > 0) {
       const cPF = 1.41 * er * (h / 25.4) * (pad / 25.4) / ((anti - pad) / 25.4);
       rows.push(["Capacitance", cPF.toPrecision(3) + " pF"]);
+      const cF = cPF * 1e-12, lH = lNH * 1e-9;
+      rows.push(["Lumped √(L/C)", Math.sqrt(lH / cF).toFixed(1) + " Ω — compare with your trace impedance; below it the via looks capacitive, above it inductive"]);
+      rows.push(["Lumped-model limit", fmt(1 / (2 * Math.PI * Math.sqrt(lH * cF)), "Hz") +
+                 " — treat the via as a discontinuity above roughly a third of this"]);
     } else {
       rows.push(["", "Antipad must be larger than pad for the capacitance estimate.", "warn"]);
     }
@@ -1761,11 +1848,15 @@ function calcFuse() {
   const tMM = parseFloat(document.getElementById("fu-oz").value) / 1000;
   const aMil2 = (w / MIL) * (tMM / MIL);
   const aCmil = aMil2 * 4 / Math.PI;
-  const iFuse = aCmil * Math.sqrt(Math.log10(1 + (1083 - ta) / (234 + ta)) / (33 * t));
+  const kOn = numOr("fu-k", 1, 0.01);
+  if (!isFinite(kOn)) { render("fu-out", []); return; }
+  const iFuse = kOn * aCmil * Math.sqrt(Math.log10(1 + (1083 - ta) / (234 + ta)) / (33 * t));
   render("fu-out", [
     ["Cross-section", aMil2.toFixed(1) + " mil&sup2; (" + (aMil2 * MIL * MIL).toPrecision(3) + " mm&sup2;)"],
     ["Fusing current for " + fmt(t, "s"), fmt(iFuse, "A")],
-    ["", "Design fault currents well below this — the trace is at its melting point.", "warn"]
+    ["", "Design fault currents well below this — the trace is at its melting point.", "warn"],
+    ["", t > 5 ? "Onderdonk is adiabatic and is not meant for faults beyond about 5 seconds; over longer events the trace sheds heat and survives more current than this figure suggests." : "",
+     t > 5 ? "warn" : ""]
   ]);
 }
 
@@ -1822,15 +1913,23 @@ function calcZ() {
 }
 
 function calcWave() {
-  const f = val("wl-f"), tr = val("wl-tr");
+  const period = val("wl-period");
+  let f = val("wl-f");
+  const tr = val("wl-tr");
   const eeff = numOr("wl-eeff", 3.3, 1);
   if (!isFinite(eeff)) { render("wl-out", []); return; }
-  const vp = 299792458 / Math.sqrt(eeff);
   const rows = [];
+  if (!isFinite(f) && isFinite(period) && period > 0) {
+    f = 1 / period;
+    rows.push(["Frequency from period", fmt(f, "Hz")]);
+  }
+  const vp = 299792458 / Math.sqrt(eeff);
   if (isFinite(f) && f > 0) {
     const lam = vp / f;
-    rows.push(["Wavelength &lambda;", fmt(lam, "m")]);
-    rows.push(["&lambda;/4 &middot; &lambda;/10 &middot; &lambda;/20", fmt(lam / 4, "m") + " · " + fmt(lam / 10, "m") + " · " + fmt(lam / 20, "m")]);
+    const div = parseFloat(document.getElementById("wl-div").value) || 1;
+    rows.push(["Wavelength λ", fmt(lam, "m")]);
+    rows.push([div === 1 ? "Full λ" : "λ/" + div, fmt(lam / div, "m")]);
+    rows.push(["Propagation speed", fmt(vp, "m/s") + " (" + (0.1 / vp * 1e12).toFixed(1) + " ps per 100 mm)"]);
   }
   if (isFinite(tr) && tr > 0) {
     rows.push(["Knee frequency 0.35/t<sub>r</sub>", fmt(0.35 / tr, "Hz")]);
@@ -1891,10 +1990,20 @@ function calcPPM() {
   else if (isFinite(f) && f > 0 && isFinite(df) && !isFinite(ppm)) { p = df / f * 1e6; setComputed("pp-ppm", p); }
   else if (isFinite(f) && f > 0 && isFinite(df) && isFinite(ppm)) p = ppm;
   if (!isFinite(p)) { render("pp-out", []); return; }
-  render("pp-out", [
+  const ppmRows = [];
+  if (isFinite(f) && f > 0) {
+    /* fmt() carries four significant figures, which cannot resolve a window of
+       a few ppm - 16 MHz ± 20 ppm would print as "16 MHz … 16 MHz". Show the
+       endpoints in whole hertz instead, where the difference is visible. */
+    const lo = f * (1 - p * 1e-6), hi = f * (1 + p * 1e-6);
+    const hz = function (x) { return Math.round(x).toLocaleString("en-US"); };
+    ppmRows.push(["Frequency window", hz(lo) + " … " + hz(hi) + " Hz"]);
+    ppmRows.push(["Deviation", "±" + fmt(f * p * 1e-6, "Hz")]);
+  }
+  render("pp-out", ppmRows.concat([
     ["Clock drift", "±" + (p * 0.0864).toPrecision(3) + " s/day, ±" + (p * 0.0864 * 365.25 / 60).toPrecision(3) + " min/year"],
     ["Worst-case pair separation", "±" + (2 * p).toPrecision(3) + " ppm between two such parts"]
-  ]);
+  ]));
 }
 
 /* ---------- utilities ---------- */
@@ -1917,13 +2026,40 @@ function calcAWG() {
   const dMM = 0.127 * Math.pow(92, (36 - n) / 39);
   const aMM2 = Math.PI / 4 * dMM * dMM;
   const rPerM = RHO20 / (aMM2 * 1e-6);
-  render("awg-out", [
+  const rows = [
     ["Diameter", dMM.toFixed(3) + " mm (" + (dMM / MIL).toFixed(1) + " mil)"],
     ["Area", aMM2.toPrecision(3) + " mm&sup2;"],
-    ["Resistance", fmt(rPerM, "Ω") + "/m (" + fmt(rPerM * 1000, "Ω") + "/km)"],
+    ["Resistance at 20 °C", fmt(rPerM, "Ω") + "/m (" + fmt(rPerM * 1000, "Ω") + "/km)"],
     ["Ampacity — chassis wiring", fmt(AWG_CHASSIS[n], "A")],
     ["Ampacity — power transmission", fmt(AWG_POWER[n], "A")]
-  ]);
+  ];
+  const len = val("awg-len"), cur = val("awg-i"), vsup = val("awg-vsupply");
+  const temp = numOr("awg-temp", 20, -273.15);
+  const trips = parseFloat(document.getElementById("awg-return").value) || 2;
+  if (isFinite(len) && len > 0 && isFinite(temp)) {
+    const rHot = rPerM * (1 + ALPHA * (temp - 20));
+    const rLoop = rHot * len * trips;
+    if (Math.abs(temp - 20) > 1e-9) {
+      rows.push(["Resistance at " + temp + " °C",
+                 fmt(rHot, "Ω") + "/m (" + ((rHot / rPerM - 1) * 100).toFixed(1) + " % higher)"]);
+    }
+    rows.push([(trips === 2 ? "Loop" : "One-way") + " resistance over " + fmt(len, "m"), fmt(rLoop, "Ω")]);
+    if (isFinite(cur) && cur > 0) {
+      const drop = cur * rLoop;
+      rows.push(["Voltage drop at " + fmt(cur, "A"), fmt(drop, "V")]);
+      rows.push(["Power lost in the wire", fmt(cur * cur * rLoop, "W")]);
+      if (isFinite(vsup) && vsup > 0) {
+        const pc = drop / vsup * 100;
+        rows.push(["As a fraction of " + fmt(vsup, "V"),
+                   pc.toFixed(2) + " %" + (pc > 5 ? " — over 5 %, consider heavier wire" : ""),
+                   pc > 5 ? "warn" : ""]);
+      }
+      if (cur > AWG_CHASSIS[n]) {
+        rows.push(["", "That current exceeds even the chassis-wiring rating for this gauge.", "err"]);
+      }
+    }
+  }
+  render("awg-out", rows);
 }
 
 /* Conversion pairs: editing either field fills the other(s). */
@@ -2274,6 +2410,24 @@ function calcBattery() {
   render("bat-out", rows);
 }
 
+/* ---------- dBm chain ---------- */
+
+function calcDbm() {
+  const lin = val("db-in"), g = val("db-gain"), att = val("db-att");
+  const z = numOr("db-z", 50, 1e-9);
+  if (!isFinite(lin) || !isFinite(z)) { render("db-out", []); return; }
+  const out = lin + (isFinite(g) ? g : 0) - (isFinite(att) ? att : 0);
+  const volts = function (dbm) { return Math.sqrt(Math.pow(10, dbm / 10) * 1e-3 * z); };
+  const watts = function (dbm) { return Math.pow(10, dbm / 10) * 1e-3; };
+  render("db-out", [
+    ["Output level", out.toFixed(2) + " dBm"],
+    ["Net gain", (out - lin >= 0 ? "+" : "") + (out - lin).toFixed(2) + " dB"],
+    ["Input", fmt(volts(lin), "V") + " rms, " + fmt(watts(lin), "W") + " into " + fmt(z, "Ω")],
+    ["Output", fmt(volts(out), "V") + " rms, " + fmt(watts(out), "W") + " into " + fmt(z, "Ω")],
+    ["Peak-to-peak out", fmt(volts(out) * 2 * Math.SQRT2, "V")]
+  ]);
+}
+
 /* ---------- wiring ---------- */
 
 const CALCS = {
@@ -2285,26 +2439,27 @@ const CALCS = {
   ee:  { calc: calcEreff, inputs: ["ee-w","ee-h","ee-er","ee-oz","ee-f"] },
   dp:  { calc: calcDiff, inputs: ["dp-struct","dp-w","dp-s","dp-h","dp-er","dp-oz","dp-target"] },
   lc:  { calc: calcLCRL, inputs: ["lc-l","lc-c","lc-r","lc-topo"] },
+  db:  { calc: calcDbm, inputs: ["db-in","db-gain","db-att","db-z"] },
   bat: { calc: calcBattery, inputs: ["bat-mah","bat-v","bat-s","bat-p","bat-load","bat-loadunit","bat-usable"] },
   ohm: { calc: calcOhm, inputs: ["ohm-v","ohm-i","ohm-r","ohm-p"] },
   div: { calc: calcDivider, inputs: ["div-vin","div-vout","div-r1","div-r2","div-rtot","div-iload"] },
-  sp:  { calc: calcSP, inputs: ["sp-list"] },
+  sp:  { calc: calcSP, inputs: ["sp-list","sp-type","sp-v"] },
   led: { calc: calcLED, inputs: ["led-vs","led-vf","led-if","led-r"] },
   ac:  { calc: calcAccuracy, inputs: ["ac-r1","ac-r2","ac-vin","ac-tol1","ac-tol2","ac-tcr1","ac-tcr2","ac-tmin","ac-tmax","ac-tnom","ac-age"] },
   rc:  { calc: calcRC, inputs: ["rc-r","rc-c","rc-f"] },
   re:  { calc: calcReact, inputs: ["re-f","re-c","re-l"] },
   tw:  { calc: calcTrace, inputs: ["tw-i","tw-w","tw-dt","tw-oz","tw-layer","tw-len","tw-ta"] },
-  via: { calc: calcVia, inputs: ["via-d","via-tp","via-h","via-dt","via-pad","via-anti","via-er"] },
-  fu:  { calc: calcFuse, inputs: ["fu-w","fu-oz","fu-t","fu-ta"] },
+  via: { calc: calcVia, inputs: ["via-d","via-tp","via-h","via-dt","via-pad","via-anti","via-er","via-i","via-n","via-arlimit","via-stub"] },
+  fu:  { calc: calcFuse, inputs: ["fu-w","fu-oz","fu-t","fu-ta","fu-k"] },
   spc: { calc: calcSpacing, inputs: ["spc-v"] },
   z:   { calc: calcZ, inputs: ["z-struct","z-w","z-h","z-oz","z-er"] },
-  wl:  { calc: calcWave, inputs: ["wl-f","wl-tr","wl-eeff"] },
+  wl:  { calc: calcWave, inputs: ["wl-f","wl-tr","wl-eeff","wl-period","wl-div"] },
   xc:  { calc: calcXtal, inputs: ["xc-cl","xc-c1","xc-c2","xc-cs"] },
   pp:  { calc: calcPPM, inputs: ["pp-f","pp-ppm","pp-df"] },
-  awg: { calc: calcAWG, inputs: ["awg-n"] },
+  awg: { calc: calcAWG, inputs: ["awg-n","awg-len","awg-return","awg-i","awg-temp","awg-vsupply"] },
   nb:  { calc: function () { render("nb-out", []); }, inputs: ["nb-dec","nb-hex","nb-bin","nb-oct"] },
   rt:  { calc: function () {}, inputs: ["rt-pct","rt-ppm","rt-ppb","rt-ratio"] },
-  cv:  { calc: function () {}, inputs: ["cv-mm","cv-mil","cv-c","cv-f","cv-db","cv-vr","cv-pr"] }
+  cv:  { calc: function () {}, inputs: ["cv-mm","cv-mil","cv-c","cv-f","cv-db","cv-vr","cv-pr","cv-re","cv-im","cv-mag","cv-ang","cv-deg","cv-rad"] }
 };
 
 /* Typing in a field makes it an input again: the `computed` tag comes off
@@ -2337,6 +2492,35 @@ wirePair([["rt-ratio", idf, idf],
           ["rt-pct", function (v) { return v / 100; }, function (c) { return c * 100; }],
           ["rt-ppm", function (v) { return v * 1e-6; }, function (c) { return c * 1e6; }],
           ["rt-ppb", function (v) { return v * 1e-9; }, function (c) { return c * 1e9; }]]);
+
+// rectangular <-> polar: two values in, two out, so wirePair does not fit
+function wireRectPolar() {
+  const ids = ["cv-re", "cv-im", "cv-mag", "cv-ang"];
+  const g = function (id) { return parseVal(document.getElementById(id).value); };
+  const put = function (id, v) {
+    const el = document.getElementById(id);
+    el.value = isFinite(v) ? +v.toPrecision(6) : "";
+  };
+  ids.forEach(function (id) {
+    document.getElementById(id).addEventListener("input", function () {
+      const polar = id === "cv-mag" || id === "cv-ang";
+      if (polar) {
+        const m = g("cv-mag"), a = g("cv-ang");
+        if (!isFinite(m) || !isFinite(a)) return;
+        put("cv-re", m * Math.cos(a * Math.PI / 180));
+        put("cv-im", m * Math.sin(a * Math.PI / 180));
+      } else {
+        const re = g("cv-re"), im = g("cv-im");
+        if (!isFinite(re) || !isFinite(im)) return;
+        put("cv-mag", Math.hypot(re, im));
+        put("cv-ang", Math.atan2(im, re) * 180 / Math.PI);
+      }
+    });
+  });
+}
+wireRectPolar();
+wirePair([["cv-deg", idf, idf],
+          ["cv-rad", function (v) { return v * 180 / Math.PI; }, function (c) { return c * Math.PI / 180; }]]);
 
 // number bases drive each other directly, in BigInt so nothing is rounded
 for (const nbf of NB_FIELDS) {
