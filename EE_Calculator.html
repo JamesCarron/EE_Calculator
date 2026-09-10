@@ -401,6 +401,11 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
   .chart .axis { stroke: var(--a-line-strong); stroke-width: 1; fill: none; }
   .chart .curve { stroke: var(--a-link); stroke-width: 2; fill: none; stroke-linejoin: round; }
   .chart .hair { stroke: var(--a-ink-muted); stroke-width: 1; }
+  /* a second series is told apart by dash and by its own direct label, never
+     by hue alone, so it survives any colour vision and a monochrome print */
+  .chart .curve.alt { stroke-dasharray: 5 4; }
+  .chart .band { fill: var(--a-link); opacity: .13; stroke: none; }
+  .chart text.tag { fill: var(--a-ink-secondary); font-size: 10px; }
   .chart .knob { fill: var(--a-link); stroke: var(--a-bg-panel); stroke-width: 2; }
   .chart text { fill: var(--a-ink-muted); font-size: 10px; font-family: var(--a-font-mono); }
   .chart text.read { fill: var(--a-ink); font-size: 11px; }
@@ -408,6 +413,10 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
   svg.schem .wire { fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
   svg.schem .dot { fill: currentColor; stroke: none; }
   svg.schem .opt { stroke-dasharray: 4 3; }
+  /* the governing equation, beside the drawing rather than buried in a note */
+  .plate { margin: .5rem 0 0; padding: .4rem .6rem; max-width: 16rem; background: var(--a-bg-subtle); border: var(--a-border) solid var(--a-line); border-radius: var(--a-radius-sm); font-family: var(--a-font-mono); font-size: var(--a-text-xs); color: var(--a-ink-secondary); }
+  /* a cross-section is monochrome, so the key maps line style to material */
+  .key { margin: .4rem 0 0; max-width: 16rem; font-size: var(--a-text-xs); color: var(--a-ink-muted); line-height: 1.5; }
   svg.schem text { fill: currentColor; stroke: none; font-family: var(--a-font-mono); font-size: 11px; }
   .fields { display: flex; flex-wrap: wrap; gap: .9rem 1.2rem; }
   .field { display: flex; flex-direction: column; gap: .25rem; }
@@ -483,6 +492,38 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
       <text x="86" y="14">I</text>
       <text x="60" y="122">P = V&#183;I</text>
     </svg>
+    <svg class="schem" width="208" height="208" viewBox="0 0 208 208" role="img" aria-label="Ohm and power law wheel: the four quantities at the hub, each surrounded by the three ways of computing it from the other two">
+      <path class="wire" d="M104.0 64.0 L104.0 8.0 A96 96 0 0 1 152.0 20.9 L124.0 69.4 A40 40 0 0 0 104.0 64.0 Z"/>
+      <text x="115.9" y="62.6" font-size="9" transform="rotate(-75.0 115.9 62.6)">V = I&middot;R</text>
+      <path class="wire" d="M124.0 69.4 L152.0 20.9 A96 96 0 0 1 187.1 56.0 L138.6 84.0 A40 40 0 0 0 124.0 69.4 Z"/>
+      <text x="136.5" y="74.5" font-size="9" transform="rotate(-45.0 136.5 74.5)">V = P/I</text>
+      <path class="wire" d="M138.6 84.0 L187.1 56.0 A96 96 0 0 1 200.0 104.0 L144.0 104.0 A40 40 0 0 0 138.6 84.0 Z"/>
+      <text x="148.4" y="95.1" font-size="9" transform="rotate(-15.0 148.4 95.1)">V = &radic;(P&middot;R)</text>
+      <path class="wire" d="M144.0 104.0 L200.0 104.0 A96 96 0 0 1 187.1 152.0 L138.6 124.0 A40 40 0 0 0 144.0 104.0 Z"/>
+      <text x="190.9" y="130.3" font-size="9" transform="rotate(195.0 190.9 130.3)">R = V/I</text>
+      <path class="wire" d="M138.6 124.0 L187.1 152.0 A96 96 0 0 1 152.0 187.1 L124.0 138.6 A40 40 0 0 0 138.6 124.0 Z"/>
+      <text x="167.6" y="170.6" font-size="9" transform="rotate(225.0 167.6 170.6)">R = V&sup2;/P</text>
+      <path class="wire" d="M124.0 138.6 L152.0 187.1 A96 96 0 0 1 104.0 200.0 L104.0 144.0 A40 40 0 0 0 124.0 138.6 Z"/>
+      <text x="127.3" y="193.9" font-size="9" transform="rotate(255.0 127.3 193.9)">R = P/I&sup2;</text>
+      <path class="wire" d="M104.0 144.0 L104.0 200.0 A96 96 0 0 1 56.0 187.1 L84.0 138.6 A40 40 0 0 0 104.0 144.0 Z"/>
+      <text x="80.7" y="193.9" font-size="9" transform="rotate(285.0 80.7 193.9)">P = V&middot;I</text>
+      <path class="wire" d="M84.0 138.6 L56.0 187.1 A96 96 0 0 1 20.9 152.0 L69.4 124.0 A40 40 0 0 0 84.0 138.6 Z"/>
+      <text x="40.4" y="170.6" font-size="9" transform="rotate(315.0 40.4 170.6)">P = I&sup2;&middot;R</text>
+      <path class="wire" d="M69.4 124.0 L20.9 152.0 A96 96 0 0 1 8.0 104.0 L64.0 104.0 A40 40 0 0 0 69.4 124.0 Z"/>
+      <text x="17.1" y="130.3" font-size="9" transform="rotate(345.0 17.1 130.3)">P = V&sup2;/R</text>
+      <path class="wire" d="M64.0 104.0 L8.0 104.0 A96 96 0 0 1 20.9 56.0 L69.4 84.0 A40 40 0 0 0 64.0 104.0 Z"/>
+      <text x="59.6" y="95.1" font-size="9" transform="rotate(195.0 59.6 95.1)">I = V/R</text>
+      <path class="wire" d="M69.4 84.0 L20.9 56.0 A96 96 0 0 1 56.0 20.9 L84.0 69.4 A40 40 0 0 0 69.4 84.0 Z"/>
+      <text x="71.5" y="74.5" font-size="9" transform="rotate(225.0 71.5 74.5)">I = P/V</text>
+      <path class="wire" d="M84.0 69.4 L56.0 20.9 A96 96 0 0 1 104.0 8.0 L104.0 64.0 A40 40 0 0 0 84.0 69.4 Z"/>
+      <text x="92.1" y="62.6" font-size="9" transform="rotate(255.0 92.1 62.6)">I = &radic;(P/R)</text>
+      <circle class="wire" cx="104" cy="104" r="38"/>
+      <path class="wire" d="M104.0 66.0 L104.0 142.0 M142.0 104.0 L66.0 104.0"/>
+      <text x="118.8" y="93.2" text-anchor="middle" font-size="13">V</text>
+      <text x="118.8" y="122.8" text-anchor="middle" font-size="13">R</text>
+      <text x="89.2" y="122.8" text-anchor="middle" font-size="13">P</text>
+      <text x="89.2" y="93.2" text-anchor="middle" font-size="13">I</text>
+      </svg>
     </div>
     <dl class="results" id="ohm-out"></dl>
     <button class="reset" data-reset="ohm">Reset</button>
@@ -497,25 +538,7 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
       <div class="field"><label for="sp-v">Applied voltage (V, optional)</label><input id="sp-v" inputmode="decimal" placeholder="e.g. 12"></div>
       <div class="field" style="flex:1 1 100%"><label for="sp-list">Values</label><textarea id="sp-list" rows="3" placeholder="e.g. 10k, 4k7, 1k"></textarea></div>
     </div>
-    <svg class="schem" width="260" height="125" viewBox="0 0 260 125" role="img" aria-label="Resistors in series and in parallel">
-      <path class="wire" d="M8 40 H26"/>
-      <rect class="wire" x="26" y="32" width="34" height="16"/>
-      <text x="35" y="27">R1</text>
-      <path class="wire" d="M60 40 H76"/>
-      <rect class="wire" x="76" y="32" width="34" height="16"/>
-      <text x="85" y="27">R2</text>
-      <path class="wire" d="M110 40 H128"/>
-      <text x="42" y="72">Series</text>
-      <path class="wire" d="M205 12 V22 M205 22 H180 V35 M205 22 H230 V35"/>
-      <circle class="dot" cx="205" cy="22" r="2.5"/>
-      <rect class="wire" x="171" y="35" width="18" height="42"/>
-      <rect class="wire" x="221" y="35" width="18" height="42"/>
-      <text x="163" y="30">R1</text>
-      <text x="228" y="30">R2</text>
-      <path class="wire" d="M180 77 V90 H230 V77 M205 90 V100"/>
-      <circle class="dot" cx="205" cy="90" r="2.5"/>
-      <text x="181" y="118">Parallel</text>
-    </svg>
+    <div class="diagram" id="sp-diagram"></div>
     </div>
     <dl class="results" id="sp-out"></dl>
     <button class="reset" data-reset="sp">Reset</button>
@@ -649,6 +672,7 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
       <path class="wire" d="M55 156 V166 M41 166 H69 M46 172 H64 M51 178 H59"/>
     </svg>
     </div>
+    <div id="ac-graph" class="chart" tabindex="0" role="img" aria-label="Ratio error across temperature"></div>
     <dl class="results" id="ac-out"></dl>
     <p class="note">Worst case is exact (both legs at their opposing extremes); RSS treats the contributions as independent random variables, which is the realistic figure for a production run but assumes the two TCRs are uncorrelated. Blank fields default to 1 %, 100 ppm/&deg;C, and &minus;40/+85/25 &deg;C.</p>
     <button class="reset" data-reset="ac">Reset</button>
@@ -720,7 +744,8 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
       <div class="field"><label for="re-epc">L: winding C (F)</label><input id="re-epc" inputmode="decimal" placeholder="e.g. 3p"></div>
       <div class="field"><label for="re-dcr">L: DCR (&Omega;)</label><input id="re-dcr" inputmode="decimal" placeholder="e.g. 50m"></div>
     </div>
-    <svg class="schem" width="230" height="150" viewBox="0 0 230 150" role="img" aria-label="Real capacitor as C, ESL and ESR in series; real inductor as L and DCR in series with winding capacitance across">
+    <div class="diagram">
+      <svg class="schem" width="230" height="150" viewBox="0 0 230 150" role="img" aria-label="Real capacitor as C, ESL and ESR in series; real inductor as L and DCR in series with winding capacitance across">
       <text x="6" y="14">real capacitor</text>
       <path class="wire" d="M8 40 H26"/>
       <path class="wire" d="M26 30 V50 M34 30 V50"/>
@@ -742,7 +767,10 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
       <path class="wire" d="M176 96 V112 M182 96 V112"/>
       <text x="158" y="92">winding C</text>
     </svg>
+      <p class="plate">X<sub>C</sub> = 1/2&pi;fC &middot; X<sub>L</sub> = 2&pi;fL &middot; f<sub>SRF</sub> = 1/2&pi;&radic;(LC)</p>
     </div>
+    </div>
+    <div id="re-graph" class="chart" tabindex="0" role="img" aria-label="Impedance against frequency"></div>
     <dl class="results" id="re-out"></dl>
     <p class="note">A capacitor is C, ESL and ESR in series: capacitive below self-resonance, resistive at it, <em>inductive above</em>. An inductor is L and DCR in series with its winding capacitance across the whole thing: inductive below self-resonance, <em>capacitive above</em>. Paralleling n identical capacitors multiplies C and divides ESL and ESR by n, which lowers the impedance floor without moving self-resonance.</p>
     <button class="reset" data-reset="re">Reset</button>
@@ -790,22 +818,7 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
         <select id="pad-series" data-mirror="series"><option value="E12">E12 (10 %)</option><option value="E24">E24 (5 %)</option><option value="E96" selected>E96 (1 %)</option></select>
       </div>
     </div>
-    <svg class="schem" width="220" height="150" viewBox="0 0 220 150" role="img" aria-label="PI pad and T pad topologies">
-      <path class="wire" d="M12 26 H40 M40 26 H70 M70 26 H98"/>
-      <rect class="wire" x="40" y="18" width="30" height="16"/>
-      <circle class="dot" cx="40" cy="26" r="2.5"/><circle class="dot" cx="70" cy="26" r="2.5"/>
-      <rect class="wire" x="32" y="44" width="16" height="24"/>
-      <rect class="wire" x="62" y="44" width="16" height="24"/>
-      <path class="wire" d="M40 34 V44 M70 34 V44 M40 68 V78 M70 68 V78 M20 78 H90 M30 84 H80"/>
-      <text x="122" y="30">PI pad</text>
-      <path class="wire" d="M12 112 H34 M64 112 H98"/>
-      <rect class="wire" x="34" y="104" width="24" height="16"/>
-      <rect class="wire" x="64" y="104" width="24" height="16" transform="translate(-6,0)"/>
-      <circle class="dot" cx="61" cy="112" r="2.5"/>
-      <rect class="wire" x="53" y="124" width="16" height="20"/>
-      <path class="wire" d="M61 112 V124"/>
-      <text x="122" y="116">T pad</text>
-    </svg>
+    <div class="diagram" id="pad-diagram"></div>
     </div>
     <dl class="results" id="pad-out"></dl>
     <p class="note">Valid for any attenuation above 0 dB. An L pad matches two <em>different</em> impedances and has a minimum loss set by their ratio &mdash; enter a second impedance to size one.</p>
@@ -841,15 +854,7 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
       <div class="field"><label for="tw-dt">Temp rise (&deg;C)</label><input id="tw-dt" data-mirror="dt" inputmode="decimal" placeholder="10"></div>
       <div class="field"><label for="tw-ta">Ambient (&deg;C)</label><input id="tw-ta" data-mirror="ta" inputmode="decimal" placeholder="25"></div>
     </div>
-    <svg class="schem" width="230" height="110" viewBox="0 0 230 110" role="img" aria-label="Trace cross-section on a board">
-      <rect class="wire" x="20" y="55" width="190" height="28"/>
-      <path class="dot" d="M85 38 H145 V52 H85 Z"/>
-      <path class="wire" d="M85 24 V34 M145 24 V34 M85 29 H145"/>
-      <text x="106" y="18">w</text>
-      <path class="wire" d="M158 38 H166 M158 52 H166 M162 38 V52"/>
-      <text x="171" y="49">t</text>
-      <text x="24" y="74">substrate</text>
-    </svg>
+    <div class="diagram" id="tw-diagram"></div>
     </div>
     <dl class="results" id="tw-out"></dl>
     <p class="note">IPC-2221: I = k&middot;&Delta;T<sup>0.44</sup>&middot;A<sup>0.725</sup> (k = 0.048 external, 0.024 internal, A in mil&sup2;). Enter current to get width, width to get max current, or both to check margin. Blank temp rise defaults to 10 &deg;C, ambient to 25 &deg;C. IPC-2152 allows somewhat more; this is the conservative classic.</p>
@@ -875,15 +880,7 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
       <div class="field"><label for="via-stub">Stub length (mm, optional)</label><input id="via-stub" inputmode="decimal" placeholder="e.g. 1.2"></div>
           <div class="field"><label for="via-dt">Temp rise (&deg;C)</label><input id="via-dt" data-mirror="dt" inputmode="decimal" placeholder="10"></div>
     </div>
-    <svg class="schem" width="180" height="140" viewBox="0 0 180 140" role="img" aria-label="Via barrel cross-section">
-      <rect class="wire" x="20" y="30" width="140" height="80"/>
-      <path class="wire" d="M70 20 V120 M110 20 V120"/>
-      <path class="wire" d="M76 20 V120 M104 20 V120"/>
-      <path class="wire" d="M55 20 H76 M104 20 H125 M55 120 H76 M104 120 H125"/>
-      <text x="128" y="76">plating</text>
-      <path class="wire opt" d="M76 68 H104"/>
-      <text x="82" y="62">drill</text>
-    </svg>
+    <div class="diagram" id="via-diagram"></div>
     </div>
     <dl class="results" id="via-out"></dl>
     <p class="note">Ampacity uses the IPC-2221 internal-layer constant on the barrel cross-section; L and C are the classic first-order via formulas (C needs pad and antipad diameters). Blank plating/thickness default to 25 &micro;m and 1.6 mm.</p>
@@ -905,7 +902,8 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
       </div>
       <div class="field"><label for="fu-ta">Ambient (&deg;C)</label><input id="fu-ta" data-mirror="ta" inputmode="decimal" placeholder="25"></div>
     </div>
-    <svg class="schem" width="215" height="130" viewBox="0 0 215 130" role="img" aria-label="Trace cross-section showing width and copper thickness, the two dimensions that set the fusing current">
+    <div class="diagram">
+      <svg class="schem" width="215" height="130" viewBox="0 0 215 130" role="img" aria-label="Trace cross-section showing width and copper thickness, the two dimensions that set the fusing current">
       <rect class="wire" x="18" y="62" width="180" height="30"/>
       <text x="22" y="82">substrate</text>
       <path class="dot" d="M62 44 H154 V60 H62 Z"/>
@@ -914,11 +912,14 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
       <path class="wire" d="M162 44 H172 M162 60 H172 M167 44 V60"/>
       <text x="176" y="56">t</text>
       <text x="18" y="112">cross-section = w &#215; t</text>
-      <text x="18" y="126">the fuse is the copper, not the current</text>
     </svg>
+      <p class="key">the fuse is the copper, not the current.</p>
+      <p class="plate">I = A &middot; &radic;( log<sub>10</sub>(1 + (T<sub>m</sub>&minus;T<sub>a</sub>) / (234+T<sub>a</sub>)) / 33t ), A in circular mils</p>
     </div>
+    </div>
+    <div id="fu-graph" class="chart" tabindex="0" role="img" aria-label="Fusing current against fault duration"></div>
     <dl class="results" id="fu-out"></dl>
-    <p class="note">Onderdonk&rsquo;s equation, copper melting at 1083 &deg;C, adiabatic &mdash; valid for events up to a few seconds; longer events shed heat and survive more.</p>
+    <p class="note">Copper is treated as a rectangle of w &times; t; real etched copper is a trapezoid with slightly less metal, so a narrow trace fuses a little sooner than this. Onderdonk&rsquo;s equation, copper melting at 1083 &deg;C, adiabatic &mdash; valid for events up to a few seconds; longer events shed heat and survive more.</p>
     <button class="reset" data-reset="fu">Reset</button>
   </div>
 </div>
@@ -931,7 +932,8 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
     <div class="fields">
       <div class="field"><label for="spc-v">Peak voltage between conductors (V)</label><input id="spc-v" inputmode="decimal" placeholder="e.g. 48"></div>
     </div>
-    <svg class="schem" width="225" height="130" viewBox="0 0 225 130" role="img" aria-label="Two conductors on a substrate separated by a gap, with an optional coating over them">
+    <div class="diagram">
+      <svg class="schem" width="225" height="130" viewBox="0 0 225 130" role="img" aria-label="Two conductors on a substrate separated by a gap, with an optional coating over them">
       <rect class="wire" x="14" y="58" width="196" height="30"/>
       <path class="dot" d="M40 40 H86 V56 H40 Z"/>
       <path class="dot" d="M138 40 H184 V56 H138 Z"/>
@@ -939,10 +941,11 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
       <path class="wire" d="M86 34 V44 M138 34 V44"/>
       <text x="102" y="30">S</text>
       <path class="wire opt" d="M30 34 H194 V58"/>
-      <text x="30" y="24">coating, if any</text>
-      <text x="14" y="108">S is the gap between copper edges, and the</text>
-      <text x="14" y="122">minimum depends on coating and altitude</text>
+      <text x="120" y="24">coating, if any</text>
     </svg>
+      <p class="key">S is the gap between copper edges, and the. minimum depends on coating and altitude.</p>
+      <p class="plate">IPC-2221 Table 6-1, by environment &mdash; above 500 V, a per-volt slope</p>
+    </div>
     </div>
     <dl class="results" id="spc-out"></dl>
     <p class="note">Minimum spacing per environment. B1 internal layers; B2 external uncoated &le;3050 m; B3 external uncoated &gt;3050 m; B4 external with permanent polymer coating; A5 external conformal coated; A6 external component leads uncoated; A7 component leads conformal coated.</p>
@@ -986,17 +989,7 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
         <select id="z-oz" data-mirror="copper"><option value="17.5">0.5 oz (17.5 &micro;m)</option><option value="35" selected>1 oz (35 &micro;m)</option><option value="70">2 oz (70 &micro;m)</option><option value="105">3 oz (105 &micro;m)</option></select>
       </div>
     </div>
-    <svg class="schem" width="230" height="120" viewBox="0 0 230 120" role="img" aria-label="Microstrip and stripline cross-sections">
-      <rect class="wire" x="15" y="45" width="90" height="30"/>
-      <path class="dot" d="M40 34 H80 V44 H40 Z"/>
-      <path class="wire" d="M15 76 H105" stroke-width="3"/>
-      <text x="30" y="102">microstrip</text>
-      <rect class="wire" x="125" y="35" width="90" height="50"/>
-      <path class="dot" d="M150 55 H190 V64 H150 Z"/>
-      <path class="wire" d="M125 34 H215" stroke-width="3"/>
-      <path class="wire" d="M125 86 H215" stroke-width="3"/>
-      <text x="142" y="102">stripline</text>
-    </svg>
+    <div class="diagram" id="z-diagram"></div>
     </div>
     <dl class="results" id="z-out"></dl>
     <button class="reset" data-reset="z">Reset</button>
@@ -1029,18 +1022,7 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
         <select id="dp-oz" data-mirror="copper"><option value="17.5">0.5 oz (17.5 &micro;m)</option><option value="35" selected>1 oz (35 &micro;m)</option><option value="70">2 oz (70 &micro;m)</option><option value="105">3 oz (105 &micro;m)</option></select>
       </div>
     </div>
-    <svg class="schem" width="210" height="105" viewBox="0 0 210 105" role="img" aria-label="Edge-coupled differential pair over a reference plane">
-      <rect class="wire" x="15" y="40" width="180" height="30"/>
-      <path class="dot" d="M55 28 H85 V39 H55 Z"/>
-      <path class="dot" d="M120 28 H150 V39 H120 Z"/>
-      <path class="wire" d="M15 71 H195" stroke-width="3"/>
-      <path class="wire" d="M55 20 V25 M85 20 V25 M55 22 H85"/>
-      <text x="64" y="16">w</text>
-      <path class="wire" d="M85 33 H120"/>
-      <text x="98" y="27">s</text>
-      <path class="wire" d="M200 40 H206 M200 70 H206 M203 40 V70"/>
-      <text x="196" y="86">h</text>
-    </svg>
+    <div class="diagram" id="dp-diagram"></div>
     </div>
     <dl class="results" id="dp-out"></dl>
     <p class="note"><b>Validity: 0.1 &lt; w/h &lt; 3.0 and 0.1 &lt; s/h &lt; 3.0.</b> Empirical coupling fits &mdash; treat the result as a starting geometry and have the fabricator field-solve the real stackup before release. Z<sub>diff</sub> = 2Z<sub>0</sub>(1 &minus; k&middot;e<sup>&minus;m&middot;s/h</sup>).</p>
@@ -1062,7 +1044,8 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
         <select id="ee-oz" data-mirror="copper"><option value="17.5">0.5 oz (17.5 &micro;m)</option><option value="35" selected>1 oz (35 &micro;m)</option><option value="70">2 oz (70 &micro;m)</option><option value="105">3 oz (105 &micro;m)</option></select>
       </div>
     </div>
-    <svg class="schem" width="230" height="140" viewBox="0 0 230 140" role="img" aria-label="Microstrip cross-section: trace width W, dielectric height H, copper thickness t, with field partly in air and partly in the substrate">
+    <div class="diagram">
+      <svg class="schem" width="230" height="140" viewBox="0 0 230 140" role="img" aria-label="Microstrip cross-section: trace width W, dielectric height H, copper thickness t, with field partly in air and partly in the substrate">
       <text x="14" y="18">air, &#949;r = 1</text>
       <rect class="wire" x="14" y="56" width="196" height="34"/>
       <text x="20" y="78">substrate &#949;r</text>
@@ -1077,8 +1060,10 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
       <text x="14" y="106">reference plane</text>
       <path class="wire opt" d="M112 42 C 70 30 46 46 40 56"/>
       <path class="wire opt" d="M112 42 C 154 30 178 46 184 56"/>
-      <text x="14" y="132">some field is in air, so &#949;eff sits between (&#949;r+1)/2 and &#949;r</text>
     </svg>
+      <p class="key">some field is in air, so &#949;eff sits between (&#949;r+1)/2 and &#949;r.</p>
+      <p class="plate">&epsilon;<sub>eff</sub> = (&epsilon;<sub>r</sub>+1)/2 + (&epsilon;<sub>r</sub>&minus;1)/2 &middot; (1 + 10h/w)<sup>&minus;ab</sup> &mdash; Hammerstad&ndash;Jensen</p>
+    </div>
     </div>
     <dl class="results" id="ee-out"></dl>
     <p class="note">Hammerstad&ndash;Jensen for the static value, with Kirschning&ndash;Jansen dispersion when a frequency is given. A microstrip&rsquo;s field is partly in air, so &epsilon;<sub>eff</sub> always lies between (&epsilon;<sub>r</sub>+1)/2 and &epsilon;<sub>r</sub>, rising towards &epsilon;<sub>r</sub> as the trace widens. Valid for 0.01 &le; w/h &le; 100.</p>
@@ -1100,7 +1085,8 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
         <select id="wl-div"><option value="1">full &lambda;</option><option value="2">&lambda;/2</option><option value="4" selected>&lambda;/4</option><option value="8">&lambda;/8</option><option value="10">&lambda;/10</option><option value="16">&lambda;/16</option><option value="20">&lambda;/20</option></select>
       </div>
     </div>
-    <svg class="schem" width="235" height="120" viewBox="0 0 235 120" role="img" aria-label="A wave along a trace with the wavelength marked, and the critical length below which no termination is needed">
+    <div class="diagram">
+      <svg class="schem" width="235" height="120" viewBox="0 0 235 120" role="img" aria-label="A wave along a trace with the wavelength marked, and the critical length below which no termination is needed">
       <path class="wire" d="M14 50 Q 33 18 52 50 T 90 50 T 128 50 T 166 50 T 204 50"/>
       <path class="wire" d="M14 66 V78 M90 66 V78 M14 72 H90"/>
       <text x="44" y="92">&#955;</text>
@@ -1110,6 +1096,8 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
       <text x="68" y="106">critical length</text>
       <text x="14" y="24">v = c / &#8730;&#949;eff</text>
     </svg>
+      <p class="plate">&lambda; = c / (f &middot; &radic;&epsilon;<sub>eff</sub>) &middot; f<sub>knee</sub> = 0.35 / t<sub>r</sub></p>
+    </div>
     </div>
     <dl class="results" id="wl-out"></dl>
     <p class="note">Enter a frequency for wavelength fractions, or a rise time for the knee frequency (0.35/t<sub>r</sub>) and the critical length beyond which a trace behaves as a transmission line (t<sub>r</sub>/2 of propagation delay). &epsilon;<sub>eff</sub> defaults to 3.3; stripline in FR4 is &asymp; &epsilon;<sub>r</sub>.</p>
@@ -1137,7 +1125,8 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
       <div class="field"><label for="vs-len">Fence length (mm, optional)</label><input id="vs-len" inputmode="decimal" placeholder="e.g. 50"></div>
       <div class="field"><label for="vs-d">Via drill (mm, optional)</label><input id="vs-d" inputmode="decimal" placeholder="e.g. 0.3"></div>
     </div>
-    <svg class="schem" width="240" height="170" viewBox="0 0 240 170" role="img" aria-label="A trace flanked by two rows of stitching vias, showing pitch and setback">
+    <div class="diagram">
+      <svg class="schem" width="240" height="170" viewBox="0 0 240 170" role="img" aria-label="A trace flanked by two rows of stitching vias, showing pitch and setback">
       <rect class="wire" x="14" y="30" width="212" height="106"/>
       <path class="dot" d="M14 78 H226 V90 H14 Z"/>
       <text x="18" y="74">trace</text>
@@ -1150,10 +1139,12 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
       <path class="wire" d="M34 26 V16 M74 26 V16 M34 21 H74"/>
       <text x="44" y="13">pitch</text>
       <path class="wire" d="M204 48 H216 M204 78 H216 M210 48 V78"/>
-      <text x="196" y="160">setback</text>
+      <text x="176" y="160">setback</text>
       <path class="wire" d="M114 54 V72"/>
       <text x="120" y="66">d</text>
     </svg>
+      <p class="plate">pitch &le; &lambda;/10, &lambda; = c / (f &middot; &radic;&epsilon;<sub>r</sub>)</p>
+    </div>
     </div>
     <dl class="results" id="vs-out"></dl>
     <p class="note">A via fence is a waveguide wall made of holes. It leaks through the gaps once the pitch approaches a half wavelength, so the working rule keeps the pitch an order of magnitude below that. Setback from the trace matters too: too close and the fence loads the line and shifts its impedance, so keep it beyond roughly three trace widths unless you have solved the geometry.</p>
@@ -1179,7 +1170,8 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
       <div class="field"><label for="th-tj">T<sub>j</sub> (&deg;C)</label><input id="th-tj" inputmode="decimal" placeholder="solved"></div>
           <div class="field"><label for="th-ta">Ambient (&deg;C)</label><input id="th-ta" data-mirror="ta" inputmode="decimal" placeholder="25"></div>
     </div>
-    <svg class="schem" width="150" height="190" viewBox="0 0 150 190" role="img" aria-label="Thermal resistance chain from junction to ambient">
+    <div class="diagram">
+      <svg class="schem" width="150" height="190" viewBox="0 0 150 190" role="img" aria-label="Thermal resistance chain from junction to ambient">
       <rect class="wire" x="40" y="12" width="70" height="20"/>
       <text x="54" y="26">junction</text>
       <path class="wire" d="M75 32 V48"/>
@@ -1196,6 +1188,8 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
       <path class="wire" d="M75 150 V164 M55 164 H95 M60 171 H90 M65 178 H85"/>
       <text x="8" y="168">ambient</text>
     </svg>
+      <p class="plate">T<sub>j</sub> = T<sub>a</sub> + P &middot; &Sigma;&theta;</p>
+    </div>
     </div>
     <dl class="results" id="th-out"></dl>
     <p class="note">Series thermal resistances add, exactly like resistors carrying power instead of current. Give the three-part chain, or a single junction&ndash;ambient figure. Note that a datasheet &theta;<sub>ja</sub> is a JEDEC board measurement, not a physical resistance you can chain, and will not match a real stackup with thermal vias.</p>
@@ -1214,14 +1208,14 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
     <svg class="schem" width="230" height="130" viewBox="0 0 230 130" role="img" aria-label="A supply rail dipping as a current step is drawn, with the allowed ripple and the transient step marked">
       <path class="wire" d="M14 34 H70 C 84 34 84 58 98 58 L 150 58 C 164 58 164 34 178 34 H216"/>
       <path class="grid opt" d="M14 34 H216"/>
-      <text x="14" y="26">V rail</text>
+      <text x="14" y="30">V rail</text>
       <path class="wire" d="M96 34 V58 M90 34 H102 M90 58 H102"/>
       <text x="104" y="50">&#916;V ripple</text>
       <path class="wire" d="M14 96 H70 V78 H150 V96 H216"/>
       <text x="14" y="118">I load</text>
       <path class="wire" d="M160 78 V96 M154 78 H166 M154 96 H166"/>
       <text x="170" y="92">&#916;I step</text>
-      <text x="14" y="14">Z target = &#916;V / &#916;I</text>
+      <text x="14" y="12">Z target = &#916;V / &#916;I</text>
     </svg>
     </div>
     <dl class="results" id="pdn-out"></dl>
@@ -1293,7 +1287,8 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
       </div>
       <div class="field"><label for="bat-usable">Usable capacity (%)</label><input id="bat-usable" inputmode="decimal" placeholder="80"></div>
     </div>
-    <svg class="schem" width="215" height="125" viewBox="0 0 215 125" role="img" aria-label="A battery pack of cells in series and parallel, showing what S and P mean">
+    <div class="diagram">
+      <svg class="schem" width="215" height="125" viewBox="0 0 215 125" role="img" aria-label="A battery pack of cells in series and parallel, showing what S and P mean">
       <g>
         <rect class="wire" x="24" y="26" width="34" height="18"/><path class="wire" d="M58 31 V39 H62 V31 Z"/>
         <rect class="wire" x="72" y="26" width="34" height="18"/><path class="wire" d="M106 31 V39 H110 V31 Z"/>
@@ -1309,10 +1304,9 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
       <path class="wire" d="M14 35 V73 M14 54 H8 M158 35 V73 M158 54 H168"/>
       <path class="wire" d="M24 35 H14 M24 73 H14"/>
       <path class="wire" d="M158 35 H166 M158 73 H166"/>
-      <text x="44" y="18">S cells in series raise voltage</text>
-      <text x="24" y="104">P strings in parallel raise capacity</text>
-      <text x="24" y="118">pack V = S &#215; cell V, pack Ah = P &#215; cell Ah</text>
     </svg>
+      <p class="key">S cells in series raise voltage. P strings in parallel raise capacity. pack V = S &#215; cell V, pack Ah = P &#215; cell Ah.</p>
+    </div>
     </div>
     <dl class="results" id="bat-out"></dl>
     <p class="note">Runtime assumes a flat discharge at the nominal voltage, which is optimistic at high C-rates and near the end of discharge. The usable fraction defaults to 80 %, a common reserve for lithium packs; set it to 100 for the nameplate figure.</p>
@@ -1805,6 +1799,7 @@ function pairSearch(vin, vout, rtot, il, series) {
 /* ---------- series / parallel ---------- */
 
 function calcSP() {
+  drawSP(document.getElementById("sp-type").value);
   const raw = document.getElementById("sp-list").value.trim();
   const type = document.getElementById("sp-type").value;
   const UNIT = { R: "\u03a9", C: "F", L: "H" }[type];
@@ -2174,9 +2169,544 @@ function calcViaShield() {
   render("vs-out", rows);
 }
 
+/* ---------- cross-section drawing ----------
+
+   Saturn's most useful habit is a drawing whose every symbol is also a field
+   label, redrawn when the structure selector moves so it can never describe
+   a geometry you are not solving. These primitives give all the cross-sections
+   one dimension-line convention, so the reader learns to read one drawing
+   rather than five. */
+
+function svgOpen(w, h, label) {
+  return '<svg class="schem" width="' + w + '" height="' + h + '" viewBox="0 0 ' + w + ' ' + h +
+         '" role="img" aria-label="' + label + '">';
+}
+function dimH(x0, x1, y, label) {
+  return '<path class="wire" d="M' + x0 + ' ' + (y - 4) + ' V' + (y + 4) + ' M' + x1 + ' ' + (y - 4) +
+         ' V' + (y + 4) + ' M' + x0 + ' ' + y + ' H' + x1 + '"/>' +
+         '<text x="' + ((x0 + x1) / 2 - 4) + '" y="' + (y - 8) + '">' + label + '</text>';
+}
+function dimV(x, y0, y1, label) {
+  return '<path class="wire" d="M' + (x - 4) + ' ' + y0 + ' H' + (x + 4) + ' M' + (x - 4) + ' ' + y1 +
+         ' H' + (x + 4) + ' M' + x + ' ' + y0 + ' V' + y1 + '"/>' +
+         '<text x="' + (x + 7) + '" y="' + ((y0 + y1) / 2 + 4) + '">' + label + '</text>';
+}
+function plane(x0, x1, y) { return '<path class="wire" d="M' + x0 + ' ' + y + ' H' + x1 + '" stroke-width="3"/>'; }
+function copper(x0, x1, y0, y1) {
+  return '<path class="dot" d="M' + x0 + ' ' + y0 + ' H' + x1 + ' V' + y1 + ' H' + x0 + ' Z"/>';
+}
+
+const XSEC_KEY = '<p class="key">filled = copper &middot; outline = dielectric &middot; ' +
+                 'heavy line = reference plane &middot; dashed = optional</p>';
+/* The trace cross-sections are rectangles because the formulas are. Saturn
+   draws the etched trapezoid because it models an etch factor; we do not, so
+   drawing one would claim an accuracy the maths does not have. */
+const ETCH_KEY = '<p class="key">Copper is drawn rectangular because that is what the model assumes. Real etched copper is a trapezoid, so a narrow trace has slightly less metal than this.</p>';
+
+/* ---- single-ended impedance ---- */
+
+const Z_LABEL = {
+  ms:    "Bare microstrip cross-section: trace of width w and thickness t on a dielectric of height h over a reference plane",
+  mscov: "Covered microstrip cross-section: as bare microstrip, with a cover of its own permittivity over the trace",
+  sl:    "Centred stripline cross-section: trace midway between two reference planes separated by b",
+  asym:  "Offset stripline cross-section: trace between two planes, nearer one than the other",
+  cpwg:  "Grounded coplanar cross-section: trace with a ground pour either side across a gap, over a reference plane"
+};
+const Z_PLATE = {
+  ms:    "Z<sub>0</sub> = Z<sub>01</sub>(u) / &radic;&epsilon;<sub>eff</sub>, u = w/h &mdash; Hammerstad&ndash;Jensen",
+  mscov: "Z<sub>0</sub> = Z<sub>01</sub>(u) / &radic;&epsilon;<sub>eff</sub>(&epsilon;<sub>r</sub>, cover) &mdash; fully covered limit",
+  sl:    "Z<sub>0</sub> = (60/&radic;&epsilon;<sub>r</sub>) &middot; ln(1.9b / (0.8w + t))",
+  asym:  "Z<sub>0</sub> = Z<sub>0,centred</sub> &middot; f(h, c) / f(b/2, b/2)",
+  cpwg:  "Z<sub>0</sub> = 60&pi; / (&radic;&epsilon;<sub>eff</sub> &middot; (K/K&prime;|<sub>k</sub> + K/K&prime;|<sub>k3</sub>))"
+};
+
+function drawZ(struct) {
+  const W = 250, H = 170, L = 16, R = 206;
+  const x0 = 96, x1 = 154;                       // the trace
+  const g = [svgOpen(W, H, Z_LABEL[struct])];
+
+  if (struct === "ms" || struct === "mscov" || struct === "cpwg") {
+    g.push('<text x="' + L + '" y="22">air, εr = 1</text>');
+    g.push('<rect class="wire" x="' + L + '" y="70" width="' + (R - L) + '" height="44"/>');
+    g.push('<text x="' + (L + 6) + '" y="98">\u03b5r</text>');
+    g.push(plane(L, R, 114));
+    g.push('<text x="' + L + '" y="132">reference plane</text>');
+    g.push(copper(x0, x1, 56, 68));
+    g.push(dimH(x0, x1, 44, "w"));
+    g.push(dimV(222, 70, 114, "h"));
+    g.push('<path class="wire" d="M' + (x1 + 6) + ' 56 H' + (x1 + 14) + ' M' + (x1 + 6) + ' 68 H' + (x1 + 14) +
+           ' M' + (x1 + 10) + ' 56 V68"/><text x="' + (x1 + 17) + '" y="66">t</text>');
+    if (struct === "mscov") {
+      g.push('<path class="wire opt" d="M' + (x0 - 40) + ' 70 V50 H' + (x1 + 40) + ' V70"/>');
+      g.push('<text x="' + (x0 - 40) + '" y="44">cover \u03b5r</text>');
+    }
+    if (struct === "cpwg") {
+      g.push(copper(L + 2, x0 - 30, 56, 68));
+      g.push(copper(x1 + 30, R - 2, 56, 68));
+      g.push(dimH(x1, x1 + 30, 44, "s"));
+      g.push('<text x="' + (L + 4) + '" y="52">ground pour</text>');
+    }
+  } else {
+    const top = 44, bot = 130;
+    const ty = struct === "sl" ? 81 : 66;        // trace top edge
+    g.push('<rect class="wire" x="' + L + '" y="' + top + '" width="' + (R - L) + '" height="' + (bot - top) + '"/>');
+    g.push(plane(L, R, top));
+    g.push(plane(L, R, bot));
+    g.push('<text x="' + (L + 6) + '" y="' + (bot - 8) + '">\u03b5r</text>');
+    g.push(copper(x0, x1, ty, ty + 12));
+    g.push(dimH(x0, x1, ty - 10, "w"));
+    if (struct === "sl") {
+      g.push(dimV(222, top, bot, "b"));
+    } else {
+      g.push(dimV(222, top, ty, "h"));
+      g.push(dimV(222, ty + 12, bot, "c"));
+    }
+  }
+  g.push("</svg>");
+  /* SVG text cannot wrap, so anything longer than a symbol goes in a
+     paragraph underneath where the browser can break it */
+  const caption = struct === "sl" ? '<p class="key">Planes above and below, trace centred; b is the plane-to-plane spacing.</p>'
+                : struct === "asym" ? '<p class="key">h is the distance to the near plane, c to the far one.</p>'
+                : struct === "cpwg" ? '<p class="key">s is the gap between the track and the ground pour either side of it.</p>'
+                : "";
+  document.getElementById("z-diagram").innerHTML =
+    g.join("") + '<p class="plate">' + Z_PLATE[struct] + "</p>" + caption + XSEC_KEY + ETCH_KEY;
+}
+
+/* ---- differential pair ---- */
+
+function drawDiff(struct) {
+  const W = 250, H = 160, L = 16, R = 206;
+  const a0 = 74, a1 = 118, b0 = 146, b1 = 190;   // the two traces
+  const ms = struct === "ms";
+  const g = [svgOpen(W, H, ms
+      ? "Edge-coupled microstrip: two traces of width w separated by a gap s, on a dielectric of height h over one plane"
+      : "Edge-coupled stripline: two traces of width w separated by a gap s, midway between two planes")];
+  if (ms) {
+    g.push('<rect class="wire" x="' + L + '" y="72" width="' + (R - L) + '" height="42"/>');
+    g.push('<text x="' + (L + 6) + '" y="98">\u03b5r</text>');
+    g.push(plane(L, R, 114));
+    g.push('<text x="' + L + '" y="132">reference plane</text>');
+    g.push(copper(a0, a1, 58, 70));
+    g.push(copper(b0, b1, 58, 70));
+    g.push(dimH(a0, a1, 46, "w"));
+    g.push(dimH(b0, b1, 46, "w"));
+    g.push(dimH(a1, b0, 30, "s"));
+    g.push(dimV(222, 72, 114, "h"));
+  } else {
+    const top = 40, bot = 124, ty = 76;
+    g.push('<rect class="wire" x="' + L + '" y="' + top + '" width="' + (R - L) + '" height="' + (bot - top) + '"/>');
+    g.push(plane(L, R, top));
+    g.push(plane(L, R, bot));
+    g.push('<text x="' + (L + 6) + '" y="' + (bot - 8) + '">\u03b5r</text>');
+    g.push(copper(a0, a1, ty, ty + 12));
+    g.push(copper(b0, b1, ty, ty + 12));
+    g.push(dimH(a1, b0, ty - 10, "s"));
+    g.push(dimH(a0, a1, ty - 10, "w"));
+    g.push(dimH(b0, b1, ty - 10, "w"));
+    g.push(dimV(222, top, bot, "h"));
+  }
+  g.push("</svg>");
+  document.getElementById("dp-diagram").innerHTML = g.join("") +
+    '<p class="plate">Z<sub>diff</sub> = 2Z<sub>0</sub>(1 &minus; k&middot;e<sup>&minus;m&middot;s/h</sup>)</p>' +
+    (ms ? "" : '<p class="key">Planes above and below, pair centred between them.</p>') +
+    XSEC_KEY + ETCH_KEY;
+}
+
+/* ---- trace current ----
+
+   External and internal are not a cosmetic distinction: the IPC constant
+   halves, because a buried trace sheds heat only through the laminate. The
+   drawing says which one you are solving. */
+
+function drawTrace(layer) {
+  const W = 250, H = 155, L = 18, R = 210;
+  const x0 = 92, x1 = 156;
+  const ext = layer !== "int";
+  const g = [svgOpen(W, H, ext
+      ? "External trace: copper of width w and thickness t on top of the board, one face exposed to air"
+      : "Internal trace: copper of width w and thickness t buried in the laminate, with no exposed face")];
+  if (ext) {
+    g.push('<text x="' + L + '" y="24">air</text>');
+    g.push('<rect class="wire" x="' + L + '" y="66" width="' + (R - L) + '" height="42"/>');
+    g.push('<text x="' + (L + 6) + '" y="92">substrate</text>');
+    g.push(copper(x0, x1, 52, 64));
+    g.push(dimH(x0, x1, 40, "w"));
+    g.push('<path class="wire" d="M' + (x1 + 6) + ' 52 H' + (x1 + 14) + ' M' + (x1 + 6) + ' 64 H' + (x1 + 14) +
+           ' M' + (x1 + 10) + ' 52 V64"/><text x="' + (x1 + 17) + '" y="62">t</text>');
+    g.push('<text x="' + L + '" y="132">k = 0.048</text>');
+  } else {
+    g.push('<rect class="wire" x="' + L + '" y="40" width="' + (R - L) + '" height="76"/>');
+    g.push('<text x="' + (L + 6) + '" y="58">laminate</text>');
+    g.push(copper(x0, x1, 72, 84));
+    g.push(dimH(x0, x1, 62, "w"));
+    g.push('<path class="wire" d="M' + (x1 + 6) + ' 72 H' + (x1 + 14) + ' M' + (x1 + 6) + ' 84 H' + (x1 + 14) +
+           ' M' + (x1 + 10) + ' 72 V84"/><text x="' + (x1 + 17) + '" y="82">t</text>');
+    g.push('<text x="' + L + '" y="140">k = 0.024</text>');
+  }
+  g.push("</svg>");
+  document.getElementById("tw-diagram").innerHTML = g.join("") +
+    '<p class="plate">I = k &middot; &Delta;T<sup>0.44</sup> &middot; A<sup>0.725</sup>, A = w&middot;t in mil&sup2;</p>' +
+    '<p class="key">' + (ext ? "One face is in air, so the trace convects."
+                             : "Buried, so heat leaves only through the board.") + "</p>" +
+    ETCH_KEY + '<p class="key">A rectangular model therefore reads a little optimistic on a narrow trace.</p>';
+}
+
+/* ---- via ----
+
+   Four of this card's fields name a diameter or a length that words cannot
+   pin down: pad, antipad, aspect ratio and stub. Saturn answers all four with
+   a section and a plan view, and so does this. */
+
+function drawVia(hasStub) {
+  const W = 262, H = 206;
+  const bx0 = 14, bx1 = 132, by0 = 34, by1 = 152;
+  const h0 = 60, h1 = 86;                          // the drilled hole
+  const g = [svgOpen(W, H, "Via section showing drill, plating, board thickness and the unused stub, "
+                         + "beside a plan view of the concentric drill, plating, pad and antipad")];
+  g.push('<rect class="wire" x="' + bx0 + '" y="' + by0 + '" width="' + (bx1 - bx0) + '" height="' + (by1 - by0) + '"/>');
+  g.push(copper(h0 - 5, h0, by0, by1));            // barrel plating, both walls
+  g.push(copper(h1, h1 + 5, by0, by1));
+  g.push(copper(h0 - 22, h1 + 22, by0 - 5, by0));  // pads, top and bottom
+  g.push(copper(h0 - 22, h1 + 22, by1, by1 + 5));
+  g.push(dimH(h0, h1, by0 + 34, "d"));
+  g.push(dimV(146, by0, by1, "H"));
+  g.push('<text x="' + bx0 + '" y="24">pad</text>');
+  g.push('<text x="' + (h1 + 14) + '" y="' + (by0 + 62) + '">plating</text>');
+  g.push('<text x="' + bx0 + '" y="' + (H - 24) + '">aspect ratio = H / d</text>');
+  if (hasStub) {
+    g.push('<path class="wire opt" d="M' + (h1 + 9) + ' ' + (by1 - 44) + ' V' + by1 + '"/>');
+    g.push('<path class="wire" d="M' + (h0 - 26) + ' ' + (by1 - 44) + ' H' + (h1 + 26) + '"/>');
+    g.push('<text x="' + bx0 + '" y="' + (by1 - 48) + '">exit layer</text>');
+    g.push('<text x="' + (h1 + 14) + '" y="' + (by1 - 14) + '">stub</text>');
+  } else {
+    g.push('<text x="' + bx0 + '" y="' + (H - 10) + '">give a stub length to mark it</text>');
+  }
+  const cx = 198, cy = 84;
+  g.push('<circle class="wire opt" cx="' + cx + '" cy="' + cy + '" r="46"/>');
+  g.push('<circle class="wire" cx="' + cx + '" cy="' + cy + '" r="32"/>');
+  g.push('<circle class="wire" cx="' + cx + '" cy="' + cy + '" r="19"/>');
+  g.push('<circle class="wire" cx="' + cx + '" cy="' + cy + '" r="13"/>');
+  g.push('<text x="' + (cx - 42) + '" y="' + (cy + 62) + '">plan view</text>');
+  g.push('<text x="' + (cx - 46) + '" y="' + (cy + 78) + '">drill, plating,</text>');
+  g.push('<text x="' + (cx - 46) + '" y="' + (cy + 92) + '">pad, antipad</text>');
+  g.push("</svg>");
+  document.getElementById("via-diagram").innerHTML = g.join("") +
+    '<p class="plate">C &asymp; 1.41&middot;&epsilon;<sub>r</sub>&middot;H&middot;d<sub>pad</sub> / (d<sub>anti</sub> &minus; d<sub>pad</sub>)</p>' +
+    '<p class="key">The antipad is the clearance in the plane, so it is drawn dashed &mdash; it is absence of copper, not copper.</p>';
+}
+
+/* ---- series and parallel ----
+
+   The selector switches the arithmetic between resistors, capacitors and
+   inductors, so the symbols switch with it. */
+
+function drawSP(kind) {
+  const NAME = { R: "resistors", C: "capacitors", L: "inductors" };
+  const g = [svgOpen(258, 128, "Two " + NAME[kind] + " in series, and two in parallel")];
+  g.push(symSeries(kind, 10, 68, 40));
+  g.push(symSeries(kind, 68, 126, 40));
+  g.push('<text x="30" y="20">1</text><text x="88" y="20">2</text>');
+  g.push('<text x="40" y="76">Series</text>');
+  g.push('<path class="wire" d="M204 12 V24 M204 24 H176 M204 24 H232"/>');
+  g.push('<circle class="dot" cx="204" cy="24" r="2.5"/>');
+  g.push(symShunt(kind, 176, 24, 88));
+  g.push(symShunt(kind, 232, 24, 88));
+  g.push('<path class="wire" d="M176 88 H232 M204 88 V102"/>');
+  g.push('<circle class="dot" cx="204" cy="88" r="2.5"/>');
+  g.push('<text x="180" y="122">Parallel</text>');
+  g.push("</svg>");
+  document.getElementById("sp-diagram").innerHTML = g.join("") + '<p class="plate">' +
+    (kind === "C"
+      ? "series: 1/C = &Sigma;1/C<sub>i</sub> &middot; parallel: C = &Sigma;C<sub>i</sub>"
+      : "series: X = &Sigma;X<sub>i</sub> &middot; parallel: 1/X = &Sigma;1/X<sub>i</sub>") + "</p>";
+}
+
+/* ---- attenuator pads ----
+
+   Three topologies, because the second-impedance field only makes sense
+   against the L pad and that was the one the drawing left out. */
+
+function drawPad(hasZ2) {
+  const g = [svgOpen(232, 224, "PI pad, T pad and L pad topologies")];
+  /* PI */
+  g.push('<path class="wire" d="M10 26 H98"/>');
+  g.push('<rect class="wire" x="40" y="18" width="30" height="16"/>');
+  g.push('<circle class="dot" cx="40" cy="26" r="2.5"/><circle class="dot" cx="70" cy="26" r="2.5"/>');
+  g.push('<rect class="wire" x="32" y="44" width="16" height="24"/>');
+  g.push('<rect class="wire" x="62" y="44" width="16" height="24"/>');
+  g.push('<path class="wire" d="M40 34 V44 M70 34 V44 M40 68 V78 M70 68 V78 M20 78 H90 M30 84 H80 M40 90 H70"/>');
+  g.push('<text x="120" y="30">PI pad</text>');
+  /* T */
+  g.push('<path class="wire" d="M10 122 H34 M64 122 H98"/>');
+  g.push('<rect class="wire" x="34" y="114" width="24" height="16"/>');
+  g.push('<rect class="wire" x="64" y="114" width="24" height="16"/>');
+  g.push('<circle class="dot" cx="61" cy="122" r="2.5"/>');
+  g.push('<path class="wire" d="M58 122 H64"/>');
+  g.push('<rect class="wire" x="53" y="134" width="16" height="24"/>');
+  g.push('<path class="wire" d="M61 122 V134 M61 158 V166 M47 166 H75 M52 172 H70 M57 178 H65"/>');
+  g.push('<text x="120" y="126">T pad</text>');
+  /* L */
+  g.push('<path class="wire" d="M10 202 H34 M58 202 H98"/>');
+  g.push('<rect class="wire" x="34" y="194" width="24" height="16"/>');
+  g.push('<circle class="dot" cx="58" cy="202" r="2.5"/>');
+  g.push('<rect class="wire" x="50" y="212" width="16" height="12"/>');
+  g.push('<path class="wire" d="M58 202 V212"/>');
+  g.push('<text x="120" y="206">L pad</text>');
+  g.push("</svg>");
+  document.getElementById("pad-diagram").innerHTML = g.join("") +
+    '<p class="plate">loss ratio N = 10<sup>A/20</sup>, A in dB</p>' +
+    '<p class="key">PI and T keep both ports at Z0. An L pad matches Z0 on one side to a different Z2 on the other' +
+    (hasZ2 ? ", which is the case you are solving." : "; give a second impedance to size one.") + "</p>";
+}
+
+/* ---------- explanatory plots ----------
+
+   Three cards turn on a relationship rather than a geometry, and a curve says
+   in one glance what a results row says in a sentence. Same conventions as
+   the filter response: hairline grid, 2px curves, a crosshair that snaps to
+   the nearest sample, no legend box - each series carries its own direct
+   label - and every value the hover shows also appears in the results list,
+   so the plot enhances and never gates. */
+
+const MINI = {};
+
+function miniPlot(hostId, spec) {
+  const W = 520, H = 190, ML = 54, MR = 62, MT = 14, MB = 32;
+  const pw = W - ML - MR, ph = H - MT - MB;
+  const all = [];
+  spec.series.forEach(function (se) { se.pts.forEach(function (q) { all.push(q); }); });
+  const xs = all.map(function (q) { return q[0]; }), ys = all.map(function (q) { return q[1]; });
+  const x0 = Math.min.apply(null, xs), x1 = Math.max.apply(null, xs);
+  const y0 = spec.yMin !== undefined ? spec.yMin : Math.min.apply(null, ys);
+  const y1 = spec.yMax !== undefined ? spec.yMax : Math.max.apply(null, ys);
+  const X = function (v) { return ML + (v - x0) / ((x1 - x0) || 1) * pw; };
+  const Y = function (v) { return MT + (y1 - v) / ((y1 - y0) || 1) * ph; };
+
+  const out = ['<svg width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '">'];
+  spec.xTicks.forEach(function (t) {
+    out.push('<path class="grid" d="M' + X(t.at).toFixed(1) + " " + MT + " V" + (MT + ph) + '"/>');
+    out.push('<text x="' + X(t.at).toFixed(1) + '" y="' + (H - 14) + '" text-anchor="middle">' + t.label + "</text>");
+  });
+  spec.yTicks.forEach(function (t) {
+    out.push('<path class="grid" d="M' + ML + " " + Y(t.at).toFixed(1) + " H" + (ML + pw) + '"/>');
+    out.push('<text x="' + (ML - 6) + '" y="' + (Y(t.at) + 3.5).toFixed(1) + '" text-anchor="end">' + t.label + "</text>");
+  });
+  out.push('<text x="' + (ML - 6) + '" y="' + (MT - 3) + '" text-anchor="end">' + spec.yUnit + "</text>");
+  out.push('<path class="axis" d="M' + ML + " " + MT + " V" + (MT + ph) + " H" + (ML + pw) + '"/>');
+
+  if (spec.band) {
+    let d = "M";
+    spec.band[0].forEach(function (q, i) { d += (i ? " L" : "") + X(q[0]).toFixed(1) + " " + Y(q[1]).toFixed(1); });
+    for (let i = spec.band[1].length - 1; i >= 0; i--) {
+      const q = spec.band[1][i];
+      d += " L" + X(q[0]).toFixed(1) + " " + Y(q[1]).toFixed(1);
+    }
+    out.push('<path class="band" d="' + d + ' Z"/>');
+  }
+  spec.series.forEach(function (se) {
+    let d = "M";
+    se.pts.forEach(function (q, i) { d += (i ? " L" : "") + X(q[0]).toFixed(1) + " " + Y(q[1]).toFixed(1); });
+    out.push('<path class="curve' + (se.alt ? " alt" : "") + '" d="' + d + '"/>');
+    const last = se.pts[se.pts.length - 1];
+    out.push('<text class="tag" x="' + (X(last[0]) + 6).toFixed(1) + '" y="' + (Y(last[1]) + 3.5).toFixed(1) +
+             '">' + se.name + "</text>");
+  });
+  (spec.marks || []).forEach(function (m) {
+    out.push('<path class="hair" d="M' + X(m.at).toFixed(1) + " " + MT + " V" + (MT + ph) + '"/>');
+    out.push('<text class="tag" x="' + (X(m.at) + 5).toFixed(1) + '" y="' + (MT + 11) + '">' + m.label + "</text>");
+  });
+  out.push('<g id="' + hostId + '-cursor"></g></svg>');
+
+  const host = document.getElementById(hostId);
+  host.innerHTML = out.join("") + (spec.note ? '<p class="key">' + spec.note + "</p>" : "");
+  host.setAttribute("aria-label", spec.label);
+  MINI[hostId] = { spec: spec, X: X, Y: Y, ML: ML, MT: MT, pw: pw, ph: ph, W: W };
+}
+
+function miniClear(hostId) {
+  const host = document.getElementById(hostId);
+  if (host) { host.innerHTML = ""; delete MINI[hostId]; }
+}
+
+function miniCursor(hostId, clientX) {
+  const st = MINI[hostId];
+  if (!st) return;
+  const host = document.getElementById(hostId);
+  const svg = host.querySelector("svg");
+  if (!svg) return;
+  const r = svg.getBoundingClientRect();
+  const px = (clientX - r.left) * (st.W / (r.width || st.W));
+  const n = st.spec.series[0].pts.length;
+  let i = Math.round((px - st.ML) / st.pw * (n - 1));
+  miniCursorAt(hostId, Math.max(0, Math.min(n - 1, i)));
+}
+
+function miniCursorAt(hostId, i) {
+  const st = MINI[hostId];
+  if (!st) return;
+  const host = document.getElementById(hostId);
+  const g = host.querySelector("#" + hostId + "-cursor");
+  if (!g) return;
+  st.index = i;
+  const x = st.X(st.spec.series[0].pts[i][0]);
+  const right = x > st.ML + st.pw * 0.6;
+  const tx = right ? x - 8 : x + 8, anchor = right ? "end" : "start";
+  const parts = ['<path class="hair" d="M' + x.toFixed(1) + " " + st.MT + " V" + (st.MT + st.ph) + '"/>'];
+  st.spec.series.forEach(function (se) {
+    const y = st.Y(se.pts[i][1]);
+    parts.push('<circle class="knob" cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="4"/>');
+  });
+  /* value leads, label follows - the reader has the curve and wants the number */
+  st.spec.read(i).forEach(function (line, k) {
+    parts.push('<text class="' + (k ? "readlabel" : "read") + '" x="' + tx.toFixed(1) + '" y="' +
+               (st.MT + 14 + k * 13) + '" text-anchor="' + anchor + '">' + line + "</text>");
+  });
+  g.innerHTML = parts.join("");
+}
+
+/* logarithmic decade ticks between two frequencies */
+function decadeTicks(lo, hi, unit) {
+  const ticks = [];
+  for (let d = Math.ceil(Math.log10(lo)); d <= Math.floor(Math.log10(hi)); d++) {
+    ticks.push({ at: d, label: fmt(Math.pow(10, d), unit) });
+  }
+  return ticks;
+}
+
+/* ---- self-resonance: the V that every real part traces ---- */
+
+function drawReactPlot(cap, ind) {
+  if (!cap && !ind) { miniClear("re-graph"); return; }
+  const centre = cap ? cap.srf : ind.srf;
+  const lo = Math.log10(centre) - 2.5, hi = Math.log10(centre) + 2.5;
+  const N = 121;
+  const series = [];
+  const zc = [], zl = [];
+  for (let i = 0; i < N; i++) {
+    const lx = lo + (hi - lo) * i / (N - 1);
+    const w = 2 * Math.PI * Math.pow(10, lx);
+    if (cap) {
+      const x = w * cap.esl - 1 / (w * cap.c);
+      zc.push([lx, Math.log10(Math.max(Math.hypot(cap.esr, x), 1e-6))]);
+    }
+    if (ind) {
+      const sr = ind.dcr, si = w * ind.l, pi = -1 / (w * ind.cp);
+      const nr = -si * pi, ni = sr * pi;
+      const dr = sr, di = si + pi;
+      const den = dr * dr + di * di || 1e-30;
+      zl.push([lx, Math.log10(Math.max(Math.hypot((nr * dr + ni * di) / den, (ni * dr - nr * di) / den), 1e-6))]);
+    }
+  }
+  if (cap) series.push({ pts: zc, name: "capacitor" });
+  if (ind) series.push({ pts: zl, name: "inductor", alt: series.length > 0 });
+
+  const ys = [];
+  series.forEach(function (se) { se.pts.forEach(function (q) { ys.push(q[1]); }); });
+  const yLo = Math.floor(Math.min.apply(null, ys)), yHi = Math.ceil(Math.max.apply(null, ys));
+  const yTicks = [];
+  for (let d = yLo; d <= yHi; d++) yTicks.push({ at: d, label: fmt(Math.pow(10, d), "\u03a9") });
+
+  miniPlot("re-graph", {
+    series: series,
+    yMin: yLo, yMax: yHi,
+    xTicks: decadeTicks(Math.pow(10, lo), Math.pow(10, hi), "Hz"),
+    yTicks: yTicks,
+    yUnit: "|Z|",
+    marks: [{ at: Math.log10(centre), label: "self-resonance" }],
+    label: "Impedance magnitude against frequency, falling to a minimum at self-resonance and rising again beyond it",
+    read: function (i) {
+      const f = Math.pow(10, series[0].pts[i][0]);
+      const vals = series.map(function (se) {
+        return se.name + " " + fmt(Math.pow(10, se.pts[i][1]), "\u03a9");
+      });
+      return [vals.join(", "), "at " + fmt(f, "Hz")];
+    }
+  });
+}
+
+/* ---- fusing current against fault duration ----
+
+   Onderdonk is adiabatic, so the current scales as 1/sqrt(t) and the plot is
+   a straight line on log-log. That is the point: halving the duration buys
+   only 41 % more current, which a single number never conveys. */
+
+function drawFusePlot(aCmil, ta, kOn, tNow) {
+  const N = 61, lo = -2, hi = 1.5;                 // 10 ms to about 30 s
+  const base = kOn * aCmil * Math.sqrt(Math.log10(1 + (1083 - ta) / (234 + ta)) / 33);
+  const pts = [];
+  for (let i = 0; i < N; i++) {
+    const lx = lo + (hi - lo) * i / (N - 1);
+    pts.push([lx, Math.log10(base / Math.sqrt(Math.pow(10, lx)))]);
+  }
+  const ys = pts.map(function (q) { return q[1]; });
+  const yLo = Math.floor(Math.min.apply(null, ys)), yHi = Math.ceil(Math.max.apply(null, ys));
+  const yTicks = [];
+  for (let d = yLo; d <= yHi; d++) yTicks.push({ at: d, label: fmt(Math.pow(10, d), "A") });
+  const marks = [{ at: Math.log10(5), label: "adiabatic model ends" }];
+  if (tNow >= Math.pow(10, lo) && tNow <= Math.pow(10, hi)) {
+    marks.unshift({ at: Math.log10(tNow), label: "your fault" });
+  }
+  miniPlot("fu-graph", {
+    series: [{ pts: pts, name: "fusing" }],
+    yMin: yLo, yMax: yHi,
+    xTicks: decadeTicks(0.01, 30, "s"),
+    yTicks: yTicks,
+    yUnit: "I",
+    marks: marks,
+    label: "Fusing current falling as the square root of fault duration, on log axes",
+    read: function (i) {
+      return [fmt(Math.pow(10, pts[i][1]), "A"), "for a " + fmt(Math.pow(10, pts[i][0]), "s") + " fault"];
+    }
+  });
+}
+
+/* ---- divider error across temperature ----
+
+   Tolerance sets the width of the band at T nominal; TCR opens it out either
+   side. Seeing the wedge is what makes the case for matched parts over tight
+   parts. No crosshair here: the band is two series wide and the extremes,
+   which are the numbers anyone acts on, are already in the results list. */
+
+function drawErrorBand(k, tol1, tol2, tcr1, tcr2, age, tmin, tmax, tnom) {
+  const N = 41;
+  const hi = [], lo = [], rssHi = [], rssLo = [];
+  for (let i = 0; i < N; i++) {
+    const T = tmin + (tmax - tmin) * i / (N - 1);
+    const dT = Math.abs(T - tnom);
+    const d1 = tol1 + Math.abs(tcr1) * 1e-6 * dT + age;
+    const d2 = tol2 + Math.abs(tcr2) * 1e-6 * dT + age;
+    const wc = (1 - k) * (d1 + d2) * 100;
+    const s1 = Math.sqrt(tol1 * tol1 + Math.pow(Math.abs(tcr1) * 1e-6 * dT, 2) + age * age);
+    const s2 = Math.sqrt(tol2 * tol2 + Math.pow(Math.abs(tcr2) * 1e-6 * dT, 2) + age * age);
+    const rs = (1 - k) * Math.sqrt(s1 * s1 + s2 * s2) * 100;
+    hi.push([T, wc]); lo.push([T, -wc]);
+    rssHi.push([T, rs]); rssLo.push([T, -rs]);
+  }
+  const peak = Math.max(hi[0][1], hi[N - 1][1]);
+  const step = peak / 2;
+  miniPlot("ac-graph", {
+    series: [{ pts: hi, name: "worst case" }, { pts: rssHi, name: "RSS", alt: true }],
+    band: [hi, lo],
+    yMin: -peak * 1.1, yMax: peak * 1.1,
+    xTicks: [{ at: tmin, label: tmin.toFixed(0) + " \u00b0C" },
+             { at: tnom, label: tnom.toFixed(0) + " \u00b0C" },
+             { at: tmax, label: tmax.toFixed(0) + " \u00b0C" }],
+    yTicks: [{ at: -step, label: "\u2212" + step.toPrecision(2) }, { at: 0, label: "0" },
+             { at: step, label: "+" + step.toPrecision(2) }],
+    yUnit: "%",
+    label: "Ratio error band across temperature, narrowest at T nominal where only tolerance applies and widening either side as TCR adds to it",
+    /* the mirrored halves are drawn as the band, so only the upper edges are
+       series; say so rather than leaving the reader to infer symmetry */
+    note: "The band is symmetric: the ratio can land the same distance either side of nominal.",
+    read: function () { return []; }
+  });
+}
+
 /* ---------- reactance ---------- */
 
 function calcReact() {
+  miniClear("re-graph");
   const f = val("re-f"), C0 = val("re-c"), L0 = val("re-l");
   const esl = val("re-esl"), esr = val("re-esr");
   const epc = val("re-epc"), dcr = val("re-dcr");
@@ -2202,6 +2732,12 @@ function calcReact() {
   if (isFinite(C) && isFinite(L0) && L0 > 0) {
     rows.push(["LC resonance", fmt(1 / (TAU * Math.sqrt(L0 * C)), "Hz")]);
   }
+
+  drawReactPlot(
+    isFinite(C) && isFinite(Lp) && Lp > 0
+      ? { c: C, esl: Lp, esr: isFinite(Rp) && Rp > 0 ? Rp : 1e-3, srf: 1 / (TAU * Math.sqrt(Lp * C)) } : null,
+    isFinite(L0) && L0 > 0 && isFinite(epc) && epc > 0
+      ? { l: L0, cp: epc, dcr: isFinite(dcr) && dcr > 0 ? dcr : 1e-3, srf: 1 / (TAU * Math.sqrt(L0 * epc)) } : null);
 
   /* real capacitor: C, ESL and ESR in series */
   if (isFinite(C) && isFinite(Lp)) {
@@ -2278,6 +2814,7 @@ function calcLED() {
    both legs are evaluated at their opposing extremes. */
 
 function calcAccuracy() {
+  miniClear("ac-graph");
   const r1 = val("ac-r1"), r2 = val("ac-r2"), vin = val("ac-vin");
   if (!isFinite(r1) || !isFinite(r2) || !(r1 > 0) || !(r2 > 0)) { render("ac-out", []); return; }
   const num = function (id, dflt) { const v = val(id); return isFinite(v) ? v : dflt; };
@@ -2300,6 +2837,8 @@ function calcAccuracy() {
   const s1 = Math.sqrt(tol1 * tol1 + drift1 * drift1 + age * age);
   const s2 = Math.sqrt(tol2 * tol2 + drift2 * drift2 + age * age);
   const rss = (1 - k) * Math.sqrt(s1 * s1 + s2 * s2);
+
+  drawErrorBand(k, tol1, tol2, tcr1, tcr2, age, tmin, tmax, tnom);
 
   const pc = function (x) { return (x * 100).toPrecision(3) + " %"; };
   const pm = function (x) { return (x * 1e6).toFixed(0) + " ppm"; };
@@ -2403,6 +2942,7 @@ function traceR(wMM, tMM, lenMM, tempC) {
 
 function calcTrace() {
   clearComputed(["tw-i","tw-w"]);
+  drawTrace(document.getElementById("tw-layer").value);
   const i = val("tw-i"), w = valDim("tw-w"), lenMM = valDim("tw-len"), f = val("tw-f");
   const dT = gTempRise();
   const ta = gAmbient();
@@ -2477,6 +3017,7 @@ function calcTrace() {
 }
 
 function calcVia() {
+  drawVia(valDim("via-stub") > 0);
   const d = valDim("via-d");
   const tp = valDimUm("via-tp", 0.025);
   const h = numOr("via-h", 1.6, 1e-6);
@@ -2540,6 +3081,7 @@ function calcVia() {
 
 /* Onderdonk: 33*(I/A_cmil)^2 * t = log10(1 + (Tm-Ta)/(234+Ta)), Tm = 1083 C */
 function calcFuse() {
+  miniClear("fu-graph");
   const w = valDim("fu-w"), t = val("fu-t");
   if (!isFinite(w) || !isFinite(t)) { render("fu-out", []); return; }
   if (!(w > 0) || !(t > 0)) { render("fu-out", [["", "Width and duration must be positive.", "err"]]); return; }
@@ -2550,6 +3092,7 @@ function calcFuse() {
   const kOn = numOr("fu-k", 1, 0.01);
   if (!isFinite(kOn)) { render("fu-out", []); return; }
   const iFuse = kOn * aCmil * Math.sqrt(Math.log10(1 + (1083 - ta) / (234 + ta)) / (33 * t));
+  drawFusePlot(aCmil, ta, kOn, t);
   render("fu-out", [
     ["Cross-section", aMil2.toFixed(1) + " mil&sup2; (" + (aMil2 * MIL * MIL).toPrecision(3) + " mm&sup2;)"],
     ["Fusing current for " + fmt(t, "s"), fmt(iFuse, "A")],
@@ -2607,6 +3150,7 @@ function hjEeffCovered(u, er, ercov) {
 
 function calcZ() {
   const struct = document.getElementById("z-struct").value;
+  drawZ(struct);
   const w = valDim("z-w"), h = valDim("z-h"), c = valDim("z-c"), gap = valDim("z-s");
   const er = numOr("z-er", 4.3, 1);
   const ercov = numOr("z-ermask", 3.8, 1);
@@ -3000,6 +3544,7 @@ function calcPDN() {
 /* ---------- attenuator pads ---------- */
 
 function calcPad() {
+  drawPad(val("pad-z2") > 0);
   const a = val("pad-a");
   const z0 = numOr("pad-z0", 50, 1e-9);
   const z2 = val("pad-z2");
@@ -3117,6 +3662,7 @@ function calcEreff() {
 /* ---------- differential pair ---------- */
 
 function calcDiff() {
+  drawDiff(document.getElementById("dp-struct").value);
   const w = valDim("dp-w"), sp = valDim("dp-s"), h = valDim("dp-h");
   const er = numOr("dp-er", 4.3, 1);
   const t = gCopperMM();
@@ -3331,7 +3877,24 @@ for (const nbf of NB_FIELDS) {
   });
 }
 
-/* The plot's hover layer. Listeners live on the container, which persists,
+/* The explanatory plots share one hover layer. Listeners sit on the
+   container, which persists, so a redraw never has to re-attach them. */
+["re-graph", "fu-graph"].forEach(function (hostId) {
+  const host = document.getElementById(hostId);
+  if (!host) return;
+  host.addEventListener("pointermove", function (e) { miniCursor(hostId, e.clientX); });
+  host.addEventListener("keydown", function (e) {
+    const st = MINI[hostId];
+    if (!st || st.index === undefined) return;
+    const step = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
+    if (!step) return;
+    e.preventDefault();
+    miniCursorAt(hostId, Math.max(0, Math.min(st.spec.series[0].pts.length - 1, st.index + step)));
+  });
+  host.addEventListener("focus", function () { if (MINI[hostId] && MINI[hostId].index === undefined) miniCursorAt(hostId, 0); });
+});
+
+/* The filter plot's hover layer. Listeners live on the container, which persists,
    so redrawing the chart never has to re-attach them. Keyboard focus gets the
    same readout as the pointer. */
 (function () {

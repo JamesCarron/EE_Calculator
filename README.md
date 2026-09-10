@@ -22,7 +22,11 @@ Copper weight, temperature rise, ambient and the E-series sit **on the cards tha
 
 **Utilities** — AWG wire with run length, load current and voltage drop · battery energy, C-rate and runtime · frequency error in ppm · number bases · ratio units · mm/mil, °C/°F, dB, rectangular/polar and degrees/radians.
 
-Most cards carry a diagram labelling the very parameters their fields ask for, and the filter card's diagram redraws as you change topology.
+Every card that has a geometry or a topology carries a diagram labelling the very parameters its fields ask for, and where a selector changes that geometry the drawing changes with it — the five impedance structures, both differential-pair structures, external against internal traces, the three filter topologies, resistors against capacitors against inductors, and a via with or without a stub. Cross-sections share one convention: filled is copper, an outline is dielectric, a heavy line is a reference plane and a dashed line is optional. Copper is drawn rectangular because that is what the formulas assume; real etched copper is a trapezoid, and the cards say so.
+
+Cards whose point is a relationship rather than a shape get a curve instead: the filter's magnitude response, the V-shaped impedance of a real capacitor or inductor around its self-resonance, fusing current falling as the square root of fault duration, and a divider's error band opening out either side of T nominal. All but the error band carry a crosshair readout on hover and on arrow keys; every value they show is also in the results list, so the plot never gates anything.
+
+Where the model is the interesting part — impedance, effective permittivity, fusing, wavelength, reactance, junction temperature, via shielding, spacing — the governing equation sits on a plate beside the drawing rather than only in a footnote, and the Ohm's law card carries the twelve-way wheel.
 
 ## Models and their limits
 
