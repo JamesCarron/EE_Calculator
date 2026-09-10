@@ -68,12 +68,13 @@ Effort: **S** = under an hour, extends an existing card · **M** = a few hours, 
 - [ ] **G4** — Dual-method max conductor length. We keep our knee frequency and critical length.
 - [ ] **H1** — Send-to actions between tabs.
 - [ ] **H2** — Print / export a report. Per-card Copy already exists.
-- [ ] **X1** — Differential pair impedance. Empirical formulas materially less accurate than single-ended.
 - [ ] **X2** — Crosstalk / NEXT. Saturn ships its own version disowned.
 - [ ] **X3** — Embedded resistors. Niche.
 - [ ] **X4** — Planar inductors. Niche.
 - [ ] **X5** — BGA land sizes and padstack pad diameters. Altium generates these.
 - [ ] **X6** — IPC-2152 with modifiers as the ampacity basis. Paywalled chart data; IPC-2221's published equation stays.
+
+Differential pairs were excluded here originally; that decision was reversed after review — see R1.
 
 Two tabs contribute nothing because ours already match or beat them: **Min Conductor Spacing** (we show all seven environments at once rather than one at a time) and **XL-XC Reactance** (SI-suffix parsing removes the need for unit radio buttons).
 
@@ -81,17 +82,17 @@ Two tabs contribute nothing because ours already match or beat them: **Min Condu
 
 ## Resulting structure
 
-Eight tabs become seven while the tool gains roughly fifteen calculators. Full reasoning in `Implementation_Plan.md`.
+Eight tabs become seven while the tool gains roughly twenty calculators. Via stub resonance joins the existing Via card rather than splitting via facts across two tabs. Full reasoning in `Implementation_Plan.md`.
 
 | Tab | Cards |
 |---|---|
 | **Fundamentals** | Ohm's Law & Power · Series / Parallel (R, C, L) |
 | **Resistors** *(E-series selector)* | Divider · LED Resistor · Attenuator Pads · Accuracy |
-| **Filters & Resonance** | RC Filter · Reactance · Crystal Load Capacitance · Frequency Error |
+| **Filters & Resonance** | RC Filter · LC / RL Filter & Q · Reactance · Crystal Load Capacitance · Frequency Error |
 | **PCB Copper** | Trace Current · Via · Fusing Current · Conductor Spacing |
-| **PCB Signal** | Impedance · Er Effective · Wavelength & Critical Length |
-| **Power & Thermal** | Junction Temperature · Plane Capacitance · PDN Target Impedance |
-| **Utilities** | AWG Wire · Number Bases · Ratio Units · Conversions |
+| **PCB Signal** | Impedance · Differential Pairs · Er Effective · Wavelength & Critical Length |
+| **Power & Thermal** | Junction Temperature · Capacitor SRF (ESL/ESR) · Plane Capacitance · PDN Target Impedance |
+| **Utilities** | AWG Wire · Battery Energy · Number Bases · Ratio Units · Conversions |
 
 ## Build order
 
@@ -100,5 +101,5 @@ Eight tabs become seven while the tool gains roughly fifteen calculators. Full r
 3. Extensions: C and L series/parallel, wire drop, via extras, crystal min/max, Onderdonk multiplier, wavelength slider, conversions.
 4. Impedance structures: covered microstrip, coplanar, asymmetric stripline, per-unit-length L and C.
 5. Conductor properties: required vs achievable, skin depth, current density.
-6. Research then build or abandon: plane and parallel-conductor modifiers.
+6. Post-review additions: differential pairs, capacitor SRF, LC/RL with Q, via stub resonance, battery energy.
 7. Cross-cutting: validity windows, then the shared settings strip.
