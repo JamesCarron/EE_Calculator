@@ -24,6 +24,12 @@ The tool carries no organisation branding: the header, docstrings, README, `pixi
 
 Nothing is outstanding and nothing is blocked. Every decision that came up during the build was put to the owner and answered; those answers are in **Key decisions** below, with the reasoning, so a later reader inherits them rather than reopening them.
 
+## Planned additions
+
+A feature comparison against the Saturn PCB Toolkit is in `Saturn_Feature_Comparison.md`, and the resulting specification is in `Implementation_Plan.md`. The owner selected junction temperature, wire voltage drop, capacitor/inductor series-parallel, and the via extras (impedance, resonant frequency, aspect ratio); a second group is specified to the same depth and awaits a go-ahead. Nothing has been implemented yet.
+
+Two pieces of prepared work sit in `C:\Auterion\Tools\claude\scratch\`: `eecalc_formula_check.py` computes and reference-checks every formula in the plan, and `eecalc_planned_tests.js` holds the test vectors, written before the features exist so they can be run at any stage — unbuilt items skip, and a failure always means something is built wrongly.
+
 ## Key decisions
 
 - **Logic lives in JS, not Python.** The house rule prefers Python logic, but this page is interactive at runtime with no server, so JS is the engine and `build_page.py` is only the build harness. There is no duplicate Python implementation, so no parity test is owed.

@@ -1,6 +1,8 @@
 # Saturn PCB Toolkit — full feature inventory and what to borrow
 
-Source: the help PDF shipped with **Saturn PCB Toolkit V8.47**, installed at `C:\Program Files (x86)\Saturn PCB Design\Saturn PCB Toolkit V8.47\Saturn PCB Toolkit Help.pdf` (47 pages, help text dated 6-8-2026). Feature names and computed quantities below are read from that document, not from the marketing page, so this list is complete rather than indicative. Compiled 2026-09-10 to decide what EE Calculator should adopt.
+Sources, in order of authority: the tab captions and UI label strings recovered from the installed executable, a screenshot of V8.47 running, and the 47-page help PDF shipped with the install (`C:\Program Files (x86)\Saturn PCB Design\Saturn PCB Toolkit V8.47\`). The help PDF alone is not sufficient — it documents version 8.46 and omits several things the shipping UI has. Compiled 2026-09-10 to decide what EE Calculator should adopt; the follow-on specification is in `Implementation_Plan.md`.
+
+Two ways of interrogating the running program do **not** work and are recorded so nobody retries them: the application exposes nothing through UI Automation, and `EnumChildWindows` finds zero child windows. It is one custom-painted VCL window, so no control-level introspection is possible. Mining the executable's label strings is the method that works.
 
 ## Complete Saturn feature inventory
 
@@ -27,6 +29,18 @@ Source: the help PDF shipped with **Saturn PCB Toolkit V8.47**, installed at `C:
 | 19 | XC-XL Reactance | Frequency, capacitance, inductance | Xc, Xl, LC resonant frequency |
 | 20 | Program Options / General Settings | — | IPC version choice (2152 with or without modifiers, or 2221), manual base copper weight and plating thickness, conductor etch factor (none / 1:1 / 2:1) for trapezoidal cross-section, via-height influence toggle, aspect-ratio limit, imperial/metric with optional microns, substrate material presets carrying Er and Tg, global temp rise and ambient, print |
 | 21 | Crosstalk Calculator | — | Readded but marked unsupported; the documentation cites a "lack of faith in the formula" that drives it |
+
+## Detail the first pass missed
+
+A marketing-page reading of this tool badly understates it. Each tab is a page of several grouped calculators, and there is a persistent global panel besides. The material corrections:
+
+- **Conductor Impedance covers six structures**, not two: microstrip, embedded microstrip, symmetric stripline, asymmetric stripline, dual stripline and coplanar. Labels for all six are present in the binary.
+- **A persistent Options panel applies across every tab**: base copper weight in nine steps from 0.25 oz to 5 oz, plating thickness as a separate control, plane thickness, imperial/metric units, a substrate library carrying both Er and Tg per laminate, and global temperature rise and ambient with live °F readouts. An Information pane reports derived values such as total copper thickness.
+- **Outputs not previously listed**: skin depth and skin depth as a percentage of thickness, current density, loaded conductor temperature, melting temperature, insertion loss on the differential tab, and power dissipation expressed in dBm as well as watts.
+- **The series/parallel calculators report per-element current and power**, not just the combined value, and cover resistors, capacitors and inductors with two to four elements each.
+- **The LED calculator solves in both directions** — resistor from current, or current from a chosen resistor.
+- **Cross-tab actions exist**: "Send to Via Calculator" and "Send to Wavelength Calculator" hand values between tabs rather than making the user retype them.
+- **The substrate library holds roughly 25 named laminates** — the FR-4 grades, FR406/FR408, the Rogers RO2800/3003/3006/3010/4003/4350/4350B family, Megtron 6, the N4000 series, Arlon 25N/33N/85N, Isola P26N/P95/P96, Getek and PTFE — each with its own Er and Tg.
 
 ## What EE Calculator already covers
 
@@ -62,6 +76,6 @@ Several things EE Calculator has are **absent from Saturn**: a divider solver of
 - **Drill charts, screw threads, BGA land sizes.** Reference tables better served by Altium and vendor data.
 - **IPC-2152 with modifiers.** Chart data from a paywalled standard; the freely published IPC-2221 equation stays the honest choice, named on the page.
 
-## Open items
+## Status
 
-None. The tier list above was put to the owner for selection; whatever is chosen becomes the next build task and this file records why the rest was declined.
+The tier list above was put to the owner. Junction temperature, wire voltage drop, C/L series-parallel and the via extras were selected and are specified in `Implementation_Plan.md`; the remainder is specified there too, awaiting a go-ahead. Nothing in this document is outstanding.
