@@ -446,7 +446,7 @@ HTML = r"""<!doctype html>
   <div class="card">
     <h3>Conductor spacing (IPC-2221 Table 6-1)</h3>
     <div class="fields">
-      <div class="field"><label for="sp-v">Peak voltage between conductors (V)</label><input id="sp-v" inputmode="decimal" placeholder="e.g. 48"></div>
+      <div class="field"><label for="spc-v">Peak voltage between conductors (V)</label><input id="spc-v" inputmode="decimal" placeholder="e.g. 48"></div>
     </div>
     <dl class="results" id="spc-out"></dl>
     <p class="note">Minimum spacing per environment. B1 internal layers; B2 external uncoated &le;3050 m; B3 external uncoated &gt;3050 m; B4 external with permanent polymer coating; A5 external conformal coated; A6 external component leads uncoated; A7 component leads conformal coated.</p>
@@ -684,6 +684,36 @@ function fmtField(v) {
   let str = (v / f).toPrecision(5);
   if (str.indexOf("e") === -1 && str.indexOf(".") !== -1) str = str.replace(/\.?0+$/, "");
   return neg + str + pre;
+}
+
+/* Read a number that has a sensible default, WITHOUT silently swallowing a
+   wrong entry. An empty box takes the default; a box holding something
+   unparseable or outside `lo`..`hi` is marked bad and returns NaN, so the
+   caller stops rather than quietly substituting the default. Entering an
+   epsilon of 1 for air used to hand back FR-4 with no warning. */
+function numOr(id, dflt, lo, hi) {
+  const el = document.getElementById(id);
+  if (!el) return dflt;
+  const raw = el.value.trim();
+  if (raw === "") { el.classList.remove("bad"); return dflt; }
+  const v = parseVal(raw);
+  const ok = isFinite(v) && (lo === undefined || v >= lo) && (hi === undefined || v <= hi);
+  el.classList.toggle("bad", !ok);
+  return ok ? v : NaN;
+}
+
+/* Same idea for a dimension box whose bare numbers mean micrometres.
+   `via-tp` is labelled (um) but was read with the SI-suffix parser, so "35u"
+   became 3.5e-5 mm of plating and the card reported nonsense confidently. */
+function valDimUm(id, dflt) {
+  const el = document.getElementById(id);
+  if (!el) return dflt;
+  const raw = el.value.trim();
+  if (raw === "") { el.classList.remove("bad"); return dflt; }
+  const v = parseDimMM(/[a-z"]/i.test(raw) ? raw : raw + "um");
+  const ok = isFinite(v) && v > 0;
+  el.classList.toggle("bad", !ok);
+  return ok ? v : NaN;
 }
 
 function setComputed(id, v) {
@@ -1130,9 +1160,9 @@ function traceR(wMM, tMM, lenMM, tempC) {
 function calcTrace() {
   clearComputed(["tw-i","tw-w"]);
   const i = val("tw-i"), w = valDim("tw-w"), lenMM = valDim("tw-len");
-  const dtRaw = val("tw-dt"), taRaw = val("tw-ta");
-  const dT = isFinite(dtRaw) && dtRaw > 0 ? dtRaw : 10;
-  const ta = isFinite(taRaw) ? taRaw : 25;
+  const dT = numOr("tw-dt", 10, 0.01);
+  const ta = numOr("tw-ta", 25, -273.15);
+  if (!isFinite(dT) || !isFinite(ta)) { render("tw-out", []); return; }
   const tMM = parseFloat(document.getElementById("tw-oz").value) / 1000;
   const k = document.getElementById("tw-layer").value === "ext" ? 0.048 : 0.024;
   if (!isFinite(i) && !isFinite(w)) { render("tw-out", []); return; }
@@ -1164,12 +1194,12 @@ function calcTrace() {
 
 function calcVia() {
   const d = valDim("via-d");
-  const tpRaw = val("via-tp"), hRaw = valDim("via-h"), dtRaw = val("via-dt"), erRaw = val("via-er");
+  const tp = valDimUm("via-tp", 0.025);
+  const h = numOr("via-h", 1.6, 1e-6);
+  const dT = numOr("via-dt", 10, 0.01);
+  const er = numOr("via-er", 4.3, 1);
   if (!isFinite(d) || !(d > 0)) { render("via-out", []); return; }
-  const tp = (isFinite(tpRaw) && tpRaw > 0 ? tpRaw : 25) / 1000;   // um -> mm
-  const h = isFinite(hRaw) && hRaw > 0 ? hRaw : 1.6;
-  const dT = isFinite(dtRaw) && dtRaw > 0 ? dtRaw : 10;
-  const er = isFinite(erRaw) && erRaw > 0 ? erRaw : 4.3;
+  if (![tp, h, dT, er].every(isFinite)) { render("via-out", []); return; }
   const aMM2 = Math.PI * tp * (d + tp);                            // barrel cross-section
   const aMil2 = aMM2 / (MIL * MIL);
   const iCap = ipcCurrent(aMil2, dT, 0.024);
@@ -1225,7 +1255,7 @@ const SPACING = {
 const SPACING_BANDS = [15, 30, 50, 100, 150, 170, 250, 300, 500];
 
 function calcSpacing() {
-  const v = val("sp-v");
+  const v = val("spc-v");
   if (!isFinite(v) || !(v > 0)) { render("spc-out", []); return; }
   const rows = [];
   let band = SPACING_BANDS.findIndex(function (b) { return v <= b; });
@@ -1241,12 +1271,11 @@ function calcSpacing() {
 
 function calcZ() {
   const w = valDim("z-w"), h = valDim("z-h");
-  const erRaw = val("z-er");
-  const er = isFinite(erRaw) && erRaw > 1 ? erRaw : 4.3;
+  const er = numOr("z-er", 4.3, 1);   // 1 is air and is a legitimate entry
   const t = parseFloat(document.getElementById("z-oz").value) / 1000;
   const ms = document.getElementById("z-struct").value === "ms";
   document.getElementById("z-hlabel").innerHTML = ms ? "Dielectric height h (mm)" : "Plane-to-plane b (mm)";
-  if (!isFinite(w) || !isFinite(h) || !(w > 0) || !(h > 0)) { render("z-out", []); return; }
+  if (!isFinite(er) || !isFinite(w) || !isFinite(h) || !(w > 0) || !(h > 0)) { render("z-out", []); return; }
   const rows = [];
   let z0, eeff;
   if (ms) {
@@ -1266,8 +1295,9 @@ function calcZ() {
 }
 
 function calcWave() {
-  const f = val("wl-f"), tr = val("wl-tr"), eRaw = val("wl-eeff");
-  const eeff = isFinite(eRaw) && eRaw >= 1 ? eRaw : 3.3;
+  const f = val("wl-f"), tr = val("wl-tr");
+  const eeff = numOr("wl-eeff", 3.3, 1);
+  if (!isFinite(eeff)) { render("wl-out", []); return; }
   const vp = 299792458 / Math.sqrt(eeff);
   const rows = [];
   if (isFinite(f) && f > 0) {
@@ -1298,10 +1328,28 @@ function calcXtal() {
       rows.push(["vs. spec " + fmt(cl, "F"), err.toFixed(1) + " %" + (Math.abs(err) > 10 ? " — retune C1/C2" : ""), Math.abs(err) > 10 ? "warn" : ""]);
     }
   } else if (isFinite(cl) && cl > 0) {
-    const c = 2 * (cl - cs);
-    if (c <= 0) { render("xc-out", [["", "Stray capacitance already exceeds the C<sub>L</sub> spec.", "err"]]); return; }
-    if (!isFinite(c1)) setComputed("xc-c1", c);
-    if (!isFinite(c2)) setComputed("xc-c2", c);
+    /* The series pair must present CL - Cs. With neither leg chosen, the
+       symmetric answer C1 = C2 = 2(CL - Cs) is the usual starting point; with
+       one leg already chosen the other is NOT the same value, and writing it
+       as though it were is how this card used to report 18 pF where 15.23 pF
+       was needed. */
+    const need = cl - cs;
+    if (need <= 0) { render("xc-out", [["", "Stray capacitance already exceeds the C<sub>L</sub> spec.", "err"]]); return; }
+    const known = isFinite(c1) && c1 > 0 ? c1 : (isFinite(c2) && c2 > 0 ? c2 : NaN);
+    let c;
+    if (isFinite(known)) {
+      if (known <= need) {
+        render("xc-out", [["", "That leg is too small: on its own it already presents " + fmt(known, "F") + " or less in series, so no partner can reach the C<sub>L</sub> spec. Use a larger value.", "err"]]);
+        return;
+      }
+      c = need * known / (known - need);
+      setComputed(isFinite(c1) && c1 > 0 ? "xc-c2" : "xc-c1", c);
+      rows.push(["Partner for " + fmt(known, "F"), fmt(c, "F")]);
+    } else {
+      c = 2 * need;
+      setComputed("xc-c1", c);
+      setComputed("xc-c2", c);
+    }
     rows.push(["Nearest E12 value", fmt(snap(seriesValues("E12", -12, -10), c), "F")]);
   }
   if (isFinite(cs) && rows.length === 0 && !isFinite(cl) && !isFinite(c1)) { render("xc-out", []); return; }
@@ -1380,7 +1428,7 @@ const CALCS = {
   tw:  { calc: calcTrace, inputs: ["tw-i","tw-w","tw-dt","tw-oz","tw-layer","tw-len","tw-ta"] },
   via: { calc: calcVia, inputs: ["via-d","via-tp","via-h","via-dt","via-pad","via-anti","via-er"] },
   fu:  { calc: calcFuse, inputs: ["fu-w","fu-oz","fu-t","fu-ta"] },
-  spc: { calc: calcSpacing, inputs: ["sp-v"] },
+  spc: { calc: calcSpacing, inputs: ["spc-v"] },
   z:   { calc: calcZ, inputs: ["z-struct","z-w","z-h","z-oz","z-er"] },
   wl:  { calc: calcWave, inputs: ["wl-f","wl-tr","wl-eeff"] },
   xc:  { calc: calcXtal, inputs: ["xc-cl","xc-c1","xc-c2","xc-cs"] },

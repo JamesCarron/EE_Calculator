@@ -45,6 +45,43 @@ Excluding the substrate library has a consequence worth stating: Er stays a manu
 
 **One prerequisite.** The plane and parallel-conductor ampacity modifiers are IPC-2152 chart data. The decision was to use published open-literature fits and name the source on the card as an approximation. That is a research step before it is a coding step, and it may come back inconclusive — if no citable fit is found, the honest outcome is to report that and leave those two modifiers out rather than invent a curve.
 
+## Review outcomes, 2026-09-10
+
+An independent review of this plan and of the shipped engine found real problems. The findings below were re-verified numerically before being accepted; what was accepted is folded into the specifications, and the review's own uncertain attribution is marked as such.
+
+### Corrections to this plan
+
+**The "IPC-2141 embedded microstrip defect" reported earlier was most likely my own transcription error.** I used `87/√(ε′r + 1.41)`; the reviewer's position is that IPC uses `60/√ε′r`, because the 87-form's `+1.41` already encodes the air half-space and putting ε′r inside it counts air twice. With the 60 coefficient the sign is right (47.92 Ω at b = h against a 53.52 Ω surface value) though a step at the boundary remains. The reviewer could not open IPC-2141A itself, so this rests on third-party reproductions plus the physical argument that a fully buried trace must approach the homogeneous-dielectric value — persuasive, but the attribution is not first-hand.
+
+**The ratio construction is withdrawn regardless.** Verified: the `ln` term cancels, so `Z_cov = Z_surface · √((ε′(h)+1.41)/(ε′(b)+1.41))` and the *fractional* correction is identical at every width — 1.634 % at w = 0.1, 0.3 and 0.6 mm alike. Covering alters fringing fields, which depend strongly on w/h, so a width-independent correction is wrong in principle, and the construction has no input for the mask's own εr, which is the dominant variable. **Replacement:** a published covered-microstrip model (Bahl & Stuchly 1980, reproduced in Wadell §3.5) with a new `z-ermask` field, cited to its source rather than presented as ours.
+
+**Asymmetric stripline has the same class of defect and I failed to check for it.** The claim that 59.85 Ω sits "correctly below" the 65.87 Ω centred case was luck. Verified across the offset range: h = 0.35 gives 69.31 Ω and the centred limit gives 77.24 Ω, both *above* the symmetric value, when moving off-centre must lower Zo. **Fix:** normalise to the symmetric result at h = c — legitimate here, unlike the microstrip case, because the two formulas share the same `ln` term — and add `asym(h = c) == sym(b)` as a boundary test.
+
+**Via impedance and resonance are being mislabelled.** √(L/C) is not a characteristic impedance for a structure that is electrically short past 10 GHz, and `1/(2π√(LC))` of a lumped series-L/shunt-C pair is not a resonance the via exhibits. The arithmetic stands; the labels change to "lumped Z, compare against trace Z0" and "lumped-model validity limit". The resonance that actually damages a channel is the **via stub quarter-wave null**, now added to scope. Also to state on the card: N parallel vias do not give L/N, because of mutual coupling, even though θ and R do divide.
+
+**The validation policy was weaker than claimed.** Only three blocks — AWG, skin depth, attenuator pads — compare against independent published values; the rest check a formula against itself, so "ALL CHECKS PASSED" proved reproducibility rather than correctness for most items. Two planned tests were tautologies: "covered at b = h reproduces bare" is true by construction under any ratio scheme, and the Hilberg self-consistency check cannot fail because the branches are reciprocals by construction. **New policy: three checks per item — one interior value, one boundary or limit identity, and one sign or monotonicity check — and assert every result row, not just the headline one.**
+
+### Scope changes
+
+- **Plane and parallel-conductor ampacity modifiers (D4/D5): dropped.** They are multipliers on the IPC-2152 base curve, and we compute from IPC-2221, so applying them would be meaningless. This removes the open-literature research step, which could only have ended in a meaningless multiplier or an admission it could not be done honestly.
+- **Differential pair impedance: now included.** The original exclusion reason — empirical formulas — applies equally to coplanar waveguide, which is in, and edge-coupled pairs are the most-used impedance calculation in current work. To be built as IPC-2141 edge-coupled Zdiff with the ±10 % validity band printed on the card.
+- **Four additions**, none previously in scope: capacitor impedance against frequency with ESL and ESR (self-resonance), because PDN target impedance is half a tool without knowing what the decoupling does above SRF; LC and RL cutoff with Q, because a tab called Filters & Resonance holding only a first-order RC is thin; via stub resonance; and battery mAh ↔ Wh with runtime.
+
+### Bugs fixed in the shipped engine
+
+Four defects were producing confident wrong numbers before any of this plan was built. All four are fixed and covered by tests.
+
+| Bug | Effect | Fix |
+|---|---|---|
+| Crystal solved C2 as if C1 = C2 even when C1 was given | CL 12 pF with C1 22 pF wrote C2 = 18 pF, actually presenting 12.9 pF | Solve the true partner, C2 = (CL−Cs)·C1/(C1−(CL−Cs)), and refuse a leg too small to reach the spec |
+| `via-tp` labelled µm but parsed with SI suffixes | `35u` became a 3.5e-8 mm barrel wall and the card reported resistance in kΩ without flagging anything | New `valDimUm()` reader: bare numbers are µm, and `um`, `mm`, `mil` all parse |
+| Out-of-range values silently replaced by defaults | Entering εr = 1 for air returned FR-4 results with no warning | New `numOr()` reader: an empty box takes the default, a wrong one is flagged and stops the calculation |
+| `sp-v` used by conductor spacing, and planned for series/parallel | Would have produced two elements sharing one id | Spacing renamed to `spc-v` |
+
+### Still open from the review, not yet actioned
+
+The existing microstrip card mixes two models — Zo from IPC's 87-form, which implies ε_eff ≈ 2.72, while the displayed ε_eff is Hammerstad's 3.20. Planned per-unit-length L and C would inherit an ~8 % inconsistency between them. The reviewer recommends moving Zo to Hammerstad–Jensen and retiring the 87-form, which would change verified vectors. Also noted: Hammerstad–Jensen is static, so "with frequency dependence" needs Kirschning–Jansen or Kobayashi, and the model should be named on the card. **This is a decision, not a defect, and is the next thing to settle.**
+
 ## Grouping
 
 Adding these calculators breaks the current tab structure in one specific way: **Series/Parallel stops being resistor-only** once capacitors and inductors join it, so it cannot stay under Resistors. That forces a rethink, and the rethink is worth doing properly rather than bolting new tabs on the end — six new calculators arriving as six new tabs would leave thirteen top-level tabs and no shape.

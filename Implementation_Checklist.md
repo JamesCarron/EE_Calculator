@@ -33,13 +33,22 @@ Effort: **S** = under an hour, extends an existing card · **M** = a few hours, 
 - [x] **D1** — Skin depth and skin depth as a percentage of copper thickness. **S**
 - [x] **D2** — Current density. **S**
 - [x] **D3** — Required vs achievable current shown together, so an undersized trace is obvious. **S**
-- [x] **D4/D5** — Plane and parallel-conductor ampacity modifiers. **Conditional:** to be built from published open-literature fits with the source named on the card. If no citable fit is found, these are dropped rather than invented. **L**
+- [ ] **D4/D5** — Plane and parallel-conductor ampacity modifiers. **DROPPED after review:** they are multipliers on the IPC-2152 base curve, and we compute from IPC-2221, so they would be meaningless here.
 
 ### Impedance structures
 
-- [x] **E1** — Asymmetric (offset) stripline. Verified 59.85 Ω. **M**
+- [x] **E1** — Asymmetric (offset) stripline. **Revised after review:** must be normalised to the symmetric result at h = c, or it reports the wrong sign over much of the offset range. **M**
 - [x] **E2** — Grounded coplanar waveguide via Hilberg's approximation. Verified 55.95 Ω. **M**
-- [x] **E3** — Covered / soldermask microstrip, using the ratio construction that fixes IPC-2141's broken embedded formula. Verified 53.52 → 52.64 Ω for 25 µm of mask. **M**
+- [x] **E3** — Covered / soldermask microstrip. **Revised after review:** the ratio construction is withdrawn (its correction was width-independent, which is wrong in principle); use the published Bahl & Stuchly model with a mask-εr field instead. **M**
+
+### Added after review
+
+- [x] **R1** — Differential pair impedance, IPC-2141 edge-coupled, with the ±10 % validity band printed on the card. Exclusion reversed: the accuracy objection applied equally to coplanar, which is in. **M**
+- [x] **R2** — Capacitor impedance vs frequency with ESL and ESR, giving self-resonance. PDN target impedance is half a tool without it. **M**
+- [x] **R3** — LC and RL cutoff with Q. **M**
+- [x] **R4** — Via stub quarter-wave resonance, f = c/(4·l·√εr) — the via figure that actually matters at speed. **S**
+- [x] **R5** — Battery mAh ↔ Wh and runtime. **S**
+- [x] **R6** — Four live-bug fixes in the shipped engine. **DONE** — crystal partner capacitor, via plating units, silent out-of-range defaults, and the `sp-v` id collision. 17 tests pass including regressions.
 
 ### Cross-cutting
 
