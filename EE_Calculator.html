@@ -595,6 +595,39 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
     <button class="reset" data-reset="led">Reset</button>
   </div>
 </div>
+<div class="subpanel" id="sub-pad">
+  <h2>Attenuator Pads</h2>
+  <p class="hint">Resistive attenuators that keep the source and load matched. Values are exact; the E-series suggestion shows the attenuation you would actually get from stock parts.</p>
+  <div class="card">
+    <h3>PI, T and L pads</h3>
+    <div class="cardrow">
+    <div class="fields">
+      <div class="field"><label for="pad-a">Attenuation (dB)</label><input id="pad-a" inputmode="decimal" placeholder="e.g. 6"></div>
+      <div class="field"><label for="pad-z0">System impedance Z<sub>0</sub> (&Omega;)</label><input id="pad-z0" inputmode="decimal" placeholder="50"></div>
+      <div class="field"><label for="pad-z2">Second impedance (&Omega;, for an L pad)</label><input id="pad-z2" inputmode="decimal" placeholder="e.g. 75"></div>
+    </div>
+    <svg class="schem" width="220" height="150" viewBox="0 0 220 150" role="img" aria-label="PI pad and T pad topologies">
+      <path class="wire" d="M12 26 H40 M40 26 H70 M70 26 H98"/>
+      <rect class="wire" x="40" y="18" width="30" height="16"/>
+      <circle class="dot" cx="40" cy="26" r="2.5"/><circle class="dot" cx="70" cy="26" r="2.5"/>
+      <rect class="wire" x="32" y="44" width="16" height="24"/>
+      <rect class="wire" x="62" y="44" width="16" height="24"/>
+      <path class="wire" d="M40 34 V44 M70 34 V44 M40 68 V78 M70 68 V78 M20 78 H90 M30 84 H80"/>
+      <text x="122" y="30">PI pad</text>
+      <path class="wire" d="M12 112 H34 M64 112 H98"/>
+      <rect class="wire" x="34" y="104" width="24" height="16"/>
+      <rect class="wire" x="64" y="104" width="24" height="16" transform="translate(-6,0)"/>
+      <circle class="dot" cx="61" cy="112" r="2.5"/>
+      <rect class="wire" x="53" y="124" width="16" height="20"/>
+      <path class="wire" d="M61 112 V124"/>
+      <text x="122" y="116">T pad</text>
+    </svg>
+    </div>
+    <dl class="results" id="pad-out"></dl>
+    <p class="note">Valid for any attenuation above 0 dB. An L pad matches two <em>different</em> impedances and has a minimum loss set by their ratio &mdash; enter a second impedance to size one.</p>
+    <button class="reset" data-reset="pad">Reset</button>
+  </div>
+</div>
 <div class="subpanel" id="sub-acc">
   <h2>Divider Accuracy</h2>
   <p class="hint">What tolerance, temperature coefficient and ageing do to a divider&rsquo;s ratio. A divider only cares about how the two legs move <em>relative to each other</em>, so matched parts beat tight parts.</p>
@@ -670,6 +703,20 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
     </div>
     <dl class="results" id="rc-out"></dl>
     <button class="reset" data-reset="rc">Reset</button>
+  </div>
+  <div class="card">
+    <h3>LC / RL cutoff and Q</h3>
+    <div class="fields">
+      <div class="field"><label for="lc-l">Inductance (H)</label><input id="lc-l" inputmode="decimal" placeholder="e.g. 10u"></div>
+      <div class="field"><label for="lc-c">Capacitance (F)</label><input id="lc-c" inputmode="decimal" placeholder="e.g. 100n"></div>
+      <div class="field"><label for="lc-r">Resistance (&Omega;)</label><input id="lc-r" inputmode="decimal" placeholder="e.g. 1"></div>
+      <div class="field"><label for="lc-topo">Topology</label>
+        <select id="lc-topo"><option value="series" selected>Series RLC</option><option value="parallel">Parallel RLC</option></select>
+      </div>
+    </div>
+    <dl class="results" id="lc-out"></dl>
+    <p class="note">L and C give the resonant frequency; adding R gives Q, bandwidth and damping. Series RLC has Q = (1/R)&radic;(L/C) and is a notch to ground; parallel RLC has Q = R&radic;(C/L) and is a tank. With R and L alone the card gives the first-order RL corner instead, f = R/2&pi;L.</p>
+    <button class="reset" data-reset="lc">Reset</button>
   </div>
   <div class="card">
     <h3>Reactance</h3>
@@ -846,6 +893,62 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
     <button class="reset" data-reset="z">Reset</button>
   </div>
   <div class="card">
+    <h3>Differential pair</h3>
+    <div class="cardrow">
+    <div class="fields">
+      <div class="field"><label for="dp-struct">Structure</label>
+        <select id="dp-struct"><option value="ms" selected>Edge-coupled microstrip</option><option value="sl">Edge-coupled stripline</option></select>
+      </div>
+      <div class="field"><label for="dp-w">Trace width (mm)</label><input id="dp-w" inputmode="decimal" placeholder="e.g. 0.2"></div>
+      <div class="field"><label for="dp-s">Edge-to-edge spacing (mm)</label><input id="dp-s" inputmode="decimal" placeholder="e.g. 0.2"></div>
+      <div class="field"><label for="dp-h">Dielectric height (mm)</label><input id="dp-h" inputmode="decimal" placeholder="e.g. 0.2"></div>
+      <div class="field"><label for="dp-er">&epsilon;<sub>r</sub></label><input id="dp-er" inputmode="decimal" placeholder="4.3"></div>
+      <div class="field"><label for="dp-oz">Copper</label>
+        <select id="dp-oz"><option value="17.5">0.5 oz</option><option value="35" selected>1 oz</option><option value="70">2 oz</option></select>
+      </div>
+      <div class="field"><label for="dp-target">Target Z<sub>diff</sub> (&Omega;)</label>
+        <select id="dp-target">
+          <option value="">none</option>
+          <option value="90">90 &mdash; USB 2.0</option>
+          <option value="100" selected>100 &mdash; Ethernet, LVDS, PCIe</option>
+          <option value="85">85 &mdash; PCIe (85 &Omega; variant)</option>
+          <option value="100dsi">100 &mdash; MIPI D-PHY</option>
+        </select>
+      </div>
+    </div>
+    <svg class="schem" width="210" height="105" viewBox="0 0 210 105" role="img" aria-label="Edge-coupled differential pair over a reference plane">
+      <rect class="wire" x="15" y="40" width="180" height="30"/>
+      <path class="dot" d="M55 28 H85 V39 H55 Z"/>
+      <path class="dot" d="M120 28 H150 V39 H120 Z"/>
+      <path class="wire" d="M15 71 H195" stroke-width="3"/>
+      <path class="wire" d="M55 20 V25 M85 20 V25 M55 22 H85"/>
+      <text x="64" y="16">w</text>
+      <path class="wire" d="M85 33 H120"/>
+      <text x="98" y="27">s</text>
+      <path class="wire" d="M200 40 H206 M200 70 H206 M203 40 V70"/>
+      <text x="196" y="86">h</text>
+    </svg>
+    </div>
+    <dl class="results" id="dp-out"></dl>
+    <p class="note"><b>Validity: 0.1 &lt; w/h &lt; 3.0 and 0.1 &lt; s/h &lt; 3.0.</b> Empirical coupling fits &mdash; treat the result as a starting geometry and have the fabricator field-solve the real stackup before release. Z<sub>diff</sub> = 2Z<sub>0</sub>(1 &minus; k&middot;e<sup>&minus;m&middot;s/h</sup>).</p>
+    <button class="reset" data-reset="dp">Reset</button>
+  </div>
+  <div class="card">
+    <h3>Effective permittivity</h3>
+    <div class="fields">
+      <div class="field"><label for="ee-w">Trace width (mm)</label><input id="ee-w" inputmode="decimal" placeholder="e.g. 0.3"></div>
+      <div class="field"><label for="ee-h">Dielectric height (mm)</label><input id="ee-h" inputmode="decimal" placeholder="e.g. 0.2"></div>
+      <div class="field"><label for="ee-er">&epsilon;<sub>r</sub></label><input id="ee-er" inputmode="decimal" placeholder="4.3"></div>
+      <div class="field"><label for="ee-oz">Copper</label>
+        <select id="ee-oz"><option value="17.5">0.5 oz</option><option value="35" selected>1 oz</option><option value="70">2 oz</option></select>
+      </div>
+      <div class="field"><label for="ee-f">Frequency (Hz, optional)</label><input id="ee-f" inputmode="decimal" placeholder="e.g. 1G"></div>
+    </div>
+    <dl class="results" id="ee-out"></dl>
+    <p class="note">Hammerstad&ndash;Jensen for the static value, with Kirschning&ndash;Jansen dispersion when a frequency is given. A microstrip&rsquo;s field is partly in air, so &epsilon;<sub>eff</sub> always lies between (&epsilon;<sub>r</sub>+1)/2 and &epsilon;<sub>r</sub>, rising towards &epsilon;<sub>r</sub> as the trace widens. Valid for 0.01 &le; w/h &le; 100.</p>
+    <button class="reset" data-reset="ee">Reset</button>
+  </div>
+  <div class="card">
     <h3>Wavelength &amp; critical length</h3>
     <div class="fields">
       <div class="field"><label for="wl-f">Frequency (Hz)</label><input id="wl-f" inputmode="decimal" placeholder="e.g. 100M"></div>
@@ -860,6 +963,90 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
 <section class="panel" id="panel-pwr">
   <h2>Power &amp; Thermal</h2>
   <p class="hint">Getting power in and heat out.</p>
+  <div class="card">
+    <h3>Junction temperature</h3>
+    <div class="cardrow">
+    <div class="fields">
+      <div class="field"><label for="th-p">Power dissipated (W)</label><input id="th-p" inputmode="decimal" placeholder="e.g. 5"></div>
+      <div class="field"><label for="th-ta">Ambient (&deg;C)</label><input id="th-ta" inputmode="decimal" placeholder="25"></div>
+      <div class="field"><label for="th-jc">&theta; junction&ndash;case (&deg;C/W)</label><input id="th-jc" inputmode="decimal" placeholder="e.g. 1.5"></div>
+      <div class="field"><label for="th-cs">&theta; case&ndash;sink (&deg;C/W)</label><input id="th-cs" inputmode="decimal" placeholder="e.g. 0.5"></div>
+      <div class="field"><label for="th-sa">&theta; sink&ndash;ambient (&deg;C/W)</label><input id="th-sa" inputmode="decimal" placeholder="e.g. 8"></div>
+      <div class="field"><label for="th-ja">or &theta; junction&ndash;ambient (&deg;C/W)</label><input id="th-ja" inputmode="decimal" placeholder="single figure"></div>
+      <div class="field"><label for="th-tjmax">T<sub>j</sub> max (&deg;C)</label><input id="th-tjmax" inputmode="decimal" placeholder="e.g. 150"></div>
+      <div class="field"><label for="th-tjtarget">Design T<sub>j</sub> target (&deg;C)</label><input id="th-tjtarget" inputmode="decimal" placeholder="defaults to Tj max"></div>
+      <div class="field"><label for="th-tj">T<sub>j</sub> (&deg;C)</label><input id="th-tj" inputmode="decimal" placeholder="solved"></div>
+    </div>
+    <svg class="schem" width="150" height="190" viewBox="0 0 150 190" role="img" aria-label="Thermal resistance chain from junction to ambient">
+      <rect class="wire" x="40" y="12" width="70" height="20"/>
+      <text x="54" y="26">junction</text>
+      <path class="wire" d="M75 32 V48"/>
+      <rect class="wire" x="63" y="48" width="24" height="26"/>
+      <text x="94" y="65">&#952;jc</text>
+      <path class="wire" d="M75 74 V86"/>
+      <text x="52" y="84">case</text>
+      <rect class="wire" x="63" y="86" width="24" height="26"/>
+      <text x="94" y="103">&#952;cs</text>
+      <path class="wire" d="M75 112 V124"/>
+      <text x="50" y="122">sink</text>
+      <rect class="wire" x="63" y="124" width="24" height="26"/>
+      <text x="94" y="141">&#952;sa</text>
+      <path class="wire" d="M75 150 V164 M55 164 H95 M60 171 H90 M65 178 H85"/>
+      <text x="8" y="168">ambient</text>
+    </svg>
+    </div>
+    <dl class="results" id="th-out"></dl>
+    <p class="note">Series thermal resistances add, exactly like resistors carrying power instead of current. Give the three-part chain, or a single junction&ndash;ambient figure. Note that a datasheet &theta;<sub>ja</sub> is a JEDEC board measurement, not a physical resistance you can chain, and will not match a real stackup with thermal vias.</p>
+    <button class="reset" data-reset="th">Reset</button>
+  </div>
+  <div class="card">
+    <h3>Capacitor impedance and self-resonance</h3>
+    <div class="fields">
+      <div class="field"><label for="cs-c">Capacitance (F)</label><input id="cs-c" inputmode="decimal" placeholder="e.g. 100n"></div>
+      <div class="field"><label for="cs-esl">ESL (H)</label><input id="cs-esl" inputmode="decimal" placeholder="e.g. 500p"></div>
+      <div class="field"><label for="cs-esr">ESR (&Omega;)</label><input id="cs-esr" inputmode="decimal" placeholder="e.g. 10m"></div>
+      <div class="field"><label for="cs-f">Frequency of interest (Hz)</label><input id="cs-f" inputmode="decimal" placeholder="e.g. 10M"></div>
+      <div class="field"><label for="cs-n">Capacitors in parallel</label><input id="cs-n" inputmode="numeric" placeholder="1"></div>
+    </div>
+    <dl class="results" id="cs-out"></dl>
+    <p class="note">A real capacitor is C, ESL and ESR in series: it is capacitive below self-resonance, resistive at it, and <em>inductive above it</em>. |Z| = &radic;(ESR&sup2; + (2&pi;fL &minus; 1/2&pi;fC)&sup2;). Paralleling n identical parts divides ESR and ESL by n and multiplies C by n, which moves the impedance floor down without moving self-resonance.</p>
+    <button class="reset" data-reset="cs">Reset</button>
+  </div>
+  <div class="card">
+    <h3>Plane capacitance</h3>
+    <div class="cardrow">
+    <div class="fields">
+      <div class="field"><label for="pc-a">Overlap area (mm&sup2;)</label><input id="pc-a" inputmode="decimal" placeholder="e.g. 10000"></div>
+      <div class="field"><label for="pc-d">Plane separation (mm)</label><input id="pc-d" inputmode="decimal" placeholder="e.g. 0.1"></div>
+      <div class="field"><label for="pc-er">&epsilon;<sub>r</sub></label><input id="pc-er" inputmode="decimal" placeholder="4.3"></div>
+      <div class="field"><label for="pc-f">Frequency (Hz, optional)</label><input id="pc-f" inputmode="decimal" placeholder="e.g. 1M"></div>
+    </div>
+    <svg class="schem" width="170" height="90" viewBox="0 0 170 90" role="img" aria-label="Two parallel copper planes separated by dielectric">
+      <rect class="dot" x="20" y="22" width="130" height="7"/>
+      <rect class="wire" x="20" y="29" width="130" height="26"/>
+      <rect class="dot" x="20" y="55" width="130" height="7"/>
+      <path class="wire" d="M158 29 V55 M154 29 H162 M154 55 H162"/>
+      <text x="20" y="16">power plane</text>
+      <text x="20" y="78">ground plane</text>
+    </svg>
+    </div>
+    <dl class="results" id="pc-out"></dl>
+    <p class="note">C = &epsilon;<sub>0</sub>&epsilon;<sub>r</sub>A/d for the overlapping area of a plane pair. Useful as the high-frequency floor of a decoupling network, though on its own it is rarely more than a few nF.</p>
+    <button class="reset" data-reset="pc">Reset</button>
+  </div>
+  <div class="card">
+    <h3>PDN target impedance</h3>
+    <div class="fields">
+      <div class="field"><label for="pdn-v">Rail voltage (V)</label><input id="pdn-v" inputmode="decimal" placeholder="e.g. 1.2"></div>
+      <div class="field"><label for="pdn-ripple">Allowed ripple (%)</label><input id="pdn-ripple" inputmode="decimal" placeholder="e.g. 2"></div>
+      <div class="field"><label for="pdn-i">Maximum current (A)</label><input id="pdn-i" inputmode="decimal" placeholder="e.g. 20"></div>
+      <div class="field"><label for="pdn-tr">Transient fraction (%)</label><input id="pdn-tr" inputmode="decimal" placeholder="e.g. 50"></div>
+      <div class="field"><label for="pdn-fmax">Bandwidth of interest (Hz)</label><input id="pdn-fmax" inputmode="decimal" placeholder="e.g. 100M"></div>
+    </div>
+    <dl class="results" id="pdn-out"></dl>
+    <p class="note">Z<sub>target</sub> = (V<sub>rail</sub> &middot; ripple%) / (I<sub>max</sub> &middot; transient%). The network must stay below this from DC to the bandwidth of interest, which is the hard part &mdash; see the capacitor card for what a real part does above its self-resonance.</p>
+    <button class="reset" data-reset="pdn">Reset</button>
+  </div>
 </section>
 <section class="panel" id="panel-util">
   <h2>Utilities</h2>
@@ -872,6 +1059,23 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
     <dl class="results" id="awg-out"></dl>
     <p class="note">Solid copper at 20 &deg;C. The two ampacities are the classic handbook rules of thumb: &ldquo;chassis wiring&rdquo; (short runs in free air) and &ldquo;power transmission&rdquo; (bundled, conservative) &mdash; insulation rating and bundling govern real limits.</p>
     <button class="reset" data-reset="awg">Reset</button>
+  </div>
+  <div class="card">
+    <h3>Battery energy and runtime</h3>
+    <div class="fields">
+      <div class="field"><label for="bat-mah">Cell capacity (mAh)</label><input id="bat-mah" inputmode="decimal" placeholder="e.g. 5000"></div>
+      <div class="field"><label for="bat-v">Nominal cell voltage (V)</label><input id="bat-v" inputmode="decimal" placeholder="3.7"></div>
+      <div class="field"><label for="bat-s">Cells in series (S)</label><input id="bat-s" inputmode="numeric" placeholder="1"></div>
+      <div class="field"><label for="bat-p">Cells in parallel (P)</label><input id="bat-p" inputmode="numeric" placeholder="1"></div>
+      <div class="field"><label for="bat-load">Load (A or W)</label><input id="bat-load" inputmode="decimal" placeholder="e.g. 2"></div>
+      <div class="field"><label for="bat-loadunit">Load is</label>
+        <select id="bat-loadunit"><option value="A" selected>Amps</option><option value="W">Watts</option></select>
+      </div>
+      <div class="field"><label for="bat-usable">Usable capacity (%)</label><input id="bat-usable" inputmode="decimal" placeholder="80"></div>
+    </div>
+    <dl class="results" id="bat-out"></dl>
+    <p class="note">Runtime assumes a flat discharge at the nominal voltage, which is optimistic at high C-rates and near the end of discharge. The usable fraction defaults to 80 %, a common reserve for lithium packs; set it to 100 for the nameplate figure.</p>
+    <button class="reset" data-reset="bat">Reset</button>
   </div>
   <div class="card">
     <h3>Number bases</h3>
@@ -1738,9 +1942,350 @@ function wirePair(specs) {
   });
 }
 
+/* ---------- power and thermal ---------- */
+
+/* Series thermal resistances add, so a package on a heatsink is a divider
+   carrying power instead of current. Tj is written back into its own box; the
+   figures with no box of their own - headroom, maximum power, the heatsink you
+   would need - go to the results list. */
+function calcThermal() {
+  clearComputed(["th-tj"]);
+  const P = val("th-p");
+  const ta = numOr("th-ta", 25, -273.15);
+  const jc = val("th-jc"), cs = val("th-cs"), sa = val("th-sa"), ja = val("th-ja");
+  const tjmax = val("th-tjmax");
+  const target = isFinite(val("th-tjtarget")) ? val("th-tjtarget") : tjmax;
+  if (!isFinite(P) || !isFinite(ta)) { render("th-out", []); return; }
+  if (P < 0) { render("th-out", [["", "Power dissipated cannot be negative.", "err"]]); return; }
+  const parts = [jc, cs, sa].filter(isFinite);
+  const chain = parts.length ? parts.reduce(function (a, b) { return a + b; }, 0) : NaN;
+  if (parts.some(function (x) { return x < 0; })) { render("th-out", [["", "Thermal resistances cannot be negative.", "err"]]); return; }
+  let theta = isFinite(chain) ? chain : ja;
+  const rows = [];
+  if (isFinite(chain) && isFinite(ja)) {
+    rows.push(["", "Both a chain and a single \u03b8(junction\u2013ambient) given \u2014 using the chain. They differ by " +
+               (Math.abs(ja - chain) / chain * 100).toFixed(0) + " %.", "warn"]);
+  }
+  if (!isFinite(theta) || theta <= 0) { render("th-out", [["", "Enter at least one thermal resistance.", ""]]); return; }
+  const rise = P * theta;
+  const tj = ta + rise;
+  setComputed("th-tj", tj);
+  rows.push(["Total \u03b8", theta.toPrecision(4) + " \u00b0C/W"]);
+  rows.push(["Temperature rise", rise.toPrecision(4) + " K"]);
+  if (isFinite(jc)) rows.push(["Case temperature", (tj - P * jc).toPrecision(4) + " \u00b0C"]);
+  if (isFinite(sa)) rows.push(["Sink temperature", (ta + P * sa).toPrecision(4) + " \u00b0C"]);
+  if (isFinite(tjmax)) {
+    const head = tjmax - tj;
+    rows.push(["Headroom to T<sub>j</sub> max", head.toPrecision(4) + " K" + (head < 0 ? " \u2014 over temperature" : ""), head < 0 ? "err" : (head < 20 ? "warn" : "")]);
+    rows.push(["Maximum power for T<sub>j</sub> max", fmt((tjmax - ta) / theta, "W")]);
+  }
+  if (isFinite(target) && P > 0) {
+    const fixed = (isFinite(jc) ? jc : 0) + (isFinite(cs) ? cs : 0);
+    const need = (target - ta) / P - fixed;
+    rows.push(["\u03b8 sink\u2013ambient needed for " + target.toPrecision(4) + " \u00b0C",
+               need > 0 ? need.toPrecision(4) + " \u00b0C/W"
+                        : "impossible \u2014 the package alone already exceeds the target, so the part or the ambient must change",
+               need > 0 ? "" : "err"]);
+  }
+  render("th-out", rows);
+}
+
+/* A real capacitor is C, ESL and ESR in series: capacitive below self
+   resonance, resistive at it, inductive above. */
+function calcCapSRF() {
+  const c = val("cs-c"), esl = val("cs-esl"), esr = val("cs-esr"), f = val("cs-f");
+  const n = Math.max(1, Math.round(numOr("cs-n", 1, 1) || 1));
+  if (!isFinite(c) || c <= 0) { render("cs-out", []); return; }
+  const C = c * n;
+  const L = isFinite(esl) && esl > 0 ? esl / n : NaN;
+  const R = isFinite(esr) && esr >= 0 ? esr / n : NaN;
+  const rows = [];
+  if (n > 1) rows.push(["Bank of " + n, fmt(C, "F") + " total" + (isFinite(L) ? ", " + fmt(L, "H") + " ESL" : "") + (isFinite(R) ? ", " + fmt(R, "\u03a9") + " ESR" : "")]);
+  if (isFinite(L)) {
+    const srf = 1 / (2 * Math.PI * Math.sqrt(L * C));
+    rows.push(["Self-resonant frequency", fmt(srf, "Hz")]);
+    rows.push(["|Z| at resonance", isFinite(R) ? fmt(R, "\u03a9") + " (ESR alone)" : "equal to ESR"]);
+  }
+  if (isFinite(f) && f > 0) {
+    const xc = 1 / (2 * Math.PI * f * C);
+    const xl = isFinite(L) ? 2 * Math.PI * f * L : 0;
+    const react = xl - xc;
+    const z = Math.sqrt((isFinite(R) ? R * R : 0) + react * react);
+    rows.push(["X<sub>C</sub> at " + fmt(f, "Hz"), fmt(xc, "\u03a9")]);
+    if (isFinite(L)) rows.push(["X<sub>L</sub> at " + fmt(f, "Hz"), fmt(xl, "\u03a9")]);
+    rows.push(["|Z| at " + fmt(f, "Hz"), fmt(z, "\u03a9") +
+               (isFinite(L) ? (react > 0 ? " \u2014 inductive, past self-resonance" : " \u2014 capacitive") : "")]);
+  }
+  if (!rows.length) rows.push(["", "Add an ESL for self-resonance, or a frequency for impedance.", ""]);
+  render("cs-out", rows);
+}
+
+function calcPlaneC() {
+  const EPS0 = 8.8541878128e-12;
+  const a = val("pc-a"), d = val("pc-d"), f = val("pc-f");
+  const er = numOr("pc-er", 4.3, 1);
+  if (!isFinite(a) || !isFinite(d) || !isFinite(er)) { render("pc-out", []); return; }
+  if (!(a > 0) || !(d > 0)) { render("pc-out", [["", "Area and separation must be positive.", "err"]]); return; }
+  const C = EPS0 * er * (a * 1e-6) / (d * 1e-3);
+  const rows = [["Plane capacitance", fmt(C, "F")],
+                ["Capacitance per area", fmt(C / (a * 1e-6) * 1e-4, "F") + " per cm\u00b2"]];
+  if (isFinite(f) && f > 0) rows.push(["X<sub>C</sub> at " + fmt(f, "Hz"), fmt(1 / (2 * Math.PI * f * C), "\u03a9")]);
+  render("pc-out", rows);
+}
+
+function calcPDN() {
+  const v = val("pdn-v"), i = val("pdn-i"), fmax = val("pdn-fmax");
+  const ripple = val("pdn-ripple"), tr = val("pdn-tr");
+  if (![v, i, ripple, tr].every(isFinite)) { render("pdn-out", []); return; }
+  if (!(v > 0) || !(i > 0) || !(ripple > 0) || !(tr > 0)) { render("pdn-out", [["", "All four values must be positive.", "err"]]); return; }
+  if (ripple > 100 || tr > 100) { render("pdn-out", [["", "Percentages cannot exceed 100.", "err"]]); return; }
+  const dv = v * ripple / 100, di = i * tr / 100;
+  const z = dv / di;
+  const rows = [["Allowed ripple", fmt(dv, "V")],
+                ["Transient current step", fmt(di, "A")],
+                ["Target impedance", fmt(z, "\u03a9")]];
+  if (isFinite(fmax) && fmax > 0) {
+    rows.push(["Must hold from DC to", fmt(fmax, "Hz")]);
+    rows.push(["Total loop inductance budget", fmt(z / (2 * Math.PI * fmax), "H") +
+               " \u2014 above this the network exceeds target at the top frequency"]);
+  }
+  render("pdn-out", rows);
+}
+
+/* ---------- attenuator pads ---------- */
+
+function calcPad() {
+  const a = val("pad-a");
+  const z0 = numOr("pad-z0", 50, 1e-9);
+  const z2 = val("pad-z2");
+  if (!isFinite(a) || !isFinite(z0)) { render("pad-out", []); return; }
+  if (a <= 0) { render("pad-out", [["", "Attenuation must be greater than 0 dB.", "err"]]); return; }
+  const K = Math.pow(10, a / 20);
+  const piSh = z0 * (K + 1) / (K - 1);
+  const piSe = z0 * (K * K - 1) / (2 * K);
+  const tSe = z0 * (K - 1) / (K + 1);
+  const tSh = 2 * K * z0 / (K * K - 1);
+  const series = document.getElementById("g-series").value;
+  const vals = seriesValues(series, -1, 7);
+  const near = function (x) { return snap(vals, x); };
+  const rows = [
+    ["PI pad", "shunt " + fmt(piSh, "\u03a9") + " \u00b7 series " + fmt(piSe, "\u03a9") + " \u00b7 shunt " + fmt(piSh, "\u03a9")],
+    ["T pad", "series " + fmt(tSe, "\u03a9") + " \u00b7 shunt " + fmt(tSh, "\u03a9") + " \u00b7 series " + fmt(tSe, "\u03a9")]
+  ];
+  // what the nearest stock values actually deliver
+  const nPiSh = near(piSh), nPiSe = near(piSe);
+  const aPi = padLossPi(nPiSh, nPiSe, z0);
+  const aT = padLossT(near(tSe), near(tSh), z0);
+  rows.push(["Nearest " + series + " PI", fmt(nPiSh, "\u03a9") + " / " + fmt(nPiSe, "\u03a9") +
+             " \u2014 gives " + aPi.toFixed(2) + " dB"]);
+  rows.push(["Nearest " + series + " T", fmt(near(tSe), "\u03a9") + " / " + fmt(near(tSh), "\u03a9") +
+             " \u2014 gives " + aT.toFixed(2) + " dB"]);
+  if (isFinite(z2) && z2 > 0 && Math.abs(z2 - z0) > 1e-12) {
+    const hi = Math.max(z0, z2), lo = Math.min(z0, z2);
+    const ratio = hi / lo;
+    const aMin = 20 * Math.log10(Math.sqrt(ratio) + Math.sqrt(ratio - 1));
+    const rs = hi * Math.sqrt(1 - lo / hi);
+    const rp = lo / Math.sqrt(1 - lo / hi);
+    rows.push(["L pad, " + fmt(hi, "\u03a9") + " to " + fmt(lo, "\u03a9"),
+               "series " + fmt(rs, "\u03a9") + " on the " + fmt(hi, "\u03a9") + " side, shunt " + fmt(rp, "\u03a9") + " across the " + fmt(lo, "\u03a9") + " side"]);
+    rows.push(["L pad minimum loss", aMin.toFixed(2) + " dB" +
+               (a < aMin ? " \u2014 more than the " + a + " dB asked for; an L pad cannot do better between these impedances" : ""),
+               a < aMin ? "warn" : ""]);
+  }
+  render("pad-out", rows);
+}
+
+/* What a pad built from real parts actually attenuates. For a matched pad this
+   is just the voltage division through it, and with exact values it returns the
+   design figure to the last decimal - which is the test. */
+function padLossPi(rp, rs, z0) {
+  const par = rp * z0 / (rp + z0);
+  return -20 * Math.log10(par / (rs + par));
+}
+
+function padLossT(rs, rp, z0) {
+  const zA = rp * (rs + z0) / (rp + rs + z0);
+  return -20 * Math.log10((zA / (rs + zA)) * (z0 / (rs + z0)));
+}
+
+/* ---------- Hammerstad-Jensen microstrip, shared by several cards ---------- */
+
+const HJ_U_MIN = 0.01, HJ_U_MAX = 100;
+
+/* Hammerstad thickness correction, expressed as an addition to w/h. */
+function hjDeltaU(tOverH) {
+  if (!(tOverH > 0)) return 0;
+  return (tOverH / Math.PI) * (1 + Math.log(2 / tOverH));
+}
+
+function hjEeff(u, er) {
+  const a = 1 + Math.log((Math.pow(u, 4) + Math.pow(u / 52, 2)) / (Math.pow(u, 4) + 0.432)) / 49
+              + Math.log1p(Math.pow(u / 18.1, 3)) / 18.7;
+  const b = 0.564 * Math.pow((er - 0.9) / (er + 3), 0.053);
+  return (er + 1) / 2 + (er - 1) / 2 * Math.pow(1 + 10 / u, -a * b);
+}
+
+function hjZ01(u) {
+  const f = 6 + (2 * Math.PI - 6) * Math.exp(-Math.pow(30.666 / u, 0.7528));
+  return 376.730313 / (2 * Math.PI) * Math.log(f / u + Math.sqrt(1 + Math.pow(2 / u, 2)));
+}
+
+/* Kirschning-Jansen dispersion. h in mm, f in Hz. */
+function kjEeff(u, er, ee0, hMM, fHz) {
+  const fn = fHz / 1e9 * hMM;
+  if (!(fn > 0)) return ee0;
+  const p1 = 0.27488 + (0.6315 + 0.525 / Math.pow(1 + 0.0157 * fn, 20)) * u - 0.065683 * Math.exp(-8.7513 * u);
+  const p2 = 0.33622 * (1 - Math.exp(-0.03442 * er));
+  const p3 = 0.0363 * Math.exp(-4.6 * u) * (1 - Math.exp(-Math.pow(fn / 38.7, 4.97)));
+  const p4 = 1 + 2.751 * (1 - Math.exp(-Math.pow(er / 15.916, 8)));
+  const P = p1 * p2 * Math.pow((0.1844 + p3 * p4) * fn, 1.5763);
+  return er - (er - ee0) / (1 + P);
+}
+
+function calcEreff() {
+  const w = valDim("ee-w"), h = valDim("ee-h"), f = val("ee-f");
+  const er = numOr("ee-er", 4.3, 1);
+  const t = parseFloat(document.getElementById("ee-oz").value) / 1000;
+  if (!isFinite(w) || !isFinite(h) || !isFinite(er) || !(w > 0) || !(h > 0)) { render("ee-out", []); return; }
+  const u = w / h + hjDeltaU(t / h);
+  const rows = [];
+  if (u < HJ_U_MIN || u > HJ_U_MAX) {
+    render("ee-out", [["", "w/h of " + u.toPrecision(3) + " is outside Hammerstad\u2013Jensen's validity range of " +
+                       HJ_U_MIN + " to " + HJ_U_MAX + "; the formula is not just inaccurate there, it breaks down.", "err"]]);
+    return;
+  }
+  const ee0 = hjEeff(u, er);
+  rows.push(["w/h, corrected for copper", u.toPrecision(4)]);
+  rows.push(["&epsilon;<sub>eff</sub> (static)", ee0.toFixed(4)]);
+  rows.push(["Bounded by", ((er + 1) / 2).toFixed(3) + " \u2026 " + er.toFixed(3)]);
+  let ee = ee0;
+  if (isFinite(f) && f > 0) {
+    ee = kjEeff(u, er, ee0, h, f);
+    rows.push(["&epsilon;<sub>eff</sub> at " + fmt(f, "Hz"), ee.toFixed(4) +
+               " (" + ((ee / ee0 - 1) * 100).toFixed(2) + " % dispersion)"]);
+  }
+  rows.push(["Propagation delay", (Math.sqrt(ee) / 299792458 * 1e12).toFixed(1) + " ps/m (" +
+             (Math.sqrt(ee) / 299792458 * 1e12 * 0.0254).toFixed(1) + " ps/in)"]);
+  render("ee-out", rows);
+}
+
+/* ---------- differential pair ---------- */
+
+function calcDiff() {
+  const w = valDim("dp-w"), sp = valDim("dp-s"), h = valDim("dp-h");
+  const er = numOr("dp-er", 4.3, 1);
+  const t = parseFloat(document.getElementById("dp-oz").value) / 1000;
+  const ms = document.getElementById("dp-struct").value === "ms";
+  if (![w, sp, h, er].every(isFinite) || !(w > 0) || !(sp > 0) || !(h > 0)) { render("dp-out", []); return; }
+  const rows = [];
+  const wh = w / h, sh = sp / h;
+  if (wh <= 0.1 || wh >= 3 || sh <= 0.1 || sh >= 3) {
+    rows.push(["", "Outside the fit's validity range (w/h = " + wh.toPrecision(3) + ", s/h = " + sh.toPrecision(3) +
+               "; both must be between 0.1 and 3.0) \u2014 treat the number below as indicative only.", "warn"]);
+  }
+  let z0, ee;
+  if (ms) {
+    const u = wh + hjDeltaU(t / h);
+    ee = hjEeff(u, er);
+    z0 = hjZ01(u) / Math.sqrt(ee);
+  } else {
+    ee = er;
+    z0 = 60 / Math.sqrt(er) * Math.log(1.9 * h / (0.8 * w + t));
+  }
+  const k = ms ? 0.48 : 0.347, m = ms ? 0.96 : 2.9;
+  const zdiff = 2 * z0 * (1 - k * Math.exp(-m * sh));
+  rows.push(["Single-ended Z<sub>0</sub>", z0.toFixed(1) + " \u03a9"]);
+  rows.push(["Differential Z<sub>diff</sub>", zdiff.toFixed(1) + " \u03a9"]);
+  /* Zdiff = 2*Zodd by definition, and for a symmetric pair the isolated-line
+     impedance is the geometric mean of the two modes, so Zeven = Z0^2/Zodd. */
+  const zodd = zdiff / 2, zeven = z0 * z0 / zodd;
+  rows.push(["Odd / even mode", zodd.toFixed(1) + " \u03a9 / " + zeven.toFixed(1) + " \u03a9"]);
+  rows.push(["Common-mode Z", (zeven / 2).toFixed(1) + " \u03a9"]);
+  rows.push(["Coupling factor", (k * Math.exp(-m * sh) * 100).toFixed(1) + " %"]);
+  const tsel = document.getElementById("dp-target").value;
+  const target = parseFloat(tsel);
+  if (isFinite(target)) {
+    const err = (zdiff - target) / target * 100;
+    const within = Math.abs(err) <= 10;
+    rows.push(["vs. target " + target + " \u03a9",
+               (err >= 0 ? "+" : "") + err.toFixed(1) + " % \u2014 " + (within ? "inside the \u00b110 % band" : "outside the \u00b110 % band"),
+               within ? "good" : "warn"]);
+  }
+  rows.push(["Propagation delay", (Math.sqrt(ee) / 299792458 * 1e12 * 0.0254).toFixed(1) + " ps/in"]);
+  render("dp-out", rows);
+}
+
+/* ---------- LC / RL ---------- */
+
+function calcLCRL() {
+  const L = val("lc-l"), C = val("lc-c"), R = val("lc-r");
+  const series = document.getElementById("lc-topo").value === "series";
+  const rows = [];
+  if (isFinite(L) && L > 0 && isFinite(C) && C > 0) {
+    const f0 = 1 / (2 * Math.PI * Math.sqrt(L * C));
+    const z0 = Math.sqrt(L / C);
+    rows.push(["Resonant frequency", fmt(f0, "Hz")]);
+    rows.push(["Characteristic impedance &radic;(L/C)", fmt(z0, "\u03a9")]);
+    if (isFinite(R) && R > 0) {
+      const Q = series ? z0 / R : R / z0;
+      rows.push(["Q (" + (series ? "series" : "parallel") + ")", Q.toPrecision(4)]);
+      rows.push(["Bandwidth", fmt(f0 / Q, "Hz")]);
+      rows.push(["Damping \u03b6", (1 / (2 * Q)).toPrecision(4) +
+                 (Q < 0.5 ? " \u2014 overdamped" : Q > 5 ? " \u2014 lightly damped, will ring" : "")]);
+      rows.push(["|Z| at resonance", series ? fmt(R, "\u03a9") + " (minimum)" : fmt(R, "\u03a9") + " (maximum)"]);
+    }
+  } else if (isFinite(R) && R > 0 && isFinite(L) && L > 0) {
+    rows.push(["RL corner frequency", fmt(R / (2 * Math.PI * L), "Hz")]);
+    rows.push(["Time constant L/R", fmt(L / R, "s")]);
+  } else if (isFinite(R) && R > 0 && isFinite(C) && C > 0) {
+    rows.push(["", "That is an RC network \u2014 use the RC cutoff card above.", ""]);
+  }
+  render("lc-out", rows);
+}
+
+/* ---------- battery ---------- */
+
+function calcBattery() {
+  const mah = val("bat-mah");
+  const vc = numOr("bat-v", 3.7, 0.1);
+  const S = Math.max(1, Math.round(numOr("bat-s", 1, 1) || 1));
+  const P = Math.max(1, Math.round(numOr("bat-p", 1, 1) || 1));
+  const load = val("bat-load");
+  const usable = numOr("bat-usable", 80, 1, 100);
+  if (!isFinite(mah) || !(mah > 0) || !isFinite(vc) || !isFinite(usable)) { render("bat-out", []); return; }
+  const packV = vc * S;
+  const packAh = mah / 1000 * P;
+  const wh = packV * packAh;
+  const rows = [
+    ["Pack", S + "S" + P + "P at " + fmt(packV, "V") + " nominal"],
+    ["Capacity", packAh.toPrecision(4) + " Ah"],
+    ["Energy", wh.toPrecision(4) + " Wh (" + (wh * usable / 100).toPrecision(4) + " Wh usable at " + usable + " %)"]
+  ];
+  if (isFinite(load) && load > 0) {
+    const watts = document.getElementById("bat-loadunit").value === "W";
+    const amps = watts ? load / packV : load;
+    const power = watts ? load : load * packV;
+    const hours = packAh * usable / 100 / amps;
+    rows.push(["Load", fmt(amps, "A") + " at " + fmt(power, "W")]);
+    rows.push(["C-rate", (amps / packAh).toPrecision(3) + " C"]);
+    rows.push(["Runtime", hours >= 1 ? hours.toPrecision(3) + " h (" + (hours * 60).toPrecision(3) + " min)"
+                                     : (hours * 60).toPrecision(3) + " min"]);
+  }
+  render("bat-out", rows);
+}
+
 /* ---------- wiring ---------- */
 
 const CALCS = {
+  th:  { calc: calcThermal, inputs: ["th-p","th-ta","th-jc","th-cs","th-sa","th-ja","th-tjmax","th-tjtarget","th-tj"] },
+  cs:  { calc: calcCapSRF, inputs: ["cs-c","cs-esl","cs-esr","cs-f","cs-n"] },
+  pc:  { calc: calcPlaneC, inputs: ["pc-a","pc-d","pc-er","pc-f"] },
+  pdn: { calc: calcPDN, inputs: ["pdn-v","pdn-ripple","pdn-i","pdn-tr","pdn-fmax"] },
+  pad: { calc: calcPad, inputs: ["pad-a","pad-z0","pad-z2"] },
+  ee:  { calc: calcEreff, inputs: ["ee-w","ee-h","ee-er","ee-oz","ee-f"] },
+  dp:  { calc: calcDiff, inputs: ["dp-struct","dp-w","dp-s","dp-h","dp-er","dp-oz","dp-target"] },
+  lc:  { calc: calcLCRL, inputs: ["lc-l","lc-c","lc-r","lc-topo"] },
+  bat: { calc: calcBattery, inputs: ["bat-mah","bat-v","bat-s","bat-p","bat-load","bat-loadunit","bat-usable"] },
   ohm: { calc: calcOhm, inputs: ["ohm-v","ohm-i","ohm-r","ohm-p"] },
   div: { calc: calcDivider, inputs: ["div-vin","div-vout","div-r1","div-r2","div-rtot","div-iload"] },
   sp:  { calc: calcSP, inputs: ["sp-list"] },
@@ -1777,7 +2322,7 @@ for (const key in CALCS) {
 
 // the E-series setting feeds every calculator that suggests standard values
 document.getElementById("g-series").addEventListener("change", function () {
-  calcDivider(); calcLED();
+  calcDivider(); calcLED(); calcPad();
 });
 
 const idf = function (x) { return x; };
