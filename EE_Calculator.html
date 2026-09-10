@@ -448,6 +448,20 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
   .cardfoot button:hover { color: var(--a-link-hover); text-decoration: underline; }
   .cardfoot button:focus-visible { outline: 2px solid var(--a-focus); outline-offset: 2px; }
   .cardfoot .copied { color: var(--a-good); text-decoration: none; }
+  /* the explain button sits at the far end of the same row as copy and reset */
+  .cardfoot .explain { margin-left: auto; }
+  dialog.help { width: min(46rem, calc(100% - 2rem)); padding: 0; color: var(--a-ink); background: var(--a-bg-panel); border: var(--a-border) solid var(--a-line); border-radius: var(--a-radius-sm); }
+  dialog.help::backdrop { background: rgb(0 0 0 / .45); }
+  .help-head { display: flex; align-items: baseline; gap: 1rem; padding: 1rem 1.2rem .7rem; border-bottom: var(--a-border) solid var(--a-line); }
+  .help-head h3 { margin: 0; flex: 1 1 auto; font-size: var(--a-text-h3); }
+  .help-head button { font: inherit; font-size: var(--a-text-xs); color: var(--a-link); background: none; border: none; cursor: pointer; padding: 0; }
+  .help-head button:hover { color: var(--a-link-hover); text-decoration: underline; }
+  .help-body { padding: 1rem 1.2rem 1.3rem; max-height: 70vh; overflow-y: auto; font-size: var(--a-text-sm); line-height: 1.65; }
+  .help-body p { margin: 0 0 .85rem; }
+  .help-body ul { margin: 0 0 .85rem; padding-left: 1.15rem; }
+  .help-body li { margin: 0 0 .4rem; }
+  .help-body code { font-family: var(--a-font-mono); font-size: .95em; }
+  .help-body .eq { display: block; margin: .75rem 0; padding: .55rem .75rem; font-family: var(--a-font-mono); font-size: var(--a-text-xs); line-height: 1.9; color: var(--a-ink); background: var(--a-bg-subtle); border-radius: var(--a-radius-sm); overflow-x: auto; }
   /* a control whose value is shared with its twins on other cards */
   .field [data-mirror] { border-style: dashed; }
   .legend { font-size: var(--a-text-xs); color: var(--a-ink-muted); margin: 0 0 .35rem; }
@@ -464,6 +478,7 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
 <nav class="tabs" role="tablist" id="tabbar">
   <button role="tab" data-tab="fund" aria-selected="true">Fundamentals</button>
   <button role="tab" data-tab="res" aria-selected="false">Resistors</button>
+  <button role="tab" data-tab="tol" aria-selected="false">Tolerance</button>
   <button role="tab" data-tab="filt" aria-selected="false">Filters &amp; Resonance</button>
   <button role="tab" data-tab="copper" aria-selected="false">PCB Copper</button>
   <button role="tab" data-tab="signal" aria-selected="false">PCB Signal</button>
@@ -551,15 +566,9 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
 </section>
 
 <section class="panel" id="panel-res">
-  <nav class="subtabs" role="tablist" id="subbar-res">
-    <button role="tab" data-sub="div" aria-selected="true">Divider</button>
-    <button role="tab" data-sub="led" aria-selected="false">LED Resistor</button>
-    <button role="tab" data-sub="acc" aria-selected="false">Tolerance</button>
-  </nav>
-<div class="subpanel active" id="sub-div">
-  <h2>Divider</h2>
-  <p class="hint">R1 on top, R2 to ground; unloaded, V<sub>out</sub> = V<sub>in</sub> &middot; R2 / (R1 + R2). The solver fills in whatever is missing as soon as it has enough &mdash; give it three of the four values, or just the two voltages to search standard E-series pairs.</p>
-  <div class="card">
+  <h2>Resistors</h2>
+  <p class="hint">Dividers and LED bias. Both solve in whichever direction you have the numbers for.</p>
+<div class="card">
     <h3>Divider solver</h3>
     <div class="cardrow">
     <div class="fields">
@@ -604,11 +613,7 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
     <p class="note">Fill in any three of V<sub>in</sub>, V<sub>out</sub>, R1 and R2 &mdash; the fourth is calculated as soon as enough is entered, and a solved resistor gets a nearest-standard-value suggestion. With only V<sub>in</sub> and V<sub>out</sub>, the best standard-value pairs are searched instead (total R, if given, sets the exact solution and steers the search; with one leg known it stands in for the other). The load is a constant current drawn out of the midpoint, so R1 carries the R2 current plus the load; leave it empty for an unloaded divider.</p>
     <button class="reset" data-reset="div">Reset</button>
   </div>
-</div>
-<div class="subpanel" id="sub-led">
-  <h2>LED Resistor</h2>
-  <p class="hint">R = (V<sub>supply</sub> &minus; V<sub>f</sub>) / I<sub>f</sub>, or the current a resistor you already have will give.</p>
-  <div class="card">
+<div class="card">
     <h3>LED series resistor</h3>
     <div class="cardrow">
     <div class="fields">
@@ -640,11 +645,15 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
     <dl class="results" id="led-out"></dl>
     <button class="reset" data-reset="led">Reset</button>
   </div>
-</div>
-<div class="subpanel" id="sub-acc">
-  <h2>Component Tolerance</h2>
+
+
+
+</section>
+
+<section class="panel" id="panel-tol">
+  <h2>Tolerance</h2>
   <p class="hint">What initial tolerance, temperature and time drift do to a part&rsquo;s value &mdash; and, separately, what they do to a divider&rsquo;s <em>ratio</em>, which is a different question because a divider only cares how its two legs move relative to each other.</p>
-  <div class="card">
+<div class="card">
     <h3>Component tolerance budget</h3>
     <div class="cardrow">
     <div class="fields">
@@ -741,7 +750,6 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
     <p class="note">Worst case is exact (both legs at their opposing extremes); RSS treats the contributions as independent random variables, which is the realistic figure for a production run but assumes the two TCRs are uncorrelated. Blank fields default to 1 %, 100 ppm/&deg;C, and &minus;40/+85/25 &deg;C.</p>
     <button class="reset" data-reset="ac">Reset</button>
   </div>
-</div>
 </section>
 
 <section class="panel" id="panel-filt">
@@ -4212,6 +4220,148 @@ function calcDbm() {
   ]);
 }
 
+/* One dialog, refilled on each open, so the page carries a single copy of
+   the chrome rather than one per card. <dialog> gives the modal behaviour,
+   the backdrop and Escape-to-close for free. */
+function showHelp(help) {
+  let dlg = document.getElementById("helpdlg");
+  if (!dlg) {
+    dlg = document.createElement("dialog");
+    dlg.id = "helpdlg";
+    dlg.className = "help";
+    dlg.setAttribute("aria-labelledby", "helpdlg-title");
+    dlg.innerHTML = '<div class="help-head"><h3 id="helpdlg-title"></h3>' +
+                    '<button type="button" data-close>Close</button></div>' +
+                    '<div class="help-body"></div>';
+    dlg.querySelector("[data-close]").addEventListener("click", function () { dlg.close(); });
+    /* clicking the backdrop closes it; clicks inside the panel must not */
+    dlg.addEventListener("click", function (e) { if (e.target === dlg) dlg.close(); });
+    document.body.appendChild(dlg);
+  }
+  dlg.querySelector("h3").innerHTML = help.title;
+  const body = dlg.querySelector(".help-body");
+  body.innerHTML = help.body;
+  body.scrollTop = 0;
+  dlg.showModal();
+}
+
+/* ---------- card explanations ----------
+
+   One entry per card, keyed by its reset id. Written for someone who
+   knows the theory but has not memorised these particular formulas:
+   the governing equation, what each symbol is, where the model comes
+   from, and the assumption that will catch them out. */
+const HELP = {
+  "ohm": {
+    "title": "Ohm's law and power",
+    "body": "<p>Two independent relations tie the four quantities together, so any two of them fix the other two.</p><span class=\"eq\">V = I·R &nbsp;&nbsp; P = V·I = I²·R = V²/R</span><p>The card solves whichever pair you give it. The forms of P are the same equation with V or I substituted out; pick whichever avoids the quantity you are least sure of.</p><p><b>What it assumes.</b> That R is a constant. A real resistor's value moves with temperature (its TCR, typically 50–200 ppm/°C for thin film) and, at high voltage, slightly with applied voltage. Neither matters for a rough sizing; both matter in a divider that sets a reference, which is what the Tolerance tab is for.</p><p><b>The number that bites.</b> P is the one people skip. A 0603 resistor is good for about 100 mW, an 0805 for 125 mW, and the derating curve starts falling from around 70 °C ambient. Work out the dissipation before choosing the package, not after the board comes back warm.</p>"
+  },
+  "sp": {
+    "title": "Series and parallel",
+    "body": "<p>Resistors and inductors add in series and combine reciprocally in parallel. Capacitors do the opposite, and it is worth knowing why rather than memorising it.</p><span class=\"eq\">series: Z = ΣZᵢ &nbsp;&nbsp; parallel: 1/Z = Σ1/Zᵢ</span><p>That rule is about <i>impedance</i>, and it never changes. Substituting Z<sub>R</sub> = R and Z<sub>L</sub> = jωL gives the familiar sums. But Z<sub>C</sub> = 1/(jωC), so adding impedances in series adds the <i>reciprocals</i> of the capacitances:</p><span class=\"eq\">R, L: &nbsp; series ΣX &nbsp; parallel 1/Σ(1/X)<br>C: &nbsp;&nbsp;&nbsp;&nbsp; series 1/Σ(1/C) &nbsp; parallel ΣC</span><p>So capacitors in series are like resistors in parallel. Two 10 µF in series make 5 µF; two in parallel make 20 µF.</p><p><b>With a voltage applied.</b> A series chain carries one current, so each element drops in proportion to its own value: V<sub>i</sub> = V·R<sub>i</sub>/ΣR. That is where the per-element voltage and power figures come from, and it is how you find the one resistor in a chain that is quietly over its rating.</p>"
+  },
+  "div": {
+    "title": "Divider solver",
+    "body": "<p>Unloaded, the midpoint sits at</p><span class=\"eq\">V<sub>out</sub> = V<sub>in</sub> · R2 / (R1 + R2)</span><p>Draw a current I<sub>L</sub> out of that midpoint and the node equation becomes</p><span class=\"eq\">(V<sub>in</sub> − V<sub>out</sub>) / R1 = V<sub>out</sub> / R2 + I<sub>L</sub></span><p>which the card solves for whichever quantity you left out. Give it any three of V<sub>in</sub>, V<sub>out</sub>, R1 and R2 and it finds the fourth; give it only the two voltages and it searches E-series pairs, optionally against a total resistance you specify.</p><p><b>Source impedance.</b> Looking back into the midpoint you see R1 ∥ R2. That is what the next stage loads, and it is what sets how much a load current disturbs the output. It also forms a pole with any capacitance hanging on the node, which is how a feedback divider ends up slowing a regulator's loop.</p><p><b>The usual rule of thumb</b> is to make the divider's own bleed current at least ten times the load current, which keeps the loading error under about 10 %. You do not need the rule here, because the card accounts for the load exactly — but you still need it when someone hands you a divider and asks whether it is sane.</p><p><b>The trade.</b> High resistances waste less power but pick up more noise and are more affected by input bias current and by leakage across a dirty board. Low resistances are quiet but burn current continuously — on a battery product a 10 kΩ divider across the pack is a real part of the standby budget.</p>"
+  },
+  "led": {
+    "title": "LED series resistor",
+    "body": "<p>The resistor takes whatever the supply has left after the LED's forward drop, at the current you want:</p><span class=\"eq\">R = (V<sub>supply</sub> − V<sub>f</sub>) / I<sub>f</sub> &nbsp;&nbsp; P<sub>R</sub> = (V<sub>supply</sub> − V<sub>f</sub>) · I<sub>f</sub></span><p><b>Why this only sets the current approximately.</b> V<sub>f</sub> is not a constant. It varies part to part, it falls about 2 mV/°C as the die warms, and it rises with current. Differentiating the expression above gives the sensitivity:</p><span class=\"eq\">ΔI/I = −ΔV<sub>f</sub> / (V<sub>supply</sub> − V<sub>f</sub>)</span><p>So the headroom across the resistor is what buys you regulation. Driving a 3.2 V white LED from 3.3 V leaves 0.1 V, and a 100 mV shift in V<sub>f</sub> then swings the current by 100 %. From 12 V the same shift costs about 1 %. If the headroom has to be small, use a current-source driver rather than a resistor.</p><p><b>Do not parallel LEDs on one resistor.</b> The lowest-V<sub>f</sub> device takes most of the current, heats, drops further, and takes more still. One resistor per LED, or one driver channel per string.</p>"
+  },
+  "ec": {
+    "title": "Component tolerance budget",
+    "body": "<p>Every error source is expressed as a fractional deviation from nominal, and they are combined two ways:</p><span class=\"eq\">worst case = Σ|e<sub>i</sub>| &nbsp;&nbsp; RSS = √(Σe<sub>i</sub>²)</span><p><b>Which to use.</b> Worst case is what a single unit must survive if you cannot screen it: every contribution at its limit, in the same direction. RSS treats the contributions as independent random variables and gives the realistic spread of a production run. RSS assumes independence, and parts from one reel are <i>not</i> independent — a whole batch can sit at the same end of the distribution — so RSS understates lot-to-lot risk.</p><p><b>Temperature.</b> For a part with a linear coefficient,</p><span class=\"eq\">e<sub>T</sub> = TCR [ppm/°C] × ΔT × 10⁻⁶, &nbsp; ΔT = max(|T<sub>max</sub> − T<sub>nom</sub>|, |T<sub>nom</sub> − T<sub>min</sub>|)</span><p>The wider leg is used because the budget must cover the worst excursion from where the part was trimmed.</p><p><b>Class 2 ceramic capacitors are different</b>, and this is the part that catches people out. X7R, X5R, Y5V and the rest are EIA-198 codes, decoded character by character: the first is the low temperature (X = −55 °C, Y = −30, Z = +10), the second the high (5 = +85, 6 = +105, 7 = +125, 8 = +150), and the third the permitted capacitance change over that whole range (R = ±15 %, S = ±22 %, T = +22/−33 %, V = +22/−82 %). It is a bound over the full range, not a slope, so it cannot be scaled down for a narrower operating range — the curve is not linear. Note also that this is <i>on top of</i> the initial tolerance, not instead of it.</p><p><b>DC bias</b> applies to class 2 ceramics only, and it is usually the largest term of all. A 10 µF 0603 X5R at its rated voltage can be under 3 µF. The datasheet capacitance is measured at a small signal with no bias, so a budget that omits this is not conservative, it is wrong. Enter the loss from the manufacturer's bias curve at your working voltage.</p><p><b>Time.</b> Three different laws, because three different mechanisms:</p><ul><li>Class 2 ceramics lose capacitance as the ferroelectric structure relaxes, at a fixed percentage per decade of hours, referred to the 1000 h point the datasheet measures at: ΔC = k · log₁₀(t/1000). Reflow resets it.</li><li>A voltage reference drifts as a random walk, so it accumulates with the <i>square root</i> of time — hence the ppm/√1000 h units. Four times the time is twice the drift.</li><li>A crystal ages roughly linearly, and worst in its first year.</li></ul><p><b>Crystals</b> are quoted in ppm throughout: initial tolerance at 25 °C, stability over the temperature range (a separate line, because an AT-cut's frequency-temperature curve is cubic rather than a slope) and ageing per year. The card adds them and gives the frequency window in whole hertz, because four significant figures cannot show 20 ppm on a 16 MHz part.</p>"
+  },
+  "ac": {
+    "title": "Divider ratio error",
+    "body": "<p>A divider does not care what its resistors are, only about their ratio:</p><span class=\"eq\">k = R2 / (R1 + R2)</span><p>Differentiating with respect to each leg gives the sensitivities</p><span class=\"eq\">∂k/k ÷ ∂R2/R2 = (1 − k) &nbsp;&nbsp; ∂k/k ÷ ∂R1/R1 = −(1 − k)</span><p>which is the whole point of the card: they are <b>equal and opposite</b>. A change common to both legs cancels exactly. Only the <i>difference</i> between them shows up at the output.</p><p>That is why matched parts beat tight parts. Two 1 % resistors from the same thin-film array, tracking to 5 ppm/°C, give a far better divider than two individually-trimmed 0.1 % parts with 100 ppm/°C coefficients that drift apart. If you only remember one thing from this card, remember to specify <i>tracking</i> TCR for a divider, not absolute TCR.</p><p><b>Worst case</b> here is computed exactly, by pushing the two legs to opposing extremes and recomputing k, rather than by adding sensitivities — the linearised form drifts from the truth once the tolerances are large. <b>RSS</b> combines the contributions as independent random variables, which is the realistic production spread but assumes the two TCRs are uncorrelated; for parts in one array they are strongly correlated, and the real answer is better than either figure.</p><p>Note the (1 − k) factor: a divider close to unity (k → 1, R1 → 0) is insensitive to both legs, and a heavy divider (k small) passes nearly the full component error through.</p>"
+  },
+  "flt": {
+    "title": "Filter design",
+    "body": "<p>A first-order section has one energy store and one corner, where the reactance equals the resistance and the output is 3 dB down and 45° shifted:</p><span class=\"eq\">RC: f<sub>c</sub> = 1/(2πRC), τ = RC<br>RL: f<sub>c</sub> = R/(2πL), τ = L/R</span><p>The time constant is the useful companion to the corner. Step response reaches 63 % in one τ; the 10–90 % rise time is 2.2τ, and settling to 1 % takes 4.6τ. Note that rise time and bandwidth are the same fact stated twice: t<sub>r</sub> ≈ 0.35/f<sub>c</sub>.</p><p><b>LC sections are second order</b> and have a characteristic impedance as well as a resonance:</p><span class=\"eq\">f₀ = 1/(2π√(LC)) &nbsp;&nbsp; Z₀ = √(L/C) &nbsp;&nbsp; Q = R/Z₀ or Z₀/R, depending on where R sits</span><p>Q is what decides whether the filter is useful or dangerous. Undamped, an LC low-pass <i>peaks</i> at f₀ — an input filter with Q of 10 will amplify supply noise tenfold at its resonance, and a step on the input will ring. Q = 0.707 (Butterworth) is maximally flat; below 0.5 the response is overdamped and slower than the LC alone would suggest. Always ask what damps your LC filter.</p><p><b>Order.</b> Cascading n identical sections multiplies the responses, so the ultimate rolloff is 20n dB/decade — but the −3 dB point moves <i>in</i>, because each section is already attenuating at the others' corner:</p><span class=\"eq\">f<sub>−3dB</sub> = f₀ · √(2<sup>1/n</sup> − 1)</span><p>For four identical sections that is 0.435·f₀. The card assumes the sections are <b>buffered</b> from each other. Cascading passive RC sections directly does not give this response, because each section loads the one before it; the real corner ends up lower and the rolloff softer near the knee.</p>"
+  },
+  "re": {
+    "title": "Reactance and self-resonance",
+    "body": "<p>Ideally, reactance is all you need:</p><span class=\"eq\">X<sub>C</sub> = 1/(2πfC) &nbsp;&nbsp; X<sub>L</sub> = 2πfL</span><p>Real parts stop obeying those above a certain frequency, and that is what this card is really about.</p><p><b>A real capacitor</b> is C in series with its equivalent series inductance and resistance:</p><span class=\"eq\">Z = ESR + j(2πf·ESL − 1/(2πfC)) &nbsp;&nbsp; f<sub>SRF</sub> = 1/(2π√(ESL·C))</span><p>Below self-resonance the −1/ωC term dominates and it behaves like a capacitor. At resonance the two reactances cancel exactly and the impedance is <b>just the ESR</b> — the minimum of the V-shaped curve. Above resonance the ESL term wins and your decoupling capacitor is an inductor. This is why a 10 µF bulk capacitor does nothing at 100 MHz and why package inductance, not capacitance, decides high-frequency decoupling.</p><p><b>A real inductor</b> is L and its DC resistance in series, with the winding capacitance across the whole thing. It self-resonates at 1/(2π√(L·C<sub>p</sub>)), and above that it is capacitive — a common-mode choke above its SRF is a capacitor, which is the opposite of what you installed it for.</p><p><b>Paralleling n identical capacitors</b> multiplies C by n and divides both ESL and ESR by n. Since SRF depends on the product of ESL and C, and one rises exactly as the other falls, <b>self-resonance does not move</b>. What you gain is a lower impedance floor. To move the resonance you need a physically smaller part, not more of the same one.</p>"
+  },
+  "xc": {
+    "title": "Crystal load capacitance",
+    "body": "<p>In a Pierce oscillator the two load capacitors appear in series across the crystal, with the strays in parallel with that:</p><span class=\"eq\">C<sub>L</sub> = C1·C2/(C1 + C2) + C<sub>stray</sub></span><p>Given a target C<sub>L</sub> and one leg, the other follows from rearranging:</p><span class=\"eq\">C2 = (C<sub>L</sub> − C<sub>s</sub>)·C1 / (C1 − (C<sub>L</sub> − C<sub>s</sub>))</span><p>which has no solution if C1 is not larger than (C<sub>L</sub> − C<sub>s</sub>) — a series combination can never exceed its smaller member, so too small a C1 makes the target unreachable however big C2 is.</p><p><b>Why it matters.</b> The crystal is specified to hit its marked frequency <i>at</i> its rated load capacitance. Present it with the wrong C<sub>L</sub> and it is pulled off frequency: too much load pulls it low, too little pulls it high. Tens of ppm of error are easy to get this way, which is more than the crystal's own tolerance and quite enough to break a UART link or fail a radio's frequency accuracy spec.</p><p><b>Stray capacitance</b> is the pin capacitance of the oscillator input and output plus the pad and track capacitance, typically 3–5 pF and worth measuring rather than guessing on a tight design. It is not negligible: with a 12 pF crystal it is a third of the budget.</p>"
+  },
+  "pad": {
+    "title": "PI, T and L pads",
+    "body": "<p>Attenuation is a voltage ratio, so first convert decibels:</p><span class=\"eq\">N = 10<sup>A/20</sup></span><p>A PI or T pad is symmetric: it presents Z₀ at both ports while attenuating by A, so the source and load both stay matched. That is the whole reason to use a resistive pad rather than a divider.</p><span class=\"eq\">PI: &nbsp; R<sub>series</sub> = Z₀(N² − 1)/(2N), &nbsp; R<sub>shunt</sub> = Z₀(N + 1)/(N − 1)<br>T: &nbsp;&nbsp; R<sub>series</sub> = Z₀(N − 1)/(N + 1), &nbsp; R<sub>shunt</sub> = 2Z₀·N/(N² − 1)</span><p>Both give the same attenuation and the same match; choose whichever lands closer to values you can buy. At small attenuations the T pad's series resistors get very small and the PI pad's shunt resistors get very large, and vice versa at large attenuations.</p><p><b>An L pad</b> matches two <i>different</i> impedances, and cannot do so at an arbitrary attenuation. There is a minimum loss set purely by the impedance ratio:</p><span class=\"eq\">A<sub>min</sub> = 20·log₁₀(√(Z1/Z2) + √(Z1/Z2 − 1))</span><p>which is about 5.7 dB for 75 Ω to 50 Ω. Ask for less and no resistive network can match both ends; you need a transformer or a matching network.</p><p><b>Remember what a pad costs.</b> It is resistive, so it attenuates signal and noise together and adds thermal noise of its own — a 10 dB pad ahead of a receiver raises the system noise figure by 10 dB. Pads belong after gain, not before it.</p>"
+  },
+  "tw": {
+    "title": "Trace width and current",
+    "body": "<p>IPC-2221's curve fit, with the cross-section in square mils:</p><span class=\"eq\">I = k · ΔT<sup>0.44</sup> · A<sup>0.725</sup> &nbsp;&nbsp; k = 0.048 external, 0.024 internal</span><p>The card inverts it when you give a current instead. Cross-section is width × copper thickness, and the thickness comes from the copper weight: 1 oz is 34.8 µm, 2 oz is 69.6 µm, and plating adds to the outer layers.</p><p><b>Why internal is half.</b> An external trace has a face in air and convects; a buried trace can only conduct into the laminate, which is a poor conductor. The constant halves to account for it. IPC-2221 is conservative here — it came from 1950s measurements on bare boards — and IPC-2152 gives noticeably more current for the same rise, particularly for internal layers near a plane. If you need the extra margin, use 2152; this card is the classic, cautious answer.</p><p><b>ΔT is a rise, not a temperature.</b> 10 °C over a 25 °C ambient is 35 °C of copper. Add the board's own self-heating from everything else on it before deciding what rise you can afford.</p><p><b>Resistance</b> comes from ρL/A with ρ<sub>Cu</sub> = 1.72×10⁻⁸ Ω·m at 20 °C, corrected at about 0.393 %/°C. That correction is not a rounding error: copper at 85 °C is 25 % more resistive than at 20 °C, so a trace that is warm because of its own I²R loss gets warmer still.</p><p><b>Skin depth</b> δ = √(ρ/(π·f·µ)) tells you when the whole cross-section stops carrying current. At 1 MHz it is about 65 µm, so a 1 oz trace is fully used; at 100 MHz it is 6.5 µm and most of the copper is idle.</p>"
+  },
+  "via": {
+    "title": "Via properties",
+    "body": "<p>A via is a plated tube. Its copper cross-section is the annulus of the plating, not the drill:</p><span class=\"eq\">A ≈ π · (d + t) · t &nbsp;&nbsp; (d = drill diameter, t = plating thickness)</span><p>Ampacity uses the IPC-2221 internal-layer constant on that area, because a barrel is surrounded by laminate.</p><p><b>Inductance and capacitance</b> use the classic first-order expressions, with dimensions in inches:</p><span class=\"eq\">L ≈ 5.08·h·(ln(4h/d) + 1) nH &nbsp;&nbsp; C ≈ 1.41·ε<sub>r</sub>·h·D<sub>pad</sub>/(D<sub>anti</sub> − D<sub>pad</sub>) pF</span><p>Inductance is the number that matters. A via in a decoupling path adds around 1 nH, which at 100 MHz is 0.6 Ω — comparable with the capacitor's own ESL and often more than the capacitor's impedance. Two vias in parallel help, but less than half, because their loops couple magnetically.</p><p><b>√(L/C) is a lumped figure, not a characteristic impedance.</b> A via is short compared with a wavelength at most frequencies, so it behaves as a lump rather than as a transmission line. The ratio is still a useful comparison against your trace impedance: below it the via looks capacitive, above it inductive.</p><p><b>Aspect ratio</b> is board thickness ÷ drill diameter, and it is a fabrication limit, not an electrical one. Above about 10:1 the plating chemistry struggles to throw copper evenly down the barrel and reliability drops. A 0.2 mm drill in a 1.6 mm board is already 8:1.</p><p><b>Stub resonance.</b> If a signal enters on layer 1 and leaves on an inner layer, the rest of the barrel is an unterminated stub. It is a quarter-wave resonator, and at that frequency it shorts the signal:</p><span class=\"eq\">f<sub>stub</sub> = c / (4 · L<sub>stub</sub> · √ε<sub>r</sub>)</span><p>Keep the first null well above your knee frequency, or back-drill.</p>"
+  },
+  "fu": {
+    "title": "Fusing current",
+    "body": "<p>Onderdonk's equation, for the current that melts a conductor in a given time:</p><span class=\"eq\">I = A · √( log₁₀(1 + (T<sub>m</sub> − T<sub>a</sub>)/(234 + T<sub>a</sub>)) / (33 · t) )</span><p>A is the cross-section in <i>circular</i> mils (a circular mil is the area of a 1 mil circle, so multiply square mils by 4/π), T<sub>m</sub> is copper's melting point of 1083 °C, T<sub>a</sub> the ambient, and t the duration in seconds.</p><p><b>It is adiabatic.</b> The derivation assumes every joule stays in the copper and none escapes into the laminate. That is a good assumption for a short fault and a bad one for a long one, which is why the model is used up to a few seconds and no further. Beyond about 5 s a real trace sheds heat and survives considerably more current than this predicts.</p><p><b>The shape is the useful part.</b> I ∝ 1/√t, so I²t is constant — the same figure of merit a fuse datasheet uses. Halving the duration buys only 41 % more current. If a protection scheme needs twice the fault current it must clear four times faster.</p><p><b>This is a destruction limit, not a rating.</b> It is where the copper melts, not where it is happy. Design continuous currents with the trace-width card, and use this only to check that a fault is cleared before the track opens — or, if you are deliberately using a trace as a fuse, to size it.</p>"
+  },
+  "spc": {
+    "title": "Conductor spacing",
+    "body": "<p>IPC-2221 Table 6-1 gives a minimum clearance for each of seven environments, indexed by the peak voltage between the conductors. Above 500 V it becomes a per-volt slope rather than a table entry.</p><p><b>Use peak voltage, not RMS.</b> 230 V RMS mains peaks at 325 V, and it is the peak that breaks down the air.</p><p><b>The environments matter more than the voltage.</b> Look at the spread: at 300 V, an internal layer needs 0.2 mm, an external uncoated layer at sea level needs 1.25 mm, and the same board above 3050 m needs 6.4 mm. Thin air breaks down more easily, which is why altitude has its own rows — relevant to anything airborne.</p><p><b>Coating buys a lot</b>, because a permanent polymer coating or conformal coat excludes the air and the contamination. But it only counts if it is genuinely continuous over the gap; a coating that stops short of the conductors, or that has a bubble over the gap, gives you the uncoated number.</p><p><b>Clearance is not creepage.</b> This table is about clearance — distance through air. Creepage, the distance across the surface, is governed by the insulation's material group and the pollution degree, and for mains isolation it is usually the larger of the two and the one that decides your layout. IPC-2221 does not cover creepage; IEC 60664 or the relevant product safety standard does.</p>"
+  },
+  "z": {
+    "title": "Single-ended impedance",
+    "body": "<p>Characteristic impedance is set by the geometry and the dielectric — the ratio of inductance to capacitance per unit length:</p><span class=\"eq\">Z₀ = √(L/C) &nbsp;&nbsp; t<sub>pd</sub> = √ε<sub>eff</sub> / c</span><p><b>Microstrip</b> uses Hammerstad–Jensen, which is a curve fit to numerical solutions and is accurate to a fraction of a percent over 0.01 ≤ w/h ≤ 100. Outside that range the card refuses rather than extrapolating, because the fit does not degrade gracefully. When you give a frequency it applies Kirschning–Jansen dispersion: ε<sub>eff</sub> rises towards ε<sub>r</sub> as frequency increases and more of the field is pulled into the substrate, so Z₀ falls slightly.</p><p><b>Stripline</b> uses the IPC-2141 expression, 60/√ε<sub>r</sub> · ln(1.9b/(0.8w + t)). Being fully embedded, ε<sub>eff</sub> = ε<sub>r</sub> exactly and there is no dispersion to speak of, which is one reason to route critical timing on inner layers.</p><p><b>Covered microstrip is given as a bracket</b>, not a single number. Solder mask thickness and coverage vary, so the honest answer is bounded by the bare case and the fully-covered case; a real 25–50 µm mask sits nearer the bare figure. No interpolation is offered because any curve drawn between them would be invented.</p><p><b>Take the answer as a starting geometry.</b> Real stackups have resin-rich regions, glass-weave effects, trapezoidal etch and copper roughness that these closed forms do not model. Send the stackup to the fabricator and have them field-solve it; expect their number to differ by a few percent, and expect them to adjust your widths.</p>"
+  },
+  "dp": {
+    "title": "Differential pair",
+    "body": "<p>Two coupled lines have an odd mode (driven differentially) and an even mode (driven together). The differential impedance is twice the odd-mode impedance, reduced from 2Z₀ by the coupling between the traces:</p><span class=\"eq\">Z<sub>diff</sub> = 2·Z₀·(1 − k·e<sup>−m·s/h</sup>)</span><p>The exponential is the important shape: coupling falls off quickly with the gap, so beyond roughly s = 3h the traces barely see each other and Z<sub>diff</sub> approaches 2Z₀. Tight pairs are therefore <i>more</i> sensitive to spacing tolerance than loose ones.</p><p>Odd and even mode impedances are tied together by</p><span class=\"eq\">Z₀ = √(Z<sub>odd</sub> · Z<sub>even</sub>)</span><p>which is a useful identity to check any tool's output against, this one included.</p><p><b>What actually matters in practice.</b> Intra-pair skew usually costs you more margin than a few ohms of impedance error. Keep the two traces the same length, match them at the source of the mismatch rather than adding a serpentine somewhere convenient, and keep a continuous reference plane under the whole run — a pair crossing a plane split has no defined impedance at all, and the return current has to detour.</p><p><b>Validity: 0.1 &lt; w/h &lt; 3 and 0.1 &lt; s/h &lt; 3.</b> These are empirical coupling fits, so treat the result as a starting geometry and have the fabricator solve the real stackup.</p>"
+  },
+  "ee": {
+    "title": "Effective permittivity",
+    "body": "<p>A microstrip's field is partly in the substrate and partly in the air above it, so the wave sees a weighted average of the two:</p><span class=\"eq\">(ε<sub>r</sub> + 1)/2 ≤ ε<sub>eff</sub> ≤ ε<sub>r</sub></span><p>A wide trace pushes most of the field into the substrate and ε<sub>eff</sub> approaches ε<sub>r</sub>; a narrow one lets more field into the air and ε<sub>eff</sub> falls towards the lower bound. The Hammerstad–Jensen expression interpolates between them as a function of w/h.</p><p><b>Dispersion.</b> As frequency rises the field concentrates in the substrate, so ε<sub>eff</sub> increases towards ε<sub>r</sub> and propagation slows. Kirschning–Jansen models it. This is why a fast edge, which contains a spread of frequencies, arrives smeared: the high-frequency content travels slightly slower than the low.</p><p><b>What you use it for.</b> Propagation delay t<sub>pd</sub> = √ε<sub>eff</sub>/c, which is about 5.7 ps/mm for FR-4 microstrip against 6.8 ps/mm for stripline in the same material. Length-matching calculations need the right one — matching a microstrip run against a stripline run by physical length alone leaves real skew.</p><p><b>ε<sub>r</sub> itself is not a constant.</b> FR-4 is a class of materials, not a specification; 4.2–4.6 at 1 MHz is typical but it falls with frequency and varies with the glass-to-resin ratio, which varies across a panel and even along a trace as it passes over and between glass bundles.</p>"
+  },
+  "wl": {
+    "title": "Wavelength and critical length",
+    "body": "<p>The wavelength in a board is shortened by the dielectric:</p><span class=\"eq\">λ = c / (f · √ε<sub>eff</sub>)</span><p>For a digital edge, the frequency that matters is not the clock rate but the <b>knee frequency</b> — the bandwidth implied by the rise time, above which there is little energy:</p><span class=\"eq\">f<sub>knee</sub> ≈ 0.35 / t<sub>r</sub></span><p>A 1 ns edge has significant content to 350 MHz whether it is clocking at 1 MHz or 100 MHz. <b>Slow clocks with fast edges still need transmission-line treatment</b>, which is the single most commonly missed point here.</p><p><b>Critical length</b> is where a trace stops being a wire and starts being a transmission line. The physical test is whether the reflection returns before the edge has finished: if the round-trip delay is shorter than the rise time, the reflection is absorbed into the transition and you never see it. That gives l = t<sub>r</sub>·v/2, and common design rules tighten it to λ/10 or t<sub>r</sub>/6 for margin.</p><p>Beyond that length, an unterminated line rings, and the overshoot can exceed the receiver's absolute maximum rating even though the driver never leaves its rails.</p>"
+  },
+  "vs": {
+    "title": "Via shielding",
+    "body": "<p>A row of stitching vias is a waveguide wall built out of holes, and it works only while the holes are close together compared with a wavelength. The usual working rule keeps the pitch below a tenth of the shortest wavelength of interest:</p><span class=\"eq\">pitch ≤ λ/10, &nbsp; λ = c / (f · √ε<sub>r</sub>)</span><p>The physical limit is the half-wave point: when the gap between barrels approaches λ/2 the fence is transparent and the vias do nothing. λ/10 is an order of magnitude below that, which is where the leakage is small enough to ignore. λ/20 is the conservative choice for anything that must pass emissions with margin.</p><p><b>Use the knee frequency, not the clock.</b> As on the wavelength card, a fence sized for a 100 MHz clock does nothing for the 3 GHz content of a 100 ps edge.</p><p><b>Setback matters too.</b> Vias too close to a trace load the line and shift its impedance — the ground is nearer than the stackup assumes. Keep the fence beyond roughly three trace widths unless you have solved the coplanar geometry deliberately.</p><p><b>What this does not tell you.</b> It bounds the leakage rather than computing it. A real shielding effectiveness figure in dB needs a field solver, and depends on what is on the other side of the fence and on whether both ends of every via actually reach a plane.</p>"
+  },
+  "th": {
+    "title": "Junction temperature",
+    "body": "<p>Thermal resistance behaves like Ohm's law with power for current and temperature for voltage:</p><span class=\"eq\">T<sub>j</sub> = T<sub>a</sub> + P · Σθ &nbsp;&nbsp; θ<sub>ja</sub> = θ<sub>jc</sub> + θ<sub>cs</sub> + θ<sub>sa</sub></span><p>The resistances in the path add in series, so the largest one dominates and is the only one worth improving. There is no point fitting a better thermal pad if the heatsink-to-air resistance is ten times larger.</p><p>Rearranged, the same equation gives the two answers you usually want: the maximum power for a temperature limit, and the heatsink you would need for a given power:</p><span class=\"eq\">P<sub>max</sub> = (T<sub>j,max</sub> − T<sub>a</sub>) / θ<sub>ja</sub> &nbsp;&nbsp; θ<sub>sa</sub> = (T<sub>j</sub> − T<sub>a</sub>)/P − θ<sub>jc</sub> − θ<sub>cs</sub></span><p><b>Treat θ<sub>ja</sub> from a datasheet with suspicion.</b> It is measured on a specified test board — often JEDEC 2s2p, a four-layer board with solid planes — and your board is not that board. A SOT-23 quoted at 250 °C/W can be far worse on a two-layer board with a small copper pour. θ<sub>jc</sub> is a property of the package and is far more trustworthy; use it with your own estimate of the rest of the path.</p><p><b>Leave margin.</b> Silicon lifetime falls roughly exponentially with junction temperature — the usual rule of thumb is that every 10 °C halves it. Designing to T<sub>j,max</sub> is designing to the point where the manufacturer stops promising anything at all. Target 20–30 °C below it at the worst-case ambient, and remember that ambient inside a sealed enclosure is not room temperature.</p><p><b>This is a steady-state model.</b> Short power pulses are handled by thermal <i>impedance</i>, not resistance; a device can survive brief peaks well above its steady-state rating because the die's own heat capacity absorbs them.</p>"
+  },
+  "pdn": {
+    "title": "PDN target impedance",
+    "body": "<p>If a load steps by ΔI and the rail may only move by ΔV, the power distribution network must present no more than their ratio:</p><span class=\"eq\">Z<sub>target</sub> = ΔV / ΔI = (V<sub>rail</sub> · ripple%) / (I<sub>max</sub> · transient%)</span><p>That single number is the design target for the whole network — regulator, bulk capacitance, decoupling, planes and package — <b>across the whole frequency range of interest</b>, not just at DC. The regulator handles up to its loop bandwidth, typically tens of kilohertz; bulk capacitors take over to a few megahertz; ceramics beyond that; and above their self-resonance only the plane capacitance and the package are left.</p><p><b>Which is why the reactance card matters here.</b> Every capacitor is inductive above its self-resonance, so the impedance curve of a real PDN is a series of V shapes. Mixing values does not simply fill the gaps: between two different capacitors' resonances there is an anti-resonant <i>peak</i> where one is inductive and the other still capacitive, and that peak can be higher than either part alone. Many identical parts, or parts with heavy damping, behave better than a decade-spaced spread.</p><p><b>The transient fraction is a guess</b>, and the answer is only as good as it. If you know the actual step profile of your load — an FPGA coming out of clock gating, a radio keying up — use it rather than a percentage.</p><p><b>What this does not do:</b> it does not tell you the inductance of your via and pad layout, which is usually what stops a PDN meeting its target above 100 MHz. Placement beats part count.</p>"
+  },
+  "awg": {
+    "title": "AWG wire",
+    "body": "<p>American Wire Gauge is a geometric series: each step of 6 gauges roughly halves the diameter, and each step of 3 roughly halves the area.</p><span class=\"eq\">d = 0.127 · 92<sup>(36 − n)/39</sup> mm &nbsp;&nbsp; A = πd²/4 &nbsp;&nbsp; R = ρL/A</span><p>Copper's resistivity is 1.72×10⁻⁸ Ω·m at 20 °C and rises about 0.393 % per °C, which the card applies at the conductor temperature you give — a wire running hot in a loom is measurably more resistive than the table value.</p><p><b>Count both directions.</b> Voltage drop is set by the total conductor length in the circuit, so a 0.5 m run means 1 m of copper unless the return is somewhere else entirely. Forgetting the return path is the most common error in a drop calculation, and it is a factor of two.</p><p><b>Ampacity depends on the installation, not the wire.</b> The two figures shown come from the classic chassis-wiring and power-transmission tables, which differ by roughly four times for the same gauge — the first assumes a single wire in free air, the second a conductor in a bundle where its neighbours are also warming it. A wire in a sealed loom in an engine bay is closer to the lower figure, or worse.</p><p><b>Usually the drop decides, not the heating.</b> A wire long enough to matter will violate your voltage budget well before it gets hot.</p>"
+  },
+  "bat": {
+    "title": "Battery pack",
+    "body": "<p>Series cells add voltage, parallel cells add capacity, and energy is the product:</p><span class=\"eq\">V<sub>pack</sub> = S · V<sub>cell</sub> &nbsp;&nbsp; Ah<sub>pack</sub> = P · Ah<sub>cell</sub> &nbsp;&nbsp; Wh = V · Ah</span><p><b>C-rate</b> normalises current to capacity: 1 C discharges the pack in one hour, so a 5 Ah pack at 2 C is drawing 10 A. It is the number cell datasheets are written in.</p><p><b>Runtime</b> is usable capacity divided by current, and the word usable is doing the work. You cannot take a lithium cell to zero — the card's default reserves 20 %. Runtime also falls faster than linearly at high current, because internal resistance both wastes energy and drags the terminal voltage down to the cutoff sooner. Peukert's effect is mild for lithium and severe for lead-acid.</p><p><b>The three voltages.</b> Nominal is the average over a discharge and is what capacity and energy are quoted at; full is the <i>resting</i> voltage of a charged cell; minimum is the discharge cutoff. For lead-acid the charging setpoint is well above the resting full voltage, which is why the card lists it separately.</p><p><b>The discharge curve is indicative.</b> It has the character of the chemistry — a lithium-iron plateau against a sloping lithium-polymer — and is bent to pass through your nominal voltage at half capacity, so a custom cell gets a curve consistent with its own three numbers. It is not your cell's measured curve; load and temperature both move it, and at high current the whole curve shifts down by I·R<sub>internal</sub>.</p><p><b>Maximum discharge is not tabulated</b>, deliberately. Within one chemistry it ranges over two orders of magnitude — a 1 C energy cell and a 100 C RC pack are both LiPo — so it has to come from your cell's own rating.</p>"
+  },
+  "pp": {
+    "title": "Frequency error in ppm",
+    "body": "<p>Parts per million is a fractional error, so it scales with the frequency:</p><span class=\"eq\">Δf = f · ppm / 10⁶</span><p>20 ppm is 20 Hz at 1 MHz and 320 Hz at 16 MHz. The card converts either way and prints the resulting window in whole hertz, because four significant figures cannot show tens of ppm on a megahertz part.</p><p><b>Budget the sources separately.</b> A crystal's datasheet quotes initial tolerance at 25 °C, stability over the temperature range, and ageing per year as three different lines, and a load capacitance error adds a fourth. They add up: ±10 ppm initial, ±20 ppm over temperature and ±3 ppm/year for five years is ±45 ppm worst case, not ±20. The Tolerance tab does this properly.</p><p><b>What the budget has to fit.</b> An asynchronous UART tolerates roughly ±2 % total between the two ends, so ppm-level accuracy is irrelevant. USB full-speed needs ±0.25 %. Ethernet needs ±100 ppm, CAN a few thousand ppm depending on bit timing, and GPS or cellular radios push into the low ppm and need a TCXO. Find the tightest consumer of your clock before choosing the part.</p>"
+  },
+  "nb": {
+    "title": "Number bases",
+    "body": "<p>Straight radix conversion between decimal, hexadecimal, binary and octal, at arbitrary size. Prefixes (<code>0x</code>, <code>0b</code>, <code>0o</code>) are optional, and spaces or underscores may be used as digit separators — <code>0b1010_1100</code> is easier to check than <code>10101100</code>.</p><p><b>Negative values are shown as two's complement</b> at each standard width that can hold them. Two's complement represents −n as 2<sup>w</sup> − n in a w-bit field, which is why −1 is all ones at every width and why the range is asymmetric: an 8-bit signed value runs from −128 to +127, not −127 to +127.</p><p>The practical use is reading a register dump: a value that looks like a wildly large unsigned number is often a small negative one, and 0xFFFFFFF8 being −8 is usually more informative than 4294967288.</p>"
+  },
+  "rt": {
+    "title": "Ratio units",
+    "body": "<p>Four ways of writing the same dimensionless fraction:</p><span class=\"eq\">1 % = 10 000 ppm = 10⁷ ppb = 0.01</span><p>Component tolerances are conventionally in per cent, temperature coefficients and frequency errors in ppm, and contamination or long-term drift in ppb. The conversions are trivial and the mistakes are not: a 100 ppm/°C resistor is 0.01 %/°C, so over a 100 °C swing it moves 1 % — comparable with its purchase tolerance, and a routine source of surprise in a design that specified 0.1 % parts.</p>"
+  },
+  "cv": {
+    "title": "Conversions",
+    "body": "<p>Length, temperature, gain, complex form and angle, each pair converting in both directions.</p><p><b>Decibels are a ratio, and the factor depends on the quantity:</b></p><span class=\"eq\">voltage: dB = 20·log₁₀(V₂/V₁) &nbsp;&nbsp; power: dB = 10·log₁₀(P₂/P₁)</span><p>Both describe the same power ratio, because power goes as voltage squared and the square becomes a factor of two in the logarithm. The factor of 20 is only correct if the impedance is the same at both points — comparing voltages across different impedances and calling the result a gain in dB is a common and quietly wrong habit.</p><p>Useful anchors worth memorising: 3 dB is ×2 in power (×1.41 in voltage), 6 dB is ×2 in voltage, 10 dB is ×10 in power, and 20 dB is ×10 in voltage.</p><p><b>Rectangular and polar</b> are the same complex number written two ways: a + jb ↔ M∠θ with M = √(a² + b²) and θ = atan2(b, a). Rectangular suits addition, polar suits multiplication and division — which is why impedances in series are easiest in rectangular form and a transfer function's magnitude and phase are easiest in polar.</p><p>A mil is one thousandth of an inch, 25.4 µm — not a millimetre, and not a thou of a millimetre either.</p>"
+  }
+};
+
 /* ---------- wiring ---------- */
 
 const CALCS = {
@@ -4482,6 +4632,16 @@ document.querySelectorAll("button.reset").forEach(function (btn) {
   copy.addEventListener("click", function () { copyText(cardText(card), copy); });
   foot.appendChild(copy);
   foot.appendChild(btn);
+  const help = HELP[btn.dataset.reset];
+  if (help) {
+    const info = document.createElement("button");
+    info.type = "button";
+    info.className = "explain";
+    info.textContent = "Explain";
+    info.title = "The equations behind this card";
+    info.addEventListener("click", function () { showHelp(help); });
+    foot.appendChild(info);
+  }
   btn.addEventListener("click", function () {
     const c = CALCS[btn.dataset.reset];
     if (!c) return;

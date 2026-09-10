@@ -22,6 +22,12 @@ The rest, following the `dataviz` skill:
 - Every plot that reads a curve gets a **crosshair that snaps to the nearest sample**, on pointer move and on arrow keys. Value leads, label follows — the reader already has the curve and wants the number.
 - **The plot enhances, never gates.** Every value the hover can show also appears in the card's results list, so nothing is reachable only by pointing at a chart.
 
+## Card explanations
+
+Every card carries an **Explain** button in its footer, right-justified on the same row as Copy results and Reset, opening a `<dialog>` with the equations behind that card. The content lives in one `HELP` object keyed by the card's reset id, and `eecalc_check_page.py` fails if a card has no entry, an entry has no card, an entry is under 400 characters, or its markup is unbalanced — so a new card cannot ship without one.
+
+Pitch it at an engineer who knows the theory but has not memorised these particular formulas. Give the governing equation, define every symbol, say where the model comes from, and — the part that earns its place — name the assumption that will catch them out. The IPC ampacity constant halving for internal layers, a class 2 ceramic's temperature spec being a bound over its whole rated range rather than a slope, DC bias dwarfing every other term in a capacitor budget, ε_eff differing between microstrip and stripline so length matching by physical length alone leaves skew: those are the lines worth writing. Avoid restating the card's own note, and avoid padding.
+
 ## Diagrams
 
 Cards carry an inline SVG labelling the very parameters their fields ask for. Where a selector changes the geometry, the drawing is a function called from the top of that card's `calc*`, so the picture and the answer cannot disagree — `drawZ`, `drawDiff`, `drawTrace`, `drawVia`, `drawSP`, `drawPad`, `drawTopology`.
@@ -53,9 +59,12 @@ Before committing any change to the page:
 
 ```
 python C:\Auterion\Tools\claude\scratch\eecalc_mkharness.py     # rebuild the node harness
+python C:\Auterion\Tools\claude\scratch\eecalc_load_check.py    # the whole script runs to completion
 python C:\Auterion\Tools\claude\scratch\eecalc_diagram_check.py # diagram geometry lint
 python C:\Auterion\Tools\claude\scratch\eecalc_check_page.py    # structural invariants
 ```
+
+**Run the load check on every change.** The node harness stops at the wiring section, so nothing else executes the top-level code that builds the card footers, attaches listeners and restores the last tab — and an error there kills the entire script, not just one card. The specific trap is the temporal dead zone: a top-level `const` declared *below* the code that reads it throws `ReferenceError: Cannot access X before initialization` at load, and the page comes up dead with no visible clue. That has happened once already, with `HELP`. Anything the wiring section reads must be declared above the `/* wiring */` marker.
 
 then run the node suites in `C:\Auterion\Tools\claude\scratch\eecalc_*_tests.js` by concatenating the harness with each suite. The harness stubs the DOM well enough to exercise the real `value` and `classList`; when a suite fails on a missing DOM method, that is a harness gap to fix in `eecalc_mkharness.py`, not a page bug — it has been exactly that four times.
 

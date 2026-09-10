@@ -2,7 +2,7 @@
 
 A single self-contained HTML page (`EE_Calculator.html`) with 26 calculators across seven tabs, for everyday electronics and PCB work. It opens straight from the filesystem — no server, no network, nothing leaves the machine.
 
-A field showing a value in its placeholder is already computing with it — a blank εr box means 4.3, not "waiting for input" — and typing replaces it. Where a card is a solver it writes its answer **into the relevant input box** and highlights it, rather than repeating it in a separate results list, so the card reads as one filled-in form. Type into a highlighted box and it becomes an input again, and whatever is now missing is solved instead. Every card has a **Copy results** button that puts its inputs and results on the clipboard as clean text.
+Every card has an **Explain** button in its footer, opening the equations behind that card: what the formula is, where it comes from, what each symbol means, and the assumption that will catch you out. A field showing a value in its placeholder is already computing with it — a blank εr box means 4.3, not "waiting for input" — and typing replaces it. Where a card is a solver it writes its answer **into the relevant input box** and highlights it, rather than repeating it in a separate results list, so the card reads as one filled-in form. Type into a highlighted box and it becomes an input again, and whatever is now missing is solved instead. Every card has a **Copy results** button that puts its inputs and results on the clipboard as clean text.
 
 Copper weight, temperature rise, ambient and the E-series sit **on the cards that use them**, so the control is where you are working — but there is only one value behind each. Set copper on the trace card and the impedance card sees it too; edit it from either side and the rest follow. Controls shared this way are drawn with a dashed border. A tab with more than three sections gets sub-tabs, and the page reopens on whichever tab you last used.
 
@@ -10,7 +10,9 @@ Copper weight, temperature rise, ambient and the E-series sit **on the cards tha
 
 **Fundamentals** — Ohm's law and power (any two of V, I, R, P) · series/parallel for resistors, capacitors and inductors, with per-element voltage and power.
 
-**Resistors** — divider solver (any three of Vin, Vout, R1, R2, or just the two voltages, plus optional total resistance and midpoint load current) · LED series resistor, solving either direction · tolerance: a component budget covering resistors, capacitors, inductors, crystals and voltage references, adding up initial tolerance, temperature and time drift — EIA dielectric codes are decoded rather than looked up, so X7R, Y5V and X6T all work, and DC bias and thermal hysteresis are there for the parts that need them — alongside the separate divider-ratio question, where only the *relative* movement of the two legs matters and matched parts beat tight parts.
+**Resistors** — divider solver (any three of Vin, Vout, R1, R2, or just the two voltages, plus optional total resistance and midpoint load current) · LED series resistor, solving either direction.
+
+**Tolerance** — a component budget covering resistors, capacitors, inductors, crystals and voltage references, adding up initial tolerance, temperature and time drift; EIA dielectric codes are decoded rather than looked up, so X7R, Y5V and X6T all work, and DC bias and thermal hysteresis are there for the parts that need them · divider ratio error, which is the separate question of how the two legs move *relative to each other*, where matched parts beat tight parts.
 
 **Filters & Resonance** — filter design: pick RC, RL or LC, low-pass or high-pass, and an order, and the card draws the matching topology, solves the missing value and plots the magnitude response with a hover readout · reactance and self-resonance for real capacitors *and* inductors, including their parasitics · crystal load capacitance · PI, T and L attenuator pads.
 
