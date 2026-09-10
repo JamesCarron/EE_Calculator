@@ -2722,7 +2722,10 @@ function calcVia() {
   }
   if (isFinite(iVia) && iVia > 0) {
     const rEff = r / nVia;
-    rows.push(["At " + fmt(iVia, "A"), fmt(iVia * rEff, "V") + " drop, " + fmt(iVia * iVia * rEff, "W") + " dissipated"]);
+    /* the current is what the net carries, so with n vias it splits between
+       them - say so, because "At 3 A" alone reads as 3 A per via */
+    rows.push(["At " + fmt(iVia, "A") + (nVia > 1 ? " shared across the " + nVia : ""),
+               fmt(iVia * rEff, "V") + " drop, " + fmt(iVia * iVia * rEff, "W") + " dissipated"]);
   }
   if (isFinite(stub) && stub > 0) {
     rows.push(["Stub quarter-wave null", fmt(299792458 / (4 * (stub / 1000) * Math.sqrt(er)), "Hz") +

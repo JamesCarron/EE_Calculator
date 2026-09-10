@@ -145,7 +145,7 @@ The ask was for all three tiers so the whole set could be judged together and th
 
 To change a drawing, patch `build_page.py` with a script written to the scratchpad (never a heredoc — backslash escapes in a non-raw Python string have silently corrupted anchors several times), regenerate with `python build_page.py`, then run the geometry lint and the node suites.
 
-Three assertions in `eecalc_planned_tests.js` fail, and failed identically before this work: they concern thermal via counts and a power-dissipation figure. They are a stale speculative suite from the planning phase, not a regression, but they are worth resolving rather than leaving red.
+The three long-standing failures in `eecalc_planned_tests.js` are resolved. All three were wrong expectations rather than defects: two demanded more significant figures than the page prints (8.337 W, 16.1 K/W), and the third assumed the whole 3 A ran through a single via instead of splitting across the bank of ten, so it expected 9.73 mW where 973 µW is correct. The page was right in each case; the assertions were corrected, and the via card's `At 3 A` row now reads `At 3 A shared across the 10`, because the ambiguity that misled the test would mislead a reader too.
 
 ## Decisions taken
 
