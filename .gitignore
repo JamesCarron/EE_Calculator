@@ -3,3 +3,7 @@
 
 # pixi environment
 /.pixi/
+
+# Python bytecode
+__pycache__/
+*.pyc
