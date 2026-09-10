@@ -6,7 +6,7 @@ Every number quoted below was computed and checked by `C:\Auterion\Tools\claude\
 
 ## How the Saturn inventory was corrected
 
-The first inventory came from the marketing page and was thin. This revision is built from three sources that agree with each other: the 47-page help PDF shipped with the local V8.47 install, the tab captions and UI label strings recovered from the executable, and a screenshot of the running application.
+The first inventory came from the marketing page and was thin. This revision is built from four sources that agree with each other: the 47-page help PDF shipped with the local V8.47 install, the tab captions and UI label strings recovered from the executable, and — most usefully — a screenshot of every one of the 19 tabs, read tab by tab in the appendix at the end of this document.
 
 Two attempts to interrogate the running program failed and are recorded so nobody repeats them: the app exposes **nothing** through UI Automation (`TAB COUNT: 0`), and `EnumChildWindows` reports **zero child windows**. It is a single custom-painted VCL window, so its controls are not addressable by either mechanism. Mining the binary's label strings is the method that works; `C:\Auterion\Tools\claude\scratch\saturn_win32_dump.py` and `saturn_ui_dump.ps1` are kept only as a record of the dead ends.
 
@@ -212,3 +212,97 @@ Saturn passes values between tabs. The cheap, high-value version here: send ε_e
 | B4 copper/plating/etch | 3 | 2 | **medium, touches verified maths** |
 | B5 plane C and PDN | 7 | 4 | none, new card |
 | B6 attenuator pads | 3 | 4 | none |
+
+---
+
+# Appendix: the Saturn UI, tab by tab
+
+Screenshots live in `SaturnPCB/`, one per tab, each named after the tab it shows. All 19 tabs are covered exactly once; the descriptions below were read off those captures. Values quoted are whatever the app happened to be showing, and are given because a worked example says more about a calculator than a field list does.
+
+The right-hand **Options** panel persists across every tab and greys out whatever does not apply: base copper weight (0.25–5 oz), plating thickness (bare to 3 oz), plane thickness, conductor layer, imperial/metric units, a substrate dropdown with editable Er and Tg, temperature rise and ambient (each showing a live °F conversion), and an **Information** pane carrying derived values such as total copper thickness. Every tab has **Print** and **Solve!** buttons.
+
+## Bandwidth_and_Max_Conductor_Length.png
+
+How long a trace may be before it must be treated as a transmission line. Input is a signal risetime (1 ns) or a frequency. Two methods run side by side: the **IPC-2251** route gives bandwidth 350 MHz, propagation speed C/√Er = 139 778 954 m/s and a maximum length of 1.772 in via an "Sr divide by factor" slider defaulting to 0.25 Sr; the **frequency-domain** route gives full wavelength in air 33.72 in and a maximum length of 4.818 in via a lambda-divide slider defaulting to 1/7. The two answers differ by 2.7× on identical input, which is the honest reflection of how arbitrary the rule of thumb is. Microstrip/stripline selection affects only the IPC route. *We already have knee frequency and critical length; the pair-of-methods presentation is the borrowable idea.*
+
+## Conductor_Impedance.png
+
+Single-ended impedance for one trace. Inputs are width (17 mil), height above the plane (10 mil) and frequency (500 MHz); outputs are Zo 50.74 Ω, Lo 7.788 nH/in, Co 3.025 pF/in and Tpd 153.49 ps/in. The **Passive Circuits** selector offers six geometries — Microstrip, Microstrip Embed, Stripline, Stripline Asym, Dual Stripline, Coplanar Wave — and the cross-section graphic redraws for each. The Information pane surfaces Er Effective (3.2802) alongside total copper thickness. *This is the tab behind plan item B2: we have two of the six structures, and per-inch L and C are outputs we do not currently give.*
+
+## Conductor_Properties.png
+
+The flagship current-carrying calculator. Solve for amperage or for conductor width; options for parallel conductors and for a plane being present. Inputs shown: load current 5 A, width 50 mil, length 1000 mil, PCB thickness 62 mil, frequency 1 MHz with a DC checkbox. Outputs: skin depth 2.599 mil at 100 % of thickness, DC resistance 8.30 mΩ, cross-section 102.79 mil², conductor current 3.723 A, voltage drop 30.9 mV, loaded voltage drop 41.5 mV, power 115 mW and 20.61 dBm. The Information pane adds material Tg, loaded conductor temperature (142 °F), conductor temperature and current density J = 0.0362 A/mil². The mode line reads "IPC-2152 with modifiers" with an etch factor of 2:1.
+
+Worth understanding before copying: **load current and conductor current are different things**. The 5 A input is what the design draws; the 3.723 A output is what the geometry can carry at the chosen temperature rise. Showing both together is what lets you see at a glance that this trace is undersized. *Plan items B3 and B4 come from this tab.*
+
+## Conversion_Calculator.png
+
+Six converters in one pane. Distance (10 mil → 0.01 in / 0.254 mm / 254 µm); temperature (72 °F → 22.22 °C); a **dB chain modelled on a bench setup** rather than a bare ratio — dBm in (−60) plus gain (23 dB) minus attenuator (10 dB) gives −47 dBm, with volts in/out and voltage gain 14.13; rectangular↔polar with a swap checkbox and a "Send →" button; degrees↔radians. The Information pane converts dBm to watts (19.95 nW). Shortcut buttons link to SI prefixes, an Ohm's law wheel, a resistor calculator, a dBm chart, a capacitor unit chart and PCB design rules. *We have distance, temperature and dB/ratio; rect↔polar and deg↔rad are plan items, and the bench-chain framing of dB is the better idea.*
+
+## Differential_Pairs_XTALK.png
+
+Differential impedance against a target, plus near-end crosstalk. Inputs: width 10 mil, spacing 5 mil, height 15 mil, applied voltage 1 V, coupled length 100 mil, risetime 1 ns, target Zdiff 100 Ω with a ±10 % tolerance slider, and a **protocol dropdown** (DDR2 CLK/DQS shown) that preloads the target. Six coupling geometries: edge-coupled external, internal symmetric, internal asymmetric, embedded, and broadside coupled shielded or unshielded. Outputs: Zdifferential 100.979 Ω with a **green in-tolerance indicator**, Zo 77.504 Ω, Zodd 50.490 Ω, Zeven 118.971 Ω; crosstalk gives Kb 0.2111 (−13.512 dB, 6.4 mV NEXT) terminated and Kb′ 0.4041 (−7.870 dB, 12.3 mV) unterminated, with Lsat 3289 mil. Formula restrictions are printed on the face of the tab: 0.1 < W/H < 3.0 and 0.1 < S/H < 3.0.
+
+*We decided against differential impedance and crosstalk. Nothing here changes that — Saturn disowns its own separate crosstalk tab — but the presentation is the model to copy if we ever revisit: state the validity window on the page, and show a target with a coloured pass/fail band rather than a bare number.*
+
+## Embedded_Resistors.png
+
+Sizes a polymer-thick-film resistor buried in the stackup. Type selector: additive screened, subtractive copper-nickel, or embedded annular. Sheet resistance 25 Ω/sq with a 100 × 50 mil rectangle gives 5000 mil² and 50 Ω. References IPC-2316. *Confirmed niche; stays out of scope.*
+
+## Er_Effective.png
+
+Effective dielectric constant for a microstrip: width 17 mil, height 10 mil, 500 MHz → Er eff 3.2802. Explicitly states it uses the Hammerstad and Jensen formulation rather than the simplified IPC-2141A one, and offers **"Send to Wavelength Calculator"**. *We compute ε_eff inside the impedance tab but never expose it or its frequency dependence; the send-to button is plan item B7.*
+
+## Fusing_Current.png
+
+Onderdonk fusing current: 10 mil width for 1 s gives a 18.79 mil² section and 3.515 A, with the equation and the copper melting point (1084.62 °C) printed on the tab. Carries an etch-factor slider and an adjustable **Onderdonk multiplier**, and warns against use beyond about 5 seconds. *We have this. The multiplier and the explicit ">5 s is out of scope" warning are the refinements worth stealing.*
+
+## Mechanical_Information.png
+
+Three reference blocks. **Wire gauge**: AWG 4/0 gives 0.46 in diameter, 0.05 Ω per 1000 ft, 380 A chassis and 302.3 A power-transmission ampacity, and with load 5 A over a 10 ft run, a 2.5 mV drop. **Drill chart** and **imperial screw thread sizes** are scrollable read-only tables. *The wire voltage drop here is plan item A2. The drill and thread tables stay out — vendor data, better placed elsewhere.*
+
+## Min_Conductor_Spacing.png
+
+IPC-2221C clearance by voltage band and construction. Ten voltage bands from 0–15 V to >500 V (the last enabling a free-entry field) against eight device types, with the legend spelled out on the tab: B1 internal, B2/B3 external uncoated by altitude, B4 solder-mask covered, B5 external coated, A6–A8 component leads. 0–15 V on B1 gives 1.97 mil. *We have this with seven environments; Saturn lists eight, splitting the coated external case, and shows only the selected one rather than all at once. Showing all seven together, as we do, remains the better call for comparing options.*
+
+## Ohms_Law.png
+
+V/I/R/P with a solve-for selector — 1 A through 12 Ω gives 12 V and 12 W — sitting above a **nested strip of nine helper calculators**: LED bias, R series, R parallel, PI attenuator, T attenuator, C series, C parallel, L series, L parallel. LED bias is the visible one: 12 V supply, 2 V drop, 10 mA gives 1000 Ω dissipating 0.1 W, and a checkbox reverses it to solve for LED current. *Direct confirmation for plan items A3 (C and L series/parallel) and B6 (attenuator pads), and our LED calculator already solves both ways.*
+
+## Padstack_Calculator.png
+
+Seven pad geometry modes: thru-hole pad, BGA land size, conductor/pad TH, conductor/pad BGA, two conductors for each, and corner-to-corner. Thru-hole shown: 32 mil hole, 12 mil annular ring, 12 mil isolation, plated, giving 56 mil external and internal signal pads, an 80 mil plane outer diameter, 56 mil inner and a 10 mil spoke width. *We excluded land-pattern work as Altium's job. The conductor/pad modes — will a track of this width pass between these pads — are the part that remains genuinely useful and is plan item B5's padstack option.*
+
+## PDN_Calculator.png
+
+Two blocks. **Target PDN impedance** from a 5 V rail, 5 % ripple, 2 A maximum and 50 % transient → 0.25 Ω. **Plane capacitance** from 5 in² of plane 2 mil apart at 1 MHz → 2587.5 pF and 61.51 Ω of reactance, with a DC checkbox. *Both are plan item B5, and the arithmetic is already verified against our own worked example.*
+
+## Planar_Inductors.png
+
+Spiral inductor in copper: 5 turns, 10 mil track and gap, 350 mil outer diameter, square geometry (also hexagonal, octagonal, circular) → 170 mil inner diameter, 0.3462 fill factor, 248.59 nH. Shows the modified-Wheeler expression on the tab. *Confirmed niche; stays out.*
+
+## PPM_XTAL_Calculator.png
+
+Three blocks: **XTAL capacitor value** (10 pF load, 3 pF stray, C1 = C2 = 14 pF → 10.00 pF seen by the crystal, with a 14 pF rule-of-thumb figure); **Hertz to PPM** (32000 → 32001 Hz = 31.25 ppm); **PPM to Hertz** (50 MHz at 25 ppm → ±1250 Hz, giving the min and max oscillation frequencies). *We match this closely already. The min/max frequency pair is a small addition worth making.*
+
+## Thermal_Management.png
+
+Two blocks. **Device junction temperature**: 3 °C/W and 5 W on a 22 °C ambient → 37 °C. **Heat sink selection**: 25 °C/W and 5 W → 147 °C, captioned as being based on a 75 °C rise in natural convection. *This is plan item A1, and note that Saturn's version is thinner than what we specified — it has no θ chain, no headroom against Tj(max), no maximum-power figure and no "what θ_sa do I need" answer. Ours should be better, not merely equivalent.*
+
+## Via_Properties.png
+
+The richest tab. A 10 mil hole, 20 mil internal pad, 40 mil plane opening, 62 mil height and 1 mil plating gives capacitance 0.4021 pF, inductance 1.3262 nH, impedance 57.429 Ω, DC resistance 1.53 mΩ, resonant frequency 6891.7 MHz, step response 25.40 ps, power 5.99 mW, cross-section 34.56 mil² and via current 1.979 A. The Information pane adds dBm power, **aspect ratio 6.20:1**, current density, via temperature, thermal resistance 179.3 °C/W and — with a via count of 10 — 17.9 °C/W per via, plus a 3.03 mV drop. A second mode computes via stub length. *Plan item A4 takes impedance, resonance, aspect ratio, via count and current from here. Step response is the one extra worth considering: it states the rise-time damage a via does to a 50 Ω line, which is the number that actually matters at speed.*
+
+## Wavelength_Calculator.png
+
+Wavelength from a period (10 ns) or frequency with an Er eff of 4 → 59.014 in, with a divide slider from full down to 1/20 and a note to enter Er eff = 1 for air. Buttons jump to the Er Effective calculator and to a speed-of-light reference. *We have this; the divide-fraction slider is a nicer interaction than our fixed λ/4, λ/10, λ/20 rows.*
+
+## XL_XC_Reactance.png
+
+Xc, Xl and LC resonance with per-field unit selectors: 1 MHz, 1 µF, 1 mH → Xc 0.1592 Ω, Xl 6283.18 Ω, resonance 5032.93 Hz. Formulas printed on the tab. *We match this, and our SI-suffix parsing removes the need for the unit radio groups.*
+
+## What the screenshots changed in the plan
+
+Nothing in Group A moved — A1 to A4 are confirmed by what the screenshots show, and the thermal tab turned out thinner than our specification rather than richer. Three small additions are now worth folding into their existing items when built: **min/max oscillation frequency** on the crystal card (from PPM-XTAL), **via step response** alongside the other via extras (from Via Properties), and **per-inch L and C** on the impedance tab (from Conductor Impedance). Each is one line of arithmetic on values already in hand.
+
+Two presentation ideas are worth adopting independently of any calculation: stating a formula's **validity window on the face of the tab** rather than only warning when it is breached, and showing a target with a **coloured pass/fail band** rather than a bare computed number.
