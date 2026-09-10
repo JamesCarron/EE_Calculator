@@ -423,6 +423,8 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
   svg.schem text { fill: currentColor; stroke: none; font-family: var(--a-font-mono); font-size: 11px; }
   .fields { display: flex; flex-wrap: wrap; gap: .9rem 1.2rem; }
   .field { display: flex; flex-direction: column; gap: .25rem; }
+  /* an author display rule beats the UA default for [hidden], so say it again */
+  .field[hidden] { display: none; }
   .field label { font-size: var(--a-text-xs); color: var(--a-ink-secondary); }
   .field input, .field select, .field textarea { font: inherit; font-family: var(--a-font-mono); font-size: var(--a-text-sm); color: var(--a-ink); background: var(--a-bg); border: var(--a-border) solid var(--a-line-strong); border-radius: var(--a-radius-sm); padding: .45rem .6rem; width: 9.5rem; }
   .field textarea { width: 100%; box-sizing: border-box; }
@@ -552,7 +554,7 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
   <nav class="subtabs" role="tablist" id="subbar-res">
     <button role="tab" data-sub="div" aria-selected="true">Divider</button>
     <button role="tab" data-sub="led" aria-selected="false">LED Resistor</button>
-    <button role="tab" data-sub="acc" aria-selected="false">Accuracy</button>
+    <button role="tab" data-sub="acc" aria-selected="false">Tolerance</button>
   </nav>
 <div class="subpanel active" id="sub-div">
   <h2>Divider</h2>
@@ -640,10 +642,69 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
   </div>
 </div>
 <div class="subpanel" id="sub-acc">
-  <h2>Accuracy</h2>
-  <p class="hint">What tolerance, temperature coefficient and ageing do to a divider&rsquo;s ratio. A divider only cares how the two legs move <em>relative to each other</em>, so matched parts beat tight parts.</p>
+  <h2>Component Tolerance</h2>
+  <p class="hint">What initial tolerance, temperature and time drift do to a part&rsquo;s value &mdash; and, separately, what they do to a divider&rsquo;s <em>ratio</em>, which is a different question because a divider only cares how its two legs move relative to each other.</p>
   <div class="card">
-    <h3>Error budget</h3>
+    <h3>Component tolerance budget</h3>
+    <div class="cardrow">
+    <div class="fields">
+      <div class="field"><label for="ec-type">Component</label>
+        <select id="ec-type">
+          <option value="R" selected>Resistor</option>
+          <option value="C">Capacitor</option>
+          <option value="L">Inductor</option>
+          <option value="X">Crystal / oscillator</option>
+          <option value="V">Voltage reference</option>
+        </select>
+      </div>
+      <div class="field"><label for="ec-val" id="ec-vallabel">Nominal value (&Omega;)</label><input id="ec-val" inputmode="decimal" placeholder="e.g. 10k"></div>
+      <div class="field" id="ec-f-diel" hidden><label for="ec-diel">Dielectric</label>
+        <select id="ec-diel">
+          <option value="C0G">C0G / NP0 &mdash; class 1</option>
+          <option value="X5R" selected>X5R</option>
+          <option value="X7R">X7R</option>
+          <option value="X6S">X6S</option>
+          <option value="X7S">X7S</option>
+          <option value="X8R">X8R</option>
+          <option value="Y5V">Y5V</option>
+          <option value="Z5U">Z5U</option>
+          <option value="other">Other EIA code&hellip;</option>
+        </select>
+      </div>
+      <div class="field" id="ec-f-code" hidden><label for="ec-code">EIA code</label><input id="ec-code" placeholder="e.g. X6T"></div>
+      <div class="field"><label for="ec-tol" id="ec-tollabel">Initial tolerance (%)</label><input id="ec-tol" inputmode="decimal" placeholder="1"></div>
+      <div class="field" id="ec-f-tc"><label for="ec-tc" id="ec-tclabel">Temperature coefficient (ppm/&deg;C)</label><input id="ec-tc" inputmode="decimal" placeholder="100"></div>
+      <div class="field"><label for="ec-tmin">T min (&deg;C)</label><input id="ec-tmin" inputmode="decimal" placeholder="-40"></div>
+      <div class="field"><label for="ec-tmax">T max (&deg;C)</label><input id="ec-tmax" inputmode="decimal" placeholder="85"></div>
+      <div class="field"><label for="ec-tnom">T nominal (&deg;C)</label><input id="ec-tnom" inputmode="decimal" placeholder="25"></div>
+      <div class="field"><label for="ec-age" id="ec-agelabel">Ageing (ppm/year)</label><input id="ec-age" inputmode="decimal" placeholder="0"></div>
+      <div class="field"><label for="ec-life" id="ec-lifelabel">Service life (years)</label><input id="ec-life" inputmode="decimal" placeholder="10"></div>
+      <div class="field" id="ec-f-bias" hidden><label for="ec-bias">DC bias loss at the working voltage (%)</label><input id="ec-bias" inputmode="decimal" placeholder="e.g. 40"></div>
+      <div class="field" id="ec-f-hyst" hidden><label for="ec-hyst">Thermal hysteresis (ppm)</label><input id="ec-hyst" inputmode="decimal" placeholder="e.g. 75"></div>
+    </div>
+    <div class="diagram">
+      <svg class="schem" width="235" height="150" viewBox="0 0 235 150" role="img" aria-label="A nominal value with a tolerance band around it, widening with temperature and with time">
+      <path class="wire" d="M18 75 H218"/>
+      <text x="18" y="70">nominal</text>
+      <path class="wire opt" d="M18 45 H218 M18 105 H218"/>
+      <path class="dot" d="M18 55 H80 V95 H18 Z" opacity="0.18"/>
+      <path class="dot" d="M80 45 H150 V105 H80 Z" opacity="0.18"/>
+      <path class="dot" d="M150 36 H218 V114 H150 Z" opacity="0.18"/>
+      <path class="wire" d="M80 30 V120 M150 30 V120"/>
+      <text x="26" y="26">tolerance</text>
+      <text x="92" y="26">+ temp</text>
+      <text x="160" y="26">+ time</text>
+    </svg>
+      <p class="plate">worst case = &Sigma;|e<sub>i</sub>| &middot; RSS = &radic;(&Sigma;e<sub>i</sub>&sup2;)</p>
+      <p class="key">Each contribution widens the band; none of them cancel.</p>
+    </div>
+    </div>
+    <dl class="results" id="ec-out"></dl>
+    <p class="note">Worst case adds every contribution at its limit, which is what a screened build must survive. RSS treats them as independent random variables, which is the realistic spread across a production run &mdash; but it assumes independence, and a reel of parts from one lot is <em>not</em> independent, so RSS understates lot-to-lot risk. Class 2 ceramics are the awkward case: their temperature figure is a bound over the dielectric&rsquo;s whole rated range and the curve is not linear, so it cannot be scaled to a narrower range, and DC bias commonly costs more than every other contribution combined.</p>
+    <button class="reset" data-reset="ec">Reset</button>
+  </div>
+  <div class="card">
+    <h3>Divider ratio error</h3>
     <div class="cardrow">
     <div class="fields">
       <div class="field"><label for="ac-r1">R1 &mdash; top (&Omega;)</label><input id="ac-r1" inputmode="decimal" placeholder="e.g. 10k"></div>
@@ -2840,6 +2901,210 @@ function calcLED() {
   render("led-out", rows);
 }
 
+/* ---------- component tolerance ----------
+
+   One budget for resistors, capacitors, inductors, oscillators and voltage
+   references. Every contribution is a signed pair of fractions, because the
+   interesting cases are asymmetric: a Y5V capacitor may fall 82 % and rise
+   only 22 %, and DC bias only ever subtracts. */
+
+/* EIA-198 class 2 codes are systematic, so decode them rather than listing a
+   handful: first character the low temperature, second the high, third the
+   permitted capacitance change over that range. */
+const EIA_LOW = { X: -55, Y: -30, Z: 10 };
+const EIA_HIGH = { "2": 45, "4": 65, "5": 85, "6": 105, "7": 125, "8": 150, "9": 200 };
+const EIA_CHANGE = {
+  A: [1, -1], B: [1.5, -1.5], C: [2.2, -2.2], D: [3.3, -3.3], E: [4.7, -4.7],
+  F: [7.5, -7.5], P: [10, -10], R: [15, -15], S: [22, -22],
+  T: [22, -33], U: [22, -56], V: [22, -82]
+};
+/* Typical ageing for the dielectric class, in per cent per decade of hours.
+   Class 2 ceramics lose capacitance as the crystal structure relaxes; the
+   figure is a class typical, not a spec, so it is offered as a default the
+   datasheet should replace. */
+const EIA_AGEING = { P: 1, R: 1.5, S: 2, T: 3, U: 5, V: 6 };
+
+function decodeEIA(code) {
+  const c = String(code || "").trim().toUpperCase();
+  if (c === "C0G" || c === "NP0") {
+    return { cls: 1, lo: -55, hi: 125, plus: 0, minus: 0, tc: 30, age: 0, name: "C0G / NP0" };
+  }
+  if (c.length !== 3) return null;
+  const lo = EIA_LOW[c[0]], hi = EIA_HIGH[c[1]], ch = EIA_CHANGE[c[2]];
+  if (lo === undefined || hi === undefined || !ch) return null;
+  return { cls: 2, lo: lo, hi: hi, plus: ch[0], minus: ch[1], tc: 0, age: EIA_AGEING[c[2]] || 2, name: c };
+}
+
+/* The five component types, and what each of the shared fields means for it. */
+const EC_TYPE = {
+  R: { name: "Resistor",          unit: "\u03a9", vlabel: "Nominal value (\u03a9)",  tc: "Temperature coefficient (ppm/\u00b0C)", tcDflt: 100, ageUnit: "ppm/year", ageDflt: 0 },
+  C: { name: "Capacitor",         unit: "F",      vlabel: "Nominal value (F)",       tc: "Temperature coefficient (ppm/\u00b0C)", tcDflt: 30,  ageUnit: "%/decade hour", ageDflt: 0 },
+  L: { name: "Inductor",          unit: "H",      vlabel: "Nominal value (H)",       tc: "Temperature coefficient (ppm/\u00b0C)", tcDflt: 100, ageUnit: "ppm/year", ageDflt: 0 },
+  X: { name: "Crystal",           unit: "Hz",     vlabel: "Nominal frequency (Hz)",  tc: "Frequency stability over range (\u00b1ppm)", tcDflt: 30, ageUnit: "ppm/year", ageDflt: 3 },
+  V: { name: "Voltage reference", unit: "V",      vlabel: "Nominal output (V)",      tc: "Temperature coefficient (ppm/\u00b0C)", tcDflt: 25,  ageUnit: "ppm/\u221a1000 h", ageDflt: 50 }
+};
+
+/* Show only the fields this component type has, and rename the ones whose
+   meaning shifts. Called on every recalculation so the card can never show a
+   field that its own maths ignores. */
+function ecFields(type) {
+  const t = EC_TYPE[type];
+  const cap = type === "C", xtal = type === "X", vref = type === "V";
+  const show = function (id, on) { const e = document.getElementById(id); if (e) e.hidden = !on; };
+  show("ec-f-diel", cap);
+  show("ec-f-bias", cap);
+  show("ec-f-hyst", vref);
+  const diel = cap ? document.getElementById("ec-diel").value : "";
+  show("ec-f-code", cap && diel === "other");
+  /* a class 2 ceramic's temperature spec is the dielectric code, not a slope */
+  const usesTc = !(cap && diel !== "C0G");
+  show("ec-f-tc", usesTc);
+  document.getElementById("ec-vallabel").innerHTML = t.vlabel;
+  document.getElementById("ec-tclabel").innerHTML = t.tc;
+  document.getElementById("ec-tollabel").innerHTML = xtal ? "Initial tolerance (\u00b1ppm at 25 \u00b0C)" : "Initial tolerance (%)";
+  document.getElementById("ec-agelabel").innerHTML = "Ageing (" + t.ageUnit + ")";
+  document.getElementById("ec-lifelabel").innerHTML = cap ? "Service life (hours)" : "Service life (years)";
+  document.getElementById("ec-tol").placeholder = xtal ? "20" : "1";
+  document.getElementById("ec-tc").placeholder = String(t.tcDflt);
+  document.getElementById("ec-age").placeholder = String(t.ageDflt);
+  document.getElementById("ec-life").placeholder = cap ? "50000" : "10";
+  return t;
+}
+
+function calcTolerance() {
+  const type = document.getElementById("ec-type").value;
+  const t = ecFields(type);
+  const cap = type === "C", xtal = type === "X", vref = type === "V";
+  const num = function (id, dflt) { const v = val(id); return isFinite(v) ? v : dflt; };
+
+  const nominal = val("ec-val");
+  const tmin = num("ec-tmin", -40), tmax = num("ec-tmax", 85), tnom = num("ec-tnom", 25);
+  if (tmax < tmin) { render("ec-out", [["", "T max must be at or above T min.", "err"]]); return; }
+  const dT = Math.max(Math.abs(tmax - tnom), Math.abs(tmin - tnom));
+
+  const diel = cap ? decodeEIA(document.getElementById("ec-diel").value === "other"
+                                 ? document.getElementById("ec-code").value
+                                 : document.getElementById("ec-diel").value) : null;
+  if (cap && document.getElementById("ec-diel").value === "other" && !diel) {
+    render("ec-out", [["", "That is not an EIA class 2 code. The first character is the low temperature (X, Y, Z), "
+                          + "the second the high (2, 4\u20139) and the third the permitted change (P, R, S, T, U, V) \u2014 X7R, Y5V, X6T.", "err"]]);
+    return;
+  }
+
+  /* every contribution as [label, +fraction, -fraction] */
+  const parts = [];
+  const tol = num("ec-tol", xtal ? 20 : 1);
+  if (xtal) parts.push(["Initial tolerance at 25 \u00b0C", tol * 1e-6, tol * 1e-6]);
+  else parts.push(["Initial tolerance", tol / 100, tol / 100]);
+
+  if (cap && diel && diel.cls === 2) {
+    parts.push(["Temperature, " + diel.name + " over " + diel.lo + " to +" + diel.hi + " \u00b0C",
+                diel.plus / 100, -diel.minus / 100]);
+  } else if (xtal) {
+    const st = num("ec-tc", t.tcDflt);
+    parts.push(["Frequency stability over temperature", st * 1e-6, st * 1e-6]);
+  } else {
+    const tc = num("ec-tc", cap ? 30 : t.tcDflt);
+    parts.push(["Temperature, " + Math.abs(tc) + " ppm/\u00b0C over \u0394T " + dT.toFixed(0) + " \u00b0C",
+                Math.abs(tc) * 1e-6 * dT, Math.abs(tc) * 1e-6 * dT]);
+  }
+
+  const life = num("ec-life", cap ? 50000 : 10);
+  const age = num("ec-age", cap && diel ? diel.age : t.ageDflt);
+  if (age > 0 && life > 0) {
+    if (cap) {
+      /* class 2 ceramics lose capacitance by a fixed percentage per decade of
+         hours, referred to the 1000 h point the datasheet measures at */
+      const decades = Math.max(0, Math.log10(life / 1000));
+      parts.push(["Ageing, " + age + " %/decade over " + fmt(life, "h") + " (" + decades.toFixed(2) + " decades past 1000 h)",
+                  0, age * decades / 100]);
+    } else if (vref) {
+      /* reference drift is a random walk, so it accumulates as the square root
+         of time rather than linearly */
+      const kh = Math.sqrt(life * 8760 / 1000);
+      parts.push(["Long-term drift, " + age + " ppm/\u221a1000 h over " + life + " years",
+                  age * kh * 1e-6, age * kh * 1e-6]);
+    } else {
+      parts.push(["Ageing, " + age + " ppm/year over " + life + " years", age * life * 1e-6, age * life * 1e-6]);
+    }
+  }
+
+  if (cap) {
+    const bias = num("ec-bias", 0);
+    if (bias > 0) parts.push(["DC bias at the working voltage", 0, bias / 100]);
+  }
+  if (vref) {
+    const hyst = num("ec-hyst", 0);
+    if (hyst > 0) parts.push(["Thermal hysteresis", hyst * 1e-6, hyst * 1e-6]);
+  }
+
+  let wcP = 0, wcM = 0, ssP = 0, ssM = 0;
+  const rows = [];
+  parts.forEach(function (q) {
+    wcP += q[1]; wcM += q[2];
+    ssP += q[1] * q[1]; ssM += q[2] * q[2];
+    rows.push([q[0], (q[1] === q[2] ? "\u00b1" + pct(q[1]) : "+" + pct(q[1]) + " / \u2212" + pct(q[2]))]);
+  });
+  const rssP = Math.sqrt(ssP), rssM = Math.sqrt(ssM);
+
+  rows.push(["Worst case", band(wcP, wcM)]);
+  rows.push(["RSS", band(rssP, rssM)]);
+
+  if (isFinite(nominal) && nominal > 0) {
+    rows.unshift(["Nominal", fmt(nominal, t.unit)]);
+    if (xtal) {
+      /* Four significant figures cannot resolve tens of ppm on a megahertz
+         part - it would print "16 MHz to 16 MHz" - so a crystal gets whole
+         hertz instead of a formatted range. */
+      const win = function (m, pl) {
+        return Math.round(nominal * (1 - m)).toLocaleString("en-GB") + " to " +
+               Math.round(nominal * (1 + pl)).toLocaleString("en-GB") + " Hz";
+      };
+      rows.push(["Worst-case window", win(wcM, wcP)]);
+      rows.push(["RSS window", win(rssM, rssP)]);
+    } else {
+      /* Contributions are summed, so a stack of large ones can subtract more
+         than the whole part. Clamping and saying so beats printing a negative
+         capacitance as though it meant something. */
+      const gone = wcM >= 1;
+      rows.push(["Worst-case range", (gone ? "0" : fmt(nominal * (1 - wcM), t.unit)) +
+                 " to " + fmt(nominal * (1 + wcP), t.unit)]);
+      rows.push(["RSS range", fmt(Math.max(0, nominal * (1 - rssM)), t.unit) + " to " +
+                 fmt(nominal * (1 + rssP), t.unit)]);
+      if (gone) {
+        rows.push(["", "The negative contributions total more than the whole value, so worst case leaves nothing. " +
+                   "Stacking every limit this far is past the point of being useful — work from the RSS figure, or from " +
+                   "the manufacturer’s own curves for the conditions you actually have.", "warn"]);
+      }
+    }
+  }
+
+  if (cap && diel && diel.cls === 2) {
+    const outside = tmin < diel.lo || tmax > diel.hi;
+    rows.push(["", "The " + diel.name + " figure is a bound over the dielectric&rsquo;s whole " + diel.lo +
+               " to +" + diel.hi + " \u00b0C range. The curve is not linear, so a narrower operating range sees less than this "
+               + "but the spec cannot be scaled down &mdash; use the manufacturer&rsquo;s curve if you need the narrower number.",
+               "warn"]);
+    if (outside) {
+      rows.push(["", "Your " + tmin + " to +" + tmax + " \u00b0C range goes outside what " + diel.name +
+                 " is rated for, so the part is unspecified at the extremes.", "err"]);
+    }
+  }
+  if (cap && num("ec-bias", 0) === 0 && diel && diel.cls === 2) {
+    rows.push(["", "No DC bias loss entered. On a class 2 ceramic this is usually the largest term of all &mdash; a small "
+               + "case size at its rated voltage can lose more than half its capacitance &mdash; so a budget without it is optimistic.", "warn"]);
+  }
+  render("ec-out", rows);
+}
+
+function pct(x) { return (x * 100).toPrecision(3) + " %"; }
+function band(plus, minus) {
+  return (Math.abs(plus - minus) < 1e-12 ? "\u00b1" + pct(plus) : "+" + pct(plus) + " / \u2212" + pct(minus)) +
+         " (" + (plus * 1e6).toFixed(0) + " / " + (minus * 1e6).toFixed(0) + " ppm)";
+}
+
+
+
 /* ---------- divider accuracy ----------
 
    A divider's ratio k = R2/(R1+R2) only moves when the two legs move
@@ -3852,58 +4117,81 @@ function calcBattery() {
   const load = val("bat-load");
   const usable = numOr("bat-usable", 80, 1, 100);
   const crate = val("bat-crate");
-  if (!isFinite(mah) || !(mah > 0) || !isFinite(vc) || !isFinite(usable) ||
-      !isFinite(vfull) || !isFinite(vmin)) { render("bat-out", []); return; }
+
+  /* The two halves of this card are independent: the voltage side needs a
+     chemistry and a series count, the current side needs a capacity. Answer
+     whichever is available rather than making one wait for the other. */
+  const haveV = isFinite(vc) && isFinite(vfull) && isFinite(vmin);
+  const haveAh = isFinite(mah) && mah > 0;
+  if (!haveV && !haveAh) { render("bat-out", []); return; }
 
   const packV = vc * S;
   const packAh = mah / 1000 * P;
-  const wh = packV * packAh;
-  const rows = [
-    ["Pack", S + "S" + P + "P at " + fmt(packV, "V") + " nominal" + (chem ? ", " + chem.name : "")],
-    ["Capacity", packAh.toPrecision(4) + " Ah"],
-    ["Energy", wh.toPrecision(4) + " Wh (" + (wh * usable / 100).toPrecision(4) + " Wh usable at " + usable + " %)"]
-  ];
+  const rows = [];
 
-  if (vmin >= vfull) {
-    rows.push(["", "The minimum cell voltage is not below the full voltage, so there is nothing to discharge.", "err"]);
-    render("bat-out", rows);
-    return;
+  if (haveV && haveAh) {
+    const wh = packV * packAh;
+    rows.push(["Pack", S + "S" + P + "P at " + fmt(packV, "V") + " nominal" + (chem ? ", " + chem.name : "")]);
+    rows.push(["Capacity", packAh.toPrecision(4) + " Ah"]);
+    rows.push(["Energy", wh.toPrecision(4) + " Wh (" + (wh * usable / 100).toPrecision(4) +
+               " Wh usable at " + usable + " %)"]);
+  } else if (haveV) {
+    rows.push(["Pack", S + "S at " + fmt(packV, "V") + " nominal" + (chem ? ", " + chem.name : "")]);
+  } else {
+    rows.push(["Capacity", packAh.toPrecision(4) + " Ah (" + P + "P)"]);
   }
 
-  rows.push(["Charge to", (vfull * S).toPrecision(4) + " V pack (" + vfull + " V per cell)" +
-             (chem && chem.cv && chem.cv !== chem.full
-                ? " &mdash; hold at " + (chem.cv * S).toPrecision(4) + " V while charging, " + chem.cv + " V per cell"
-                : "")]);
-  if (chem && chem.chg) {
-    rows.push(["Typical charge current", fmt(chem.chg * packAh, "A") + " at " + chem.chg +
-               " C, the ordinary rate for " + chem.name + " &mdash; the cell&rsquo;s datasheet overrides this"]);
-  }
-  rows.push(["Discharge no lower than", (vmin * S).toPrecision(4) + " V pack (" + vmin + " V per cell)"]);
-
-  if (isFinite(crate) && crate > 0) {
-    rows.push(["Maximum continuous discharge", fmt(crate * packAh, "A") + " at the " + crate + " C rating you gave"]);
-  }
-
-  if (isFinite(load) && load > 0) {
-    const watts = document.getElementById("bat-loadunit").value === "W";
-    const amps = watts ? load / packV : load;
-    const power = watts ? load : load * packV;
-    const hours = packAh * usable / 100 / amps;
-    rows.push(["Load", fmt(amps, "A") + " at " + fmt(power, "W")]);
-    rows.push(["C-rate", (amps / packAh).toPrecision(3) + " C"]);
-    if (isFinite(crate) && crate > 0) {
-      const head = crate * packAh / amps;
-      rows.push(["Against the rating", head >= 1
-                   ? "within it, " + (head >= 2 ? head.toPrecision(2) + "× headroom"
-                                                : ((head - 1) * 100).toFixed(0) + " % headroom")
-                   : "over it by " + ((1 / head - 1) * 100).toFixed(0) + " % &mdash; the pack cannot supply this continuously",
-                 head >= 1 ? "good" : "warn"]);
+  if (haveV) {
+    if (vmin >= vfull) {
+      rows.push(["", "The minimum cell voltage is not below the full voltage, so there is nothing to discharge.", "err"]);
+      render("bat-out", rows);
+      return;
     }
-    rows.push(["Runtime", hours >= 1 ? hours.toPrecision(3) + " h (" + (hours * 60).toPrecision(3) + " min)"
-                                     : (hours * 60).toPrecision(3) + " min"]);
+    rows.push(["Charge to", (vfull * S).toPrecision(4) + " V pack (" + vfull + " V per cell)" +
+               (chem && chem.cv && chem.cv !== chem.full
+                  ? " &mdash; hold at " + (chem.cv * S).toPrecision(4) + " V while charging, " + chem.cv + " V per cell"
+                  : "")]);
+    rows.push(["Discharge no lower than", (vmin * S).toPrecision(4) + " V pack (" + vmin + " V per cell)"]);
+    rows.push(["Working range", (vmin * S).toPrecision(4) + " to " + (vfull * S).toPrecision(4) + " V, " +
+               ((vfull - vmin) * S).toPrecision(3) + " V of swing"]);
   }
+
+  if (haveAh) {
+    if (chem && chem.chg) {
+      rows.push(["Typical charge current", fmt(chem.chg * packAh, "A") + " at " + chem.chg +
+                 " C, the ordinary rate for " + chem.name + " &mdash; the cell&rsquo;s datasheet overrides this"]);
+    }
+    if (isFinite(crate) && crate > 0) {
+      rows.push(["Maximum continuous discharge", fmt(crate * packAh, "A") + " at the " + crate + " C rating you gave"]);
+    }
+  }
+
+  if (haveAh && isFinite(load) && load > 0) {
+    const watts = document.getElementById("bat-loadunit").value === "W";
+    /* a load in watts needs a pack voltage; without one, say so rather than
+       silently using a default */
+    if (watts && !haveV) {
+      rows.push(["", "A load in watts needs a pack voltage &mdash; give a chemistry, or the cell voltages.", ""]);
+    } else {
+      const amps = watts ? load / packV : load;
+      const hours = packAh * usable / 100 / amps;
+      rows.push(["Load", fmt(amps, "A") + (haveV ? " at " + fmt(watts ? load : load * packV, "W") : "")]);
+      rows.push(["C-rate", (amps / packAh).toPrecision(3) + " C"]);
+      if (isFinite(crate) && crate > 0) {
+        const head = crate * packAh / amps;
+        rows.push(["Against the rating", head >= 1
+                     ? "within it, " + (head >= 2 ? head.toPrecision(2) + "\u00d7 headroom"
+                                                  : ((head - 1) * 100).toFixed(0) + " % headroom")
+                     : "over it by " + ((1 / head - 1) * 100).toFixed(0) + " % &mdash; the pack cannot supply this continuously",
+                   head >= 1 ? "good" : "warn"]);
+      }
+      rows.push(["Runtime", hours >= 1 ? hours.toPrecision(3) + " h (" + (hours * 60).toPrecision(3) + " min)"
+                                       : (hours * 60).toPrecision(3) + " min"]);
+    }
+  }
+
   render("bat-out", rows);
-  drawBatteryCurve(vfull, vc, vmin, S, chem ? chem.shape : "slope", usable);
+  if (haveV) drawBatteryCurve(vfull, vc, vmin, S, chem ? chem.shape : "slope", usable);
 }
 
 /* ---------- dBm chain (disabled: card hidden) ---------- */
@@ -3938,6 +4226,7 @@ const CALCS = {
   sp:  { calc: calcSP, inputs: ["sp-list","sp-type","sp-v"] },
   led: { calc: calcLED, inputs: ["led-vs","led-vf","led-if","led-r","led-series"] },
   ac:  { calc: calcAccuracy, inputs: ["ac-r1","ac-r2","ac-vin","ac-tol1","ac-tol2","ac-tcr1","ac-tcr2","ac-tmin","ac-tmax","ac-tnom","ac-age"] },
+  ec:  { calc: calcTolerance, inputs: ["ec-type","ec-val","ec-diel","ec-code","ec-tol","ec-tc","ec-tmin","ec-tmax","ec-tnom","ec-age","ec-life","ec-bias","ec-hyst"] },
   flt: { calc: calcFilter, inputs: ["flt-type","flt-resp","flt-order","flt-r","flt-c","flt-l","flt-f"] },
   re:  { calc: calcReact, inputs: ["re-f","re-c","re-l","re-esl","re-esr","re-n","re-epc","re-dcr"] },
   tw:  { calc: calcTrace, inputs: ["tw-i","tw-w","tw-layer","tw-len","tw-f","tw-oz","tw-dt","tw-ta"] },

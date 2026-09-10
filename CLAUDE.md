@@ -39,6 +39,8 @@ Cards carry an inline SVG labelling the very parameters their fields ask for. Wh
 
 Where a card *derives* a value that the user may then override, write it into the box with `setComputed`, which highlights it. Typing over a highlighted box makes it an input again and whatever is now missing gets solved instead. `clearComputed` at the top of a `calc*` clears only the boxes the calculator itself filled, so a user's own entry survives.
 
+A card whose fields depend on a selector hides the ones that do not apply, from its own `calc*`, so it can never show a field its maths ignores. `.field` is a flex container, and an author `display` rule beats the UA default for `[hidden]` — hence the explicit `.field[hidden] { display: none }`. This has bitten twice now; if a hidden thing is still visible, look for a `display` rule on its own selector before looking anywhere else.
+
 Shared board settings (copper weight, temp rise, ambient, E-series) are discovered from `data-mirror` attributes rather than hard-coded id lists: they appear on every card that reads them, with one value behind all copies.
 
 ## Honesty about models

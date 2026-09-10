@@ -10,7 +10,7 @@ Copper weight, temperature rise, ambient and the E-series sit **on the cards tha
 
 **Fundamentals** — Ohm's law and power (any two of V, I, R, P) · series/parallel for resistors, capacitors and inductors, with per-element voltage and power.
 
-**Resistors** — divider solver (any three of Vin, Vout, R1, R2, or just the two voltages, plus optional total resistance and midpoint load current) · LED series resistor, solving either direction · accuracy, showing what tolerance, TCR and ageing do to a divider's ratio.
+**Resistors** — divider solver (any three of Vin, Vout, R1, R2, or just the two voltages, plus optional total resistance and midpoint load current) · LED series resistor, solving either direction · tolerance: a component budget covering resistors, capacitors, inductors, crystals and voltage references, adding up initial tolerance, temperature and time drift — EIA dielectric codes are decoded rather than looked up, so X7R, Y5V and X6T all work, and DC bias and thermal hysteresis are there for the parts that need them — alongside the separate divider-ratio question, where only the *relative* movement of the two legs matters and matched parts beat tight parts.
 
 **Filters & Resonance** — filter design: pick RC, RL or LC, low-pass or high-pass, and an order, and the card draws the matching topology, solves the missing value and plots the magnitude response with a hover readout · reactance and self-resonance for real capacitors *and* inductors, including their parasitics · crystal load capacitance · PI, T and L attenuator pads.
 
