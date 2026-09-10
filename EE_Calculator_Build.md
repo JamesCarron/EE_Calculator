@@ -22,6 +22,8 @@ Inputs accept SI suffixes including `4k7` style. Dimension fields on the PCB and
 
 The tool carries no organisation branding: the header, docstrings, README, `pixi.toml` authors field and the stylesheet are all neutral, and the build has no dependency outside this folder.
 
+Nothing is outstanding and nothing is blocked. Every decision that came up during the build was put to the owner and answered; those answers are in **Key decisions** below, with the reasoning, so a later reader inherits them rather than reopening them.
+
 ## Key decisions
 
 - **Logic lives in JS, not Python.** The house rule prefers Python logic, but this page is interactive at runtime with no server, so JS is the engine and `build_page.py` is only the build harness. There is no duplicate Python implementation, so no parity test is owed.
@@ -32,6 +34,10 @@ The tool carries no organisation branding: the header, docstrings, README, `pixi
 - **IPC-2221, not IPC-2152, for current capacity.** IPC-2152's data is chart-based inside a paywalled standard; IPC-2221's equation is freely published. The card names the method and notes 2152 permits more, so the tool is conservative rather than silently wrong — the failure mode of calculators that claim 2152 while implementing 2221.
 - **Impedance formulas carry validity warnings rather than false precision**, and the tab says to confirm against the fab's field solver.
 - **Saturn PCB Toolkit comparison.** Assessed its whole tab list and built the four groups the user selected. Deliberately not implemented: planar inductors, embedded resistors, BGA/padstack land patterns (Altium does these), PDN target impedance, crosstalk. Differential-pair impedance was left out because the empirical formulas are markedly less accurate than the single-ended ones and would invite misplaced trust.
+- **Vendored theme, decided by the owner over re-linking.** The tool stays standalone and brand-free; a change to the shared house stylesheet will not reach it, and re-vendoring `theme/` is a deliberate act when the tokens change. No refresh task was added.
+- **Local only, no public release for now**, decided by the owner. No remote. The client-side-only release checks (a CSP meta tag, a scan for network APIs) and the licence decision are deferred until that changes; de-branding was done on its own merits, not as release prep.
+- **Divider pair search keeps nearest-snap**, decided by the owner on measured evidence: over 6491 Vin/Vout combinations, snapping each candidate R2 to the nearest series value is never beaten by testing both neighbours at E96, and at E24 it loses in 3 cases by at most 295 ppm — far inside a 5 % part's own tolerance. Not worth a second code path.
+- **The shared stylesheet has no contrast defect.** The `--a-bg-accent` / `--a-on-accent` mix-up was confined to this tool. The shared stylesheet documents `--a-on-accent` as 4.90:1 on `--a-link` and its own components pair them correctly, and no other generator uses `--a-bg-accent` at all. A claim made mid-session that other tools shared the bug was wrong and was retracted.
 - `user_data/` exists and is gitignored per the tool-distribution convention, though nothing is stored there yet.
 
 ## Files touched
@@ -48,12 +54,3 @@ The tool carries no organisation branding: the header, docstrings, README, `pixi
 Edit the template in `build_page.py`, run `pixi run build`, and refresh the browser tab — there is no server to restart. Add a top-level tab with a `<button data-tab=...>` in the tab bar, a `<section class="panel" id="panel-...">`, a calc function, and an entry in the `CALCS` map; a resistor sub-tab is a `<button data-sub=...>` plus a `<div class="subpanel" id="sub-...">`. A card gets its Copy and Reset buttons automatically from the presence of a `button.reset`. To make a solver fill a field, call `setComputed(id, value)` and list the field in `clearComputed([...])` at the top of the calculator.
 
 Verification harness (session scratch, re-creatable): a Python script extracts the page's JS, wraps it in a DOM stub whose `value` and `classList` are real, and runs assertions in node — this is what caught the field-clearing and round-tripping behaviour. The static checker cross-references every element id referenced in JS against the HTML, tabs against panels, and reset buttons against `CALCS` entries. Browser verification needs a temporary local static server, because the Chrome extension cannot open `file://` URLs.
-
-## Open questions / blockers
-
-None. Everything raised during the build was put to the owner and settled; the answers are recorded here so they are not re-litigated.
-
-- **Vendored theme vs shared stylesheet — keep vendored.** The tool stays standalone and brand-free; a change to the shared house stylesheet will not reach it, and re-vendoring `theme/` is a deliberate act when the tokens change. No refresh task was added.
-- **Public release — not yet, local only.** The repo stays local with no remote. The client-side-only release checks (a CSP meta tag, a scan for network APIs) and the licence decision are deferred until that changes; de-branding was done on its own merits, not as release prep.
-- **Divider pair search — keep nearest-snap.** Measured over 6491 Vin/Vout combinations: at E96 snapping each candidate R2 to the nearest series value is never beaten by testing both neighbours, and at E24 it loses in 3 cases by at most 295 ppm, which is far inside a 5 % part's own tolerance. Not worth a second code path.
-- **Shared stylesheet contrast — no defect, nothing to change.** The `--a-bg-accent` / `--a-on-accent` mix-up was confined to this tool. The shared stylesheet documents `--a-on-accent` as 4.90:1 on `--a-link` and its own components pair them correctly; no other generator uses `--a-bg-accent` at all. An earlier claim in this session that other tools shared the bug was wrong.
