@@ -10,17 +10,19 @@ Copper weight, temperature rise and ambient sit in one **shared strip** under th
 
 **Fundamentals** — Ohm's law and power (any two of V, I, R, P) · series/parallel for resistors, capacitors and inductors, with per-element voltage and power.
 
-**Resistors** — divider solver (any three of Vin, Vout, R1, R2, or just the two voltages, plus optional total resistance and midpoint load current) · LED series resistor, solving either direction · PI, T and L attenuator pads · accuracy, showing what tolerance, TCR and ageing do to a divider's ratio.
+**Resistors** — divider solver (any three of Vin, Vout, R1, R2, or just the two voltages, plus optional total resistance and midpoint load current) · LED series resistor, solving either direction · accuracy, showing what tolerance, TCR and ageing do to a divider's ratio.
 
-**Filters & Resonance** — filter design, one card with a topology dropdown covering first-order RC and RL and series or parallel LC, solving whichever value is missing and giving Q, bandwidth and damping · reactance · crystal load capacitance · capacitor impedance with ESL and ESR.
+**Filters & Resonance** — filter design: pick RC, RL or LC, low-pass or high-pass, and an order, and the card draws the matching topology, solves the missing value and plots the magnitude response with a hover readout · reactance and self-resonance for real capacitors *and* inductors, including their parasitics · crystal load capacitance · PI, T and L attenuator pads.
 
 **PCB Copper** — trace current, showing what the design draws next to what the copper can carry, with current density, skin depth and the width needed if it falls short · via properties including lumped impedance, aspect ratio, parallel count and stub resonance · Onderdonk fusing current · IPC-2221 conductor spacing across all seven environments at once.
 
-**PCB Signal** — impedance for five structures (bare and covered microstrip, centred and offset stripline, grounded coplanar) with per-unit-length L and C · differential pairs against a target band · effective permittivity with dispersion · wavelength, knee frequency and critical length.
+**PCB Signal** — impedance for five structures (bare and covered microstrip, centred and offset stripline, grounded coplanar) with per-unit-length L and C · differential pairs against a target band · effective permittivity with dispersion · wavelength, knee frequency and critical length · via shielding pitch for stitching fences.
 
 **Power & Thermal** — junction temperature through a θ chain, with headroom, maximum power and the heatsink you would need · PDN target impedance.
 
 **Utilities** — AWG wire with run length, load current and voltage drop · battery energy, C-rate and runtime · frequency error in ppm · number bases · ratio units · mm/mil, °C/°F, dB, rectangular/polar and degrees/radians.
+
+Most cards carry a diagram labelling the very parameters their fields ask for, and the filter card's diagram redraws as you change topology.
 
 ## Models and their limits
 
