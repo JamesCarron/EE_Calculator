@@ -99,16 +99,8 @@ HTML = r"""<!doctype html>
   .cardfoot button:hover { color: var(--a-link-hover); text-decoration: underline; }
   .cardfoot button:focus-visible { outline: 2px solid var(--a-focus); outline-offset: 2px; }
   .cardfoot .copied { color: var(--a-good); text-decoration: none; }
-  .globals { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem 1.4rem; margin: 0 0 .2rem; padding: .55rem .8rem; background: var(--a-bg-subtle); border: var(--a-border) solid var(--a-line); border-radius: var(--a-radius-sm); font-size: var(--a-text-xs); }
-  .globals span { display: flex; align-items: center; gap: .4rem; }
-  /* an author display rule beats the UA default for [hidden], so say it again */
-  .globals span[hidden] { display: none; }
-  .globals label { color: var(--a-ink-secondary); }
-  .globals input, .globals select { font: inherit; font-family: var(--a-font-mono); color: var(--a-ink); background: var(--a-bg); border: var(--a-border) solid var(--a-line-strong); border-radius: var(--a-radius-sm); padding: .2rem .4rem; }
-  .globals input { width: 4rem; }
-  .globals input:focus-visible, .globals select:focus-visible { outline: 2px solid var(--a-focus); outline-offset: 1px; }
-  .globals .unit { color: var(--a-ink-muted); }
-  .globals .gnote { margin-left: auto; color: var(--a-ink-muted); }
+  /* a control whose value is shared with its twins on other cards */
+  .field [data-mirror] { border-style: dashed; }
   .legend { font-size: var(--a-text-xs); color: var(--a-ink-muted); margin: 0 0 .35rem; }
   .legend b { display: inline-block; background: var(--a-bg-accent); color: var(--a-ink); border: var(--a-border) solid var(--a-link); border-radius: var(--a-radius-sm); padding: 0 .35rem; font-weight: 400; }
   footer.site { border-top: var(--a-border) solid var(--a-line); color: var(--a-ink-muted); font-size: var(--a-text-xs); padding: 1rem 0 2rem; }
@@ -129,21 +121,6 @@ HTML = r"""<!doctype html>
   <button role="tab" data-tab="pwr" aria-selected="false">Power &amp; Thermal</button>
   <button role="tab" data-tab="util" aria-selected="false">Utilities</button>
 </nav>
-<div class="globals" id="globals" hidden>
-  <span data-g="g-oz"><label for="g-oz">Copper</label>
-    <select id="g-oz"><option value="17.5">0.5 oz (17.5 &micro;m)</option><option value="35" selected>1 oz (35 &micro;m)</option><option value="70">2 oz (70 &micro;m)</option><option value="105">3 oz (105 &micro;m)</option></select>
-  </span>
-  <span data-g="g-dt"><label for="g-dt">Temp rise</label><input id="g-dt" inputmode="decimal" placeholder="10"><span class="unit">&deg;C</span></span>
-  <span data-g="g-ta"><label for="g-ta">Ambient</label><input id="g-ta" inputmode="decimal" placeholder="25"><span class="unit">&deg;C</span></span>
-  <span data-g="g-series"><label for="g-series">E-series</label>
-    <select id="g-series">
-      <option value="E12">E12 (10 %)</option>
-      <option value="E24">E24 (5 %)</option>
-      <option value="E96" selected>E96 (1 %)</option>
-    </select>
-  </span>
-  <span class="gnote">shared by the cards on this tab</span>
-</div>
 </div>
 
 <main class="wrap">
@@ -229,6 +206,9 @@ HTML = r"""<!doctype html>
       <div class="field"><label for="div-r2">R2 &mdash; bottom (&Omega;)</label><input id="div-r2" inputmode="decimal" placeholder="e.g. 4k7"></div>
       <div class="field"><label for="div-rtot">Total R1&#8202;+&#8202;R2 (&Omega;, optional)</label><input id="div-rtot" inputmode="decimal" placeholder="e.g. 100k"></div>
       <div class="field"><label for="div-iload">Load current at midpoint (A, optional)</label><input id="div-iload" inputmode="decimal" placeholder="e.g. 50u"></div>
+          <div class="field"><label for="div-series">E-series</label>
+        <select id="div-series" data-mirror="series"><option value="E12">E12 (10 %)</option><option value="E24">E24 (5 %)</option><option value="E96" selected>E96 (1 %)</option></select>
+      </div>
     </div>
     <svg class="schem" width="210" height="235" viewBox="0 0 210 235" role="img" aria-label="Resistor divider: R1 from Vin to the midpoint, R2 from the midpoint to ground, optional load current out of the midpoint">
       <circle class="wire" cx="60" cy="18" r="3.5"/>
@@ -273,6 +253,9 @@ HTML = r"""<!doctype html>
       <div class="field"><label for="led-vf">LED V<sub>f</sub> (V)</label><input id="led-vf" inputmode="decimal" placeholder="e.g. 2.1"></div>
       <div class="field"><label for="led-if">LED I<sub>f</sub> (A)</label><input id="led-if" inputmode="decimal" placeholder="e.g. 10m"></div>
       <div class="field"><label for="led-r">Series R (&Omega;)</label><input id="led-r" inputmode="decimal" placeholder="solved, or enter"></div>
+          <div class="field"><label for="led-series">E-series</label>
+        <select id="led-series" data-mirror="series"><option value="E12">E12 (10 %)</option><option value="E24">E24 (5 %)</option><option value="E96" selected>E96 (1 %)</option></select>
+      </div>
     </div>
     <svg class="schem" width="250" height="125" viewBox="0 0 250 125" role="img" aria-label="Supply, series resistor, LED to ground">
       <circle class="wire" cx="18" cy="45" r="3.5"/>
@@ -468,6 +451,9 @@ HTML = r"""<!doctype html>
       <div class="field"><label for="pad-a">Attenuation (dB)</label><input id="pad-a" inputmode="decimal" placeholder="e.g. 6"></div>
       <div class="field"><label for="pad-z0">System impedance Z<sub>0</sub> (&Omega;)</label><input id="pad-z0" inputmode="decimal" placeholder="50"></div>
       <div class="field"><label for="pad-z2">Second impedance (&Omega;, for an L pad)</label><input id="pad-z2" inputmode="decimal" placeholder="e.g. 75"></div>
+          <div class="field"><label for="pad-series">E-series</label>
+        <select id="pad-series" data-mirror="series"><option value="E12">E12 (10 %)</option><option value="E24">E24 (5 %)</option><option value="E96" selected>E96 (1 %)</option></select>
+      </div>
     </div>
     <svg class="schem" width="220" height="150" viewBox="0 0 220 150" role="img" aria-label="PI pad and T pad topologies">
       <path class="wire" d="M12 26 H40 M40 26 H70 M70 26 H98"/>
@@ -514,6 +500,11 @@ HTML = r"""<!doctype html>
       </div>
       <div class="field"><label for="tw-len">Length (mm, optional)</label><input id="tw-len" inputmode="decimal" placeholder="e.g. 50"></div>
       <div class="field"><label for="tw-f">Frequency (Hz, optional)</label><input id="tw-f" inputmode="decimal" placeholder="e.g. 1M"></div>
+          <div class="field"><label for="tw-oz">Copper weight</label>
+        <select id="tw-oz" data-mirror="copper"><option value="17.5">0.5 oz (17.5 &micro;m)</option><option value="35" selected>1 oz (35 &micro;m)</option><option value="70">2 oz (70 &micro;m)</option><option value="105">3 oz (105 &micro;m)</option></select>
+      </div>
+      <div class="field"><label for="tw-dt">Temp rise (&deg;C)</label><input id="tw-dt" data-mirror="dt" inputmode="decimal" placeholder="10"></div>
+      <div class="field"><label for="tw-ta">Ambient (&deg;C)</label><input id="tw-ta" data-mirror="ta" inputmode="decimal" placeholder="25"></div>
     </div>
     <svg class="schem" width="230" height="110" viewBox="0 0 230 110" role="img" aria-label="Trace cross-section on a board">
       <rect class="wire" x="20" y="55" width="190" height="28"/>
@@ -547,6 +538,7 @@ HTML = r"""<!doctype html>
       <div class="field"><label for="via-n">Vias in parallel</label><input id="via-n" inputmode="numeric" placeholder="1"></div>
       <div class="field"><label for="via-arlimit">Aspect ratio limit</label><input id="via-arlimit" inputmode="decimal" placeholder="10"></div>
       <div class="field"><label for="via-stub">Stub length (mm, optional)</label><input id="via-stub" inputmode="decimal" placeholder="e.g. 1.2"></div>
+          <div class="field"><label for="via-dt">Temp rise (&deg;C)</label><input id="via-dt" data-mirror="dt" inputmode="decimal" placeholder="10"></div>
     </div>
     <svg class="schem" width="180" height="140" viewBox="0 0 180 140" role="img" aria-label="Via barrel cross-section">
       <rect class="wire" x="20" y="30" width="140" height="80"/>
@@ -573,6 +565,10 @@ HTML = r"""<!doctype html>
       <div class="field"><label for="fu-w">Trace width (mm)</label><input id="fu-w" inputmode="decimal" placeholder="e.g. 1"></div>
       <div class="field"><label for="fu-t">Fault duration (s)</label><input id="fu-t" inputmode="decimal" placeholder="e.g. 1"></div>
       <div class="field"><label for="fu-k">Onderdonk multiplier</label><input id="fu-k" inputmode="decimal" placeholder="1"></div>
+          <div class="field"><label for="fu-oz">Copper weight</label>
+        <select id="fu-oz" data-mirror="copper"><option value="17.5">0.5 oz (17.5 &micro;m)</option><option value="35" selected>1 oz (35 &micro;m)</option><option value="70">2 oz (70 &micro;m)</option><option value="105">3 oz (105 &micro;m)</option></select>
+      </div>
+      <div class="field"><label for="fu-ta">Ambient (&deg;C)</label><input id="fu-ta" data-mirror="ta" inputmode="decimal" placeholder="25"></div>
     </div>
     <svg class="schem" width="215" height="130" viewBox="0 0 215 130" role="img" aria-label="Trace cross-section showing width and copper thickness, the two dimensions that set the fusing current">
       <rect class="wire" x="18" y="62" width="180" height="30"/>
@@ -651,6 +647,9 @@ HTML = r"""<!doctype html>
       <div class="field"><label for="z-c">Far plane distance (mm)</label><input id="z-c" inputmode="decimal" placeholder="offset stripline"></div>
       <div class="field"><label for="z-s">Gap to ground (mm)</label><input id="z-s" inputmode="decimal" placeholder="coplanar"></div>
       <div class="field"><label for="z-f">Frequency (Hz, optional)</label><input id="z-f" inputmode="decimal" placeholder="e.g. 1G"></div>
+          <div class="field"><label for="z-oz">Copper weight</label>
+        <select id="z-oz" data-mirror="copper"><option value="17.5">0.5 oz (17.5 &micro;m)</option><option value="35" selected>1 oz (35 &micro;m)</option><option value="70">2 oz (70 &micro;m)</option><option value="105">3 oz (105 &micro;m)</option></select>
+      </div>
     </div>
     <svg class="schem" width="230" height="120" viewBox="0 0 230 120" role="img" aria-label="Microstrip and stripline cross-sections">
       <rect class="wire" x="15" y="45" width="90" height="30"/>
@@ -691,6 +690,9 @@ HTML = r"""<!doctype html>
           <option value="100dsi">100 &mdash; MIPI D-PHY</option>
         </select>
       </div>
+          <div class="field"><label for="dp-oz">Copper weight</label>
+        <select id="dp-oz" data-mirror="copper"><option value="17.5">0.5 oz (17.5 &micro;m)</option><option value="35" selected>1 oz (35 &micro;m)</option><option value="70">2 oz (70 &micro;m)</option><option value="105">3 oz (105 &micro;m)</option></select>
+      </div>
     </div>
     <svg class="schem" width="210" height="105" viewBox="0 0 210 105" role="img" aria-label="Edge-coupled differential pair over a reference plane">
       <rect class="wire" x="15" y="40" width="180" height="30"/>
@@ -721,6 +723,9 @@ HTML = r"""<!doctype html>
       <div class="field"><label for="ee-h">Dielectric height (mm)</label><input id="ee-h" inputmode="decimal" placeholder="e.g. 0.2"></div>
       <div class="field"><label for="ee-er">&epsilon;<sub>r</sub></label><input id="ee-er" inputmode="decimal" placeholder="4.3"></div>
       <div class="field"><label for="ee-f">Frequency (Hz, optional)</label><input id="ee-f" inputmode="decimal" placeholder="e.g. 1G"></div>
+          <div class="field"><label for="ee-oz">Copper weight</label>
+        <select id="ee-oz" data-mirror="copper"><option value="17.5">0.5 oz (17.5 &micro;m)</option><option value="35" selected>1 oz (35 &micro;m)</option><option value="70">2 oz (70 &micro;m)</option><option value="105">3 oz (105 &micro;m)</option></select>
+      </div>
     </div>
     <svg class="schem" width="230" height="140" viewBox="0 0 230 140" role="img" aria-label="Microstrip cross-section: trace width W, dielectric height H, copper thickness t, with field partly in air and partly in the substrate">
       <text x="14" y="18">air, &#949;r = 1</text>
@@ -837,6 +842,7 @@ HTML = r"""<!doctype html>
       <div class="field"><label for="th-tjmax">T<sub>j</sub> max (&deg;C)</label><input id="th-tjmax" inputmode="decimal" placeholder="e.g. 150"></div>
       <div class="field"><label for="th-tjtarget">Design T<sub>j</sub> target (&deg;C)</label><input id="th-tjtarget" inputmode="decimal" placeholder="defaults to Tj max"></div>
       <div class="field"><label for="th-tj">T<sub>j</sub> (&deg;C)</label><input id="th-tj" inputmode="decimal" placeholder="solved"></div>
+          <div class="field"><label for="th-ta">Ambient (&deg;C)</label><input id="th-ta" data-mirror="ta" inputmode="decimal" placeholder="25"></div>
     </div>
     <svg class="schem" width="150" height="190" viewBox="0 0 150 190" role="img" aria-label="Thermal resistance chain from junction to ambient">
       <rect class="wire" x="40" y="12" width="70" height="20"/>
@@ -1210,9 +1216,29 @@ function setComputed(id, v) {
    calculation, so they live in one strip and every card reads them from here.
    Before this they were repeated on six cards and could disagree. */
 
-function gCopperMM() { return parseFloat(document.getElementById("g-oz").value) / 1000; }
-function gTempRise() { return numOr("g-dt", 10, 0.01); }
-function gAmbient() { return numOr("g-ta", 25, -273.15); }
+/* Each of these appears on several cards, because that is where you want it
+   while you are working, but there is only one value behind them: editing any
+   copy writes through to the rest and recalculates everything. The first copy
+   in document order is the one read. */
+function mirrors(group) { return document.querySelectorAll('[data-mirror="' + group + '"]'); }
+function mirrorId(group) { const m = mirrors(group)[0]; return m ? m.id : null; }
+
+function readMirror(group, dflt, lo, hi) {
+  const id = mirrorId(group);
+  if (!id) return dflt;
+  const v = numOr(id, dflt, lo, hi);
+  const bad = document.getElementById(id).classList.contains("bad");
+  mirrors(group).forEach(function (el) { el.classList.toggle("bad", bad); });
+  return v;
+}
+
+function gCopperMM() {
+  const id = mirrorId("copper");
+  return id ? parseFloat(document.getElementById(id).value) / 1000 : 0.035;
+}
+function gTempRise() { return readMirror("dt", 10, 0.01); }
+function gAmbient() { return readMirror("ta", 25, -273.15); }
+function gSeries() { const id = mirrorId("series"); return id ? document.getElementById(id).value : "E96"; }
 
 /* ---------- E-series ---------- */
 
@@ -1300,7 +1326,7 @@ function calcDivider() {
   if (il < 0) { render("div-out", [["", "Load current must be zero or positive.", "err"]]); return; }
   if ((isFinite(r1) && !(r1 > 0)) || (isFinite(r2) && !(r2 > 0))) { render("div-out", [["", "Resistor values must be positive.", "err"]]); return; }
   const rows = [];
-  const series = document.getElementById("g-series").value;
+  const series = gSeries();
 
   // Total R can stand in for a missing leg when the other is known.
   let legFromTotal = false;
@@ -1687,6 +1713,8 @@ function calcFilter() {
     else { r = 1 / (TAU * C * F); setComputed("flt-r", r); f0 = F; }
     if (!(r > 0) || !(c > 0) || !(f0 > 0)) { render("flt-out", [["", "R, C and the corner must all be positive.", "err"]]); return; }
     rows.push(["Time constant &tau; = RC", fmt(r * c, "s")]);
+    rows.push(["Rise time 10–90 %", fmt(2.197 * r * c, "s")]);
+    rows.push(["Settling to 1 %", fmt(4.6 * r * c, "s")]);
   } else if (type === "rl") {
     const have = [isFinite(R), isFinite(L), isFinite(F)].filter(Boolean).length;
     if (have < 2) { render("flt-out", []); document.getElementById("flt-graph").innerHTML = ""; note.innerHTML = "Give any two of R, L and the section corner."; return; }
@@ -1893,7 +1921,7 @@ function calcLED() {
   if (isFinite(iF) && !isFinite(r)) { r = (vs - vf) / iF; setComputed("led-r", r); }
   else if (isFinite(r) && !isFinite(iF)) { iF = (vs - vf) / r; setComputed("led-if", iF); }
   else rows.push(["Current through " + fmt(r, "Ω"), fmt((vs - vf) / r, "A")]);
-  const series = document.getElementById("g-series").value;
+  const series = gSeries();
   const vals = seriesValues(series, -1, 7);
   let std = vals[vals.length - 1];
   for (const v of vals) if (v >= r) { std = v; break; }
@@ -2647,7 +2675,7 @@ function calcPad() {
   const piSe = z0 * (K * K - 1) / (2 * K);
   const tSe = z0 * (K - 1) / (K + 1);
   const tSh = 2 * K * z0 / (K * K - 1);
-  const series = document.getElementById("g-series").value;
+  const series = gSeries();
   const vals = seriesValues(series, -1, 7);
   const near = function (x) { return snap(vals, x); };
   const rows = [
@@ -2849,24 +2877,24 @@ function calcDbm() {
 /* ---------- wiring ---------- */
 
 const CALCS = {
-  th:  { calc: calcThermal, inputs: ["th-p","th-jc","th-cs","th-sa","th-ja","th-tjmax","th-tjtarget","th-tj"] },
+  th:  { calc: calcThermal, inputs: ["th-p","th-jc","th-cs","th-sa","th-ja","th-tjmax","th-tjtarget","th-tj","th-ta"] },
   pdn: { calc: calcPDN, inputs: ["pdn-v","pdn-ripple","pdn-i","pdn-tr","pdn-fmax"] },
-  pad: { calc: calcPad, inputs: ["pad-a","pad-z0","pad-z2"] },
-  ee:  { calc: calcEreff, inputs: ["ee-w","ee-h","ee-er","ee-f"] },
-  dp:  { calc: calcDiff, inputs: ["dp-struct","dp-w","dp-s","dp-h","dp-er","dp-target"] },
+  pad: { calc: calcPad, inputs: ["pad-a","pad-z0","pad-z2","pad-series"] },
+  ee:  { calc: calcEreff, inputs: ["ee-w","ee-h","ee-er","ee-f","ee-oz"] },
+  dp:  { calc: calcDiff, inputs: ["dp-struct","dp-w","dp-s","dp-h","dp-er","dp-target","dp-oz"] },
   bat: { calc: calcBattery, inputs: ["bat-mah","bat-v","bat-s","bat-p","bat-load","bat-loadunit","bat-usable"] },
   ohm: { calc: calcOhm, inputs: ["ohm-v","ohm-i","ohm-r","ohm-p"] },
-  div: { calc: calcDivider, inputs: ["div-vin","div-vout","div-r1","div-r2","div-rtot","div-iload"] },
+  div: { calc: calcDivider, inputs: ["div-vin","div-vout","div-r1","div-r2","div-rtot","div-iload","div-series"] },
   sp:  { calc: calcSP, inputs: ["sp-list","sp-type","sp-v"] },
-  led: { calc: calcLED, inputs: ["led-vs","led-vf","led-if","led-r"] },
+  led: { calc: calcLED, inputs: ["led-vs","led-vf","led-if","led-r","led-series"] },
   ac:  { calc: calcAccuracy, inputs: ["ac-r1","ac-r2","ac-vin","ac-tol1","ac-tol2","ac-tcr1","ac-tcr2","ac-tmin","ac-tmax","ac-tnom","ac-age"] },
   flt: { calc: calcFilter, inputs: ["flt-type","flt-resp","flt-order","flt-r","flt-c","flt-l","flt-f"] },
   re:  { calc: calcReact, inputs: ["re-f","re-c","re-l","re-esl","re-esr","re-n","re-epc","re-dcr"] },
-  tw:  { calc: calcTrace, inputs: ["tw-i","tw-w","tw-layer","tw-len","tw-f"] },
-  via: { calc: calcVia, inputs: ["via-d","via-tp","via-h","via-pad","via-anti","via-er","via-i","via-n","via-arlimit","via-stub"] },
-  fu:  { calc: calcFuse, inputs: ["fu-w","fu-t","fu-k"] },
+  tw:  { calc: calcTrace, inputs: ["tw-i","tw-w","tw-layer","tw-len","tw-f","tw-oz","tw-dt","tw-ta"] },
+  via: { calc: calcVia, inputs: ["via-d","via-tp","via-h","via-pad","via-anti","via-er","via-i","via-n","via-arlimit","via-stub","via-dt"] },
+  fu:  { calc: calcFuse, inputs: ["fu-w","fu-t","fu-k","fu-oz","fu-ta"] },
   spc: { calc: calcSpacing, inputs: ["spc-v"] },
-  z:   { calc: calcZ, inputs: ["z-struct","z-w","z-h","z-er","z-ermask","z-c","z-s","z-f"] },
+  z:   { calc: calcZ, inputs: ["z-struct","z-w","z-h","z-er","z-ermask","z-c","z-s","z-f","z-oz"] },
   vs:  { calc: calcViaShield, inputs: ["vs-f","vs-tr","vs-er","vs-frac","vs-pitch","vs-len","vs-d"] },
   wl:  { calc: calcWave, inputs: ["wl-f","wl-tr","wl-eeff","wl-period","wl-div"] },
   xc:  { calc: calcXtal, inputs: ["xc-cl","xc-c1","xc-c2","xc-cs"] },
@@ -2891,33 +2919,17 @@ for (const key in CALCS) {
 }
 
 // the E-series setting feeds every calculator that suggests standard values
-/* Copper weight, temperature rise and ambient are only meaningful on some
-   tabs, so the strip shows just the controls the current tab actually uses
-   and disappears entirely where none apply. */
-const GLOBALS_FOR = {
-  res: ["g-series"], filt: ["g-series"],
-  copper: ["g-oz", "g-dt", "g-ta"], signal: ["g-oz"], pwr: ["g-ta"]
-};
-
-function showGlobals(tabName) {
-  const strip = document.getElementById("globals");
-  const wanted = GLOBALS_FOR[tabName] || [];
-  strip.hidden = wanted.length === 0;
-  strip.querySelectorAll("span[data-g]").forEach(function (sp) {
-    sp.hidden = wanted.indexOf(sp.dataset.g) === -1;
+/* Editing any copy of a shared control writes through to its twins and
+   recalculates every card, so two tabs can never disagree about the board. */
+["copper", "dt", "ta", "series"].forEach(function (group) {
+  mirrors(group).forEach(function (el) {
+    ["input", "change"].forEach(function (ev) {
+      el.addEventListener(ev, function () {
+        mirrors(group).forEach(function (other) { if (other !== el) other.value = el.value; });
+        for (const key in CALCS) CALCS[key].calc();
+      });
+    });
   });
-}
-
-/* A board setting affects most cards, so recalculate all of them. */
-["g-oz", "g-dt", "g-ta"].forEach(function (gid) {
-  const el = document.getElementById(gid);
-  ["input", "change"].forEach(function (ev) {
-    el.addEventListener(ev, function () { for (const key in CALCS) CALCS[key].calc(); });
-  });
-});
-
-document.getElementById("g-series").addEventListener("change", function () {
-  calcDivider(); calcLED(); calcPad();
 });
 
 const idf = function (x) { return x; };
@@ -3149,7 +3161,6 @@ function showTab(name) {
   document.querySelectorAll(".panel").forEach(function (pnl) {
     pnl.classList.toggle("active", pnl.id === "panel-" + name);
   });
-  showGlobals(name);
   return true;
 }
 
@@ -3209,11 +3220,11 @@ const LEGACY_HASH = {
   /* An explicit link wins over the remembered tab, which wins over the
      default. */
   let h = location.hash.replace("#", "") || recall();
-  if (!h) { showGlobals("fund"); return; }
+  if (!h) return;
   if (LEGACY_HASH[h]) h = LEGACY_HASH[h];
   const dash = h.indexOf("-");
   if (dash > 0 && showTab(h.slice(0, dash))) { showSub(h.slice(0, dash), h.slice(dash + 1)); return; }
-  if (!showTab(h)) showGlobals("fund");
+  showTab(h);
 })();
 
 // first paint: a browser may have restored values into the fields

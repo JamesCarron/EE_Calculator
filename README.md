@@ -4,7 +4,7 @@ A single self-contained HTML page (`EE_Calculator.html`) with 26 calculators acr
 
 Where a card is a solver it writes its answer **into the relevant input box** and highlights it, rather than repeating it in a separate results list, so the card reads as one filled-in form. Type into a highlighted box and it becomes an input again, and whatever is now missing is solved instead. Every card has a **Copy results** button that puts its inputs and results on the clipboard as clean text.
 
-Copper weight, temperature rise and ambient sit in one **shared strip** under the tab bar, because they describe the board rather than any single calculation. The strip appears only on the tabs that use them, showing just the controls that tab needs. A tab with more than three sections gets sub-tabs, and the page reopens on whichever tab you last used. The E-series used for standard-value suggestions lives on the Resistors tab and defaults to E96.
+Copper weight, temperature rise, ambient and the E-series sit **on the cards that use them**, so the control is where you are working — but there is only one value behind each. Set copper on the trace card and the impedance card sees it too; edit it from either side and the rest follow. Controls shared this way are drawn with a dashed border. A tab with more than three sections gets sub-tabs, and the page reopens on whichever tab you last used.
 
 ## Tabs
 
