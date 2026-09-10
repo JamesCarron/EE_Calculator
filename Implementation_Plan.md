@@ -12,13 +12,93 @@ Two attempts to interrogate the running program failed and are recorded so nobod
 
 What the corrected pass added over the first inventory: the **Conductor Impedance** tab covers six structures, not two (microstrip, embedded microstrip, symmetric / asymmetric / dual stripline, coplanar); there is a persistent global **Options** panel (base copper weight in nine steps from 0.25 oz to 5 oz, plating thickness separately, plane thickness, units, substrate library, temp rise, ambient) that applies across tabs; there are **skin depth**, **skin depth percentage**, **current density**, **loaded conductor temperature**, **insertion loss** and **melting temperature** outputs; the series/parallel calculators report **per-element current and power**; the LED calculator **solves in both directions**; and there are cross-tab **"Send to Via Calculator" / "Send to Wavelength Calculator"** actions. The substrate library holds roughly 25 named laminates, each carrying Er and Tg.
 
-## Scope
+## Scope, settled
 
-Confirmed by the owner: junction temperature, wire voltage drop, C and L series/parallel, and the via extras. Group B below is specified to the same depth but awaits a go-ahead, since the owner asked for the fuller picture before choosing.
+Decided by tab-by-tab interview on 2026-09-10. Fourteen of Saturn's nineteen tabs contribute something; five are excluded outright.
+
+**In, and what each contributes**
+
+| Saturn tab | What we take |
+|---|---|
+| Conductor Properties | Required vs achievable current shown together, skin depth and its percentage of copper thickness, current density, plane and parallel-conductor ampacity modifiers |
+| Thermal Management | Junction temperature card, with a θ chain, Tj(max) headroom, maximum allowable power and required heatsink θ |
+| Via Properties | Impedance √(L/C), self-resonant frequency, aspect-ratio check, via count, and drop and dissipation at a stated current |
+| Ohm's Law | Capacitor and inductor series/parallel, per-element current and power, and PI/T/L-pad attenuators |
+| Conductor Impedance | Covered/soldermask microstrip, grounded coplanar, asymmetric stripline, and per-unit-length L and C |
+| Er Effective | Standalone card with frequency dependence, Hammerstad–Jensen |
+| Wavelength Calculator | Divide-fraction slider from full to 1/20, and period as an alternative input |
+| Mechanical Information | Wire voltage drop from run length, load current, round-trip and conductor temperature |
+| Fusing Current | Adjustable Onderdonk multiplier and an explicit ">5 s is out of scope" warning |
+| Conversion Calculator | Rectangular↔polar, degrees↔radians, and a dBm bench chain with volts into a stated impedance |
+| PDN Calculator | Plane capacitance from area and separation, and PDN target impedance |
+| PPM-XTAL | Actual minimum and maximum oscillation frequencies, not just the deviation |
+| Min Conductor Spacing | Nothing — ours already covers all seven environments at once, which beats showing one at a time |
+| XL-XC Reactance | Nothing — ours already matches, and SI-suffix parsing removes the need for unit radio buttons |
+
+Two cross-cutting behaviours are also in: **validity windows printed on the face of each card** rather than only warning once breached, and a **shared settings strip** for copper weight, ambient and temperature rise instead of repeating them per card.
+
+**Out, deliberately**
+
+Bandwidth & Max Conductor Length as a dual-method presentation (we keep our knee frequency and critical length); Padstack Calculator; Differential Pairs / XTALK; Embedded Resistors; Planar Inductors; drill and screw-thread reference tables; via step response; the whole substrate-library and copper-modelling group (library, Tg warning, separate plating, etch factor); cross-tab send-to actions; print/export.
+
+Excluding the substrate library has a consequence worth stating: Er stays a manually entered number on the impedance and wavelength cards. That is fine for the structures being added, but it means the Tg-exceeded warning cannot be built either, since it needs a laminate's Tg.
+
+**One prerequisite.** The plane and parallel-conductor ampacity modifiers are IPC-2152 chart data. The decision was to use published open-literature fits and name the source on the card as an approximation. That is a research step before it is a coding step, and it may come back inconclusive — if no citable fit is found, the honest outcome is to report that and leave those two modifiers out rather than invent a curve.
+
+## Grouping
+
+Adding these calculators breaks the current tab structure in one specific way: **Series/Parallel stops being resistor-only** once capacitors and inductors join it, so it cannot stay under Resistors. That forces a rethink, and the rethink is worth doing properly rather than bolting new tabs on the end — six new calculators arriving as six new tabs would leave thirteen top-level tabs and no shape.
+
+The organising idea is to group by the question being asked, not by the component involved, and to use the sub-tab pattern already proven on Resistors. Seven tabs, twenty-two cards, every tab holding two to four:
+
+| Tab | Cards |
+|---|---|
+| **Fundamentals** | Ohm's Law & Power · Series / Parallel (R, C, L) |
+| **Resistors** *(E-series selector lives here)* | Divider · LED Resistor · Attenuator Pads · Accuracy |
+| **Filters & Resonance** | RC Filter · Reactance · Crystal Load Capacitance · Frequency Error |
+| **PCB Copper** | Trace Current · Via · Fusing Current · Conductor Spacing |
+| **PCB Signal** | Impedance · Er Effective · Wavelength & Critical Length |
+| **Power & Thermal** | Junction Temperature · Plane Capacitance · PDN Target Impedance |
+| **Utilities** | AWG Wire · Number Bases · Ratio Units · Conversions |
+
+What moves and why:
+
+- **Series/Parallel leaves Resistors for Fundamentals.** It now handles R, C and L, so filing it under Resistors would misdescribe it. Paired with Ohm's Law it makes a coherent "basic network arithmetic" tab, and it rescues Ohm's Law from being a one-card tab.
+- **RC Filter, Reactance and Crystal merge into Filters & Resonance.** Three thin tabs become one four-card tab covering the same idea from different angles: how passives behave against frequency. Crystal load capacitance and ppm sit naturally beside LC resonance.
+- **PCB splits into Copper and Signal.** These answer genuinely different questions — will the copper carry the current and fit the clearances, versus will the signal arrive intact — and the existing PCB tab was already four cards deep before adding anything. Via stays on the Copper side: power, thermal and stitching vias are its common use, and the new impedance and resonance figures ride along.
+- **Impedance becomes PCB Signal** and gains the Er Effective card, which belongs beside the impedance maths that consumes ε_eff.
+- **Power & Thermal is the one genuinely new tab.** Junction temperature and the PDN pair are both about getting power in and heat out, and neither justifies a tab alone.
+- **The E-series selector stays with Resistors**, which still works: divider, LED and the new attenuator pads all want standard-value suggestions, and nothing that moved out needs it.
+
+Net effect: eight tabs become seven while the tool gains roughly fifteen calculators.
+
+## Build order
+
+One batch, self-contained work first, anything touching verified code last.
+
+1. **Regrouping** — move cards into the seven-tab structure with no behaviour change, and confirm the existing test suite still passes untouched. Doing this first means every later addition lands in its final home.
+2. **New cards** — Junction Temperature, Plane Capacitance, PDN Target Impedance, Attenuator Pads, Er Effective. All new code, nothing to regress.
+3. **Extensions to existing cards** — C and L in Series/Parallel, wire voltage drop, via extras, crystal min/max, Onderdonk multiplier, wavelength slider, the conversion additions.
+4. **Impedance structures** — covered microstrip, coplanar, asymmetric stripline, per-unit-length L and C.
+5. **Conductor Properties additions** — required vs achievable current, skin depth, current density. These touch the trace card, which carries verified reference values.
+6. **Research, then build or abandon** — open-literature fits for the plane and parallel-conductor modifiers.
+7. **Cross-cutting** — validity windows on each card, then the shared settings strip, which is a refactor and therefore last.
 
 ---
 
-# Group A — confirmed
+# Specifications
+
+Every item below is specified to implementation depth. Each carries its final status from the interview; the excluded ones are kept because the reasoning is worth not relitigating, and because a later change of mind should not need the work redone.
+
+## Status at a glance
+
+**In:** A1 junction temperature · A2 wire voltage drop · A3 C and L series/parallel · A4 via extras · B2 impedance structures · B3 skin depth and current density · B5 plane capacitance and PDN · B6 attenuator pads · validity windows · shared settings strip · Er effective card · crystal min/max · Onderdonk multiplier · wavelength slider · conversion additions · plane/parallel modifiers *(pending a citable source)*
+
+**Out:** B1 substrate library · B4 copper weight, plating and etch factor · B7 send-to actions · via step response · differential pairs · crosstalk · embedded resistors · planar inductors · padstack · dual-method bandwidth · drill and thread tables · print/export
+
+---
+
+# Confirmed items
 
 ## A1. Junction temperature
 
@@ -118,9 +198,11 @@ Extends the existing Via card. L and C are already computed, so most of this is 
 
 ---
 
-# Group B — specified, awaiting go-ahead
+# Remaining items, with their final status
 
-## B1. Substrate library
+## B1. Substrate library — **EXCLUDED**
+
+> Not being built. Er stays a manually entered number, and the Tg-exceeded warning falls with it since it needs a laminate's Tg.
 
 A laminate select feeding Er into Impedance, Wavelength and the via capacitance, and Tg into a new over-temperature warning on the trace card. Both values stay editable after selection, exactly as Saturn does it, because Er varies with frequency, glass style and resin content and the datasheet always wins.
 
@@ -141,7 +223,7 @@ Typical values, to be marked in the UI as nominal rather than authoritative:
 
 The Tg warning fires when ambient + temperature rise exceeds Tg on the trace card, which is a genuine design error the tool currently lets through silently.
 
-## B2. Additional impedance structures
+## B2. Additional impedance structures — **IN**
 
 **Recommended to add**: asymmetric (offset) stripline and grounded coplanar waveguide. **Recommended to add with a caveat**: covered microstrip. **Recommended to skip**: dual stripline, as the niche case.
 
@@ -152,13 +234,15 @@ The Tg warning fires when ambient + temperature rise exceeds Tg on the trace car
 
 The fix, and it should be labelled in the page as our construction rather than IPC's: apply it as a ratio against its own b/h = 1 case, Z_covered = Z_surface · Z_embedded(b) / Z_embedded(h). The boundary is then exact by construction and the covering carries the right sign and a credible magnitude — a 25 µm solder mask on the 53.52 Ω line gives **52.64 Ω**, a 0.9 Ω drop, and 0.1 mm of cover gives 50.97 Ω. Both sit in the 1–3 Ω band fabricators quote for mask on a 50 Ω microstrip.
 
-## B3. Skin depth and current density
+## B3. Skin depth and current density — **IN**
 
 - δ = √(ρ / (π f μ₀)) for copper (μr = 1). Checks: **66.1 µm at 1 MHz**, 20.9 µm at 10 MHz, 6.61 µm at 100 MHz, all matching published copper figures.
 - Skin depth as a percentage of copper thickness: at 1 MHz, δ is 188.8 % of 1 oz copper, i.e. the whole thickness still conducts. The percentage is more useful than the raw depth because it answers the actual question — whether the trace thickness is being wasted.
 - Current density J = I/A: 3 A in 1 mm × 35 µm is **85.7 A/mm²**.
 
-## B4. Copper weight, plating and etch factor on the trace card
+## B4. Copper weight, plating and etch factor — **EXCLUDED**
+
+> Not being built. This was the only item that touched trace maths verified against reference values, so excluding it also removes the main regression risk from the batch.
 
 Today copper weight is one dropdown and the cross-section is assumed rectangular. Saturn models base copper and plating separately (plating applies to external layers only; internal layers are unplated) and offers an etch factor for the trapezoidal reality of a subtractively etched conductor.
 
@@ -168,21 +252,21 @@ Today copper weight is one dropdown and the cross-section is assumed rectangular
 
 **Risk to manage.** This touches trace maths currently verified against reference values. The existing rectangular results must remain reachable and unchanged when etch factor is "none", and the current test vectors must keep passing untouched.
 
-## B5. Plane capacitance and PDN target impedance
+## B5. Plane capacitance and PDN target impedance — **IN**
 
 - Parallel-plate: C = ε₀·εr·A/d. Check: 100 × 100 mm planes 0.1 mm apart in εr 4.3 give **3.807 nF**, with X_C = **41.80 Ω** at 1 MHz.
 - Target impedance: Z_target = (V_rail · ripple%) / (I_max · transient%). Check: a 1.2 V rail, 20 A maximum, 50 % transient, 2 % ripple gives **2.4 mΩ**.
 
-## B6. Attenuator pads
+## B6. Attenuator pads — **IN**
 
-Not selected, specified because it is cheap and the formulas are exact. With K = 10^(A_dB/20) in a symmetric system of impedance Z₀:
+Now selected. The formulas are exact. With K = 10^(A_dB/20) in a symmetric system of impedance Z₀:
 
 - π pad: shunt legs Z₀(K+1)/(K−1), series leg Z₀(K²−1)/(2K)
 - T pad: series legs Z₀(K−1)/(K+1), shunt leg 2KZ₀/(K²−1)
 
 Checked against published 50 Ω tables at 6 dB: π gives 150.5 / 37.35 Ω, T gives 16.61 / 66.93 Ω. All four match to better than 0.5 %.
 
-## B7. Cross-tab "send to" actions
+## B7. Cross-tab "send to" actions — **EXCLUDED**
 
 Saturn passes values between tabs. The cheap, high-value version here: send ε_eff from Impedance into Wavelength, and send a solved trace width into the PCB current card. Low effort, and it removes the retyping that makes multi-step work tedious.
 
