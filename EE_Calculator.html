@@ -398,6 +398,9 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
   .chart svg { display: block; max-width: 100%; }
   .chart:focus-visible { outline: 2px solid var(--a-focus); outline-offset: 3px; }
   .chart .grid { stroke: var(--a-line); stroke-width: 1; fill: none; }
+  /* the 2-9 lines inside each decade: bunching towards the next decade is
+     what makes a log axis legible at a glance, so they are always drawn */
+  .chart .gridmin { stroke: var(--a-line); stroke-width: 1; fill: none; opacity: .45; }
   .chart .axis { stroke: var(--a-line-strong); stroke-width: 1; fill: none; }
   .chart .curve { stroke: var(--a-link); stroke-width: 2; fill: none; stroke-linejoin: round; }
   .chart .hair { stroke: var(--a-ink-muted); stroke-width: 1; }
@@ -1229,8 +1232,6 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
     <button role="tab" data-sub="awg" aria-selected="true">AWG Wire</button>
     <button role="tab" data-sub="bat" aria-selected="false">Battery</button>
     <button role="tab" data-sub="pp" aria-selected="false">Frequency Error</button>
-    <button role="tab" data-sub="nb" aria-selected="false">Number Bases</button>
-    <button role="tab" data-sub="rt" aria-selected="false">Ratio Units</button>
     <button role="tab" data-sub="cv" aria-selected="false">Conversions</button>
   </nav>
 <div class="subpanel active" id="sub-awg">
@@ -1277,8 +1278,21 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
     <h3>Battery energy and runtime</h3>
     <div class="cardrow">
     <div class="fields">
+      <div class="field"><label for="bat-chem">Cell chemistry</label>
+        <select id="bat-chem">
+          <option value="lipo" selected>LiPo</option>
+          <option value="lihv">LiHV</option>
+          <option value="liion">Li-ion</option>
+          <option value="lifepo4">LiFePO4 / LiFe</option>
+          <option value="nimh">NiMH</option>
+          <option value="lead">Lead-acid</option>
+          <option value="custom">Custom</option>
+        </select>
+      </div>
       <div class="field"><label for="bat-mah">Cell capacity (mAh)</label><input id="bat-mah" inputmode="decimal" placeholder="e.g. 5000"></div>
-      <div class="field"><label for="bat-v">Nominal cell voltage (V)</label><input id="bat-v" inputmode="decimal" placeholder="3.7"></div>
+      <div class="field"><label for="bat-vfull">Cell full (V)</label><input id="bat-vfull" inputmode="decimal" placeholder="4.2"></div>
+      <div class="field"><label for="bat-v">Cell nominal (V)</label><input id="bat-v" inputmode="decimal" placeholder="3.7"></div>
+      <div class="field"><label for="bat-vmin">Cell minimum (V)</label><input id="bat-vmin" inputmode="decimal" placeholder="3.0"></div>
       <div class="field"><label for="bat-s">Cells in series (S)</label><input id="bat-s" inputmode="numeric" placeholder="1"></div>
       <div class="field"><label for="bat-p">Cells in parallel (P)</label><input id="bat-p" inputmode="numeric" placeholder="1"></div>
       <div class="field"><label for="bat-load">Load (A or W)</label><input id="bat-load" inputmode="decimal" placeholder="e.g. 2"></div>
@@ -1286,6 +1300,7 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
         <select id="bat-loadunit"><option value="A" selected>Amps</option><option value="W">Watts</option></select>
       </div>
       <div class="field"><label for="bat-usable">Usable capacity (%)</label><input id="bat-usable" inputmode="decimal" placeholder="80"></div>
+      <div class="field"><label for="bat-crate">Cell discharge rating (C, optional)</label><input id="bat-crate" inputmode="decimal" placeholder="e.g. 25"></div>
     </div>
     <div class="diagram">
       <svg class="schem" width="215" height="125" viewBox="0 0 215 125" role="img" aria-label="A battery pack of cells in series and parallel, showing what S and P mean">
@@ -1308,8 +1323,9 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
       <p class="key">S cells in series raise voltage. P strings in parallel raise capacity. pack V = S &#215; cell V, pack Ah = P &#215; cell Ah.</p>
     </div>
     </div>
+    <div id="bat-graph" class="chart" tabindex="0" role="img" aria-label="Typical discharge curve"></div>
     <dl class="results" id="bat-out"></dl>
-    <p class="note">Runtime assumes a flat discharge at the nominal voltage, which is optimistic at high C-rates and near the end of discharge. The usable fraction defaults to 80 %, a common reserve for lithium packs; set it to 100 for the nameplate figure.</p>
+    <p class="note">Pick a chemistry and its three cell voltages fill in, highlighted; they are used from that moment and typing over one makes it yours, so Custom is for a cell that matches none of the presets. Full is the <em>resting</em> voltage of a charged cell, which is why lead-acid shows a separate charging setpoint. Charge rates are the ordinary rate for the chemistry; maximum discharge is not tabulated because it varies a hundredfold within one chemistry, so it comes from the cell&rsquo;s own C rating. Runtime assumes a flat load and ignores temperature, cable loss and cell ageing.</p>
     <button class="reset" data-reset="bat">Reset</button>
   </div>
 </div>
@@ -1340,40 +1356,11 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
     <button class="reset" data-reset="pp">Reset</button>
   </div>
 </div>
-<div class="subpanel" id="sub-nb">
-  <h2>Number Bases</h2>
-  <p class="hint">Decimal, hex, binary and octal, at any width.</p>
-  <div class="card">
-    <h3>Number bases</h3>
-    <div class="fields">
-      <div class="field"><label for="nb-dec">Decimal</label><input id="nb-dec" placeholder="e.g. 4096"></div>
-      <div class="field"><label for="nb-hex">Hex</label><input id="nb-hex" placeholder="e.g. 0x1000"></div>
-      <div class="field"><label for="nb-bin">Binary</label><input id="nb-bin" placeholder="e.g. 0b1010"></div>
-      <div class="field"><label for="nb-oct">Octal</label><input id="nb-oct" placeholder="e.g. 0o7777"></div>
-    </div>
-    <dl class="results" id="nb-out"></dl>
-    <p class="note">Integers of any size. Prefixes (<code>0x</code>, <code>0b</code>, <code>0o</code>) are optional, and spaces or underscores may be used as digit separators. Negative decimals are shown as two&rsquo;s complement at each standard width that can hold them.</p>
-    <button class="reset" data-reset="nb">Reset</button>
-  </div>
-</div>
-<div class="subpanel" id="sub-rt">
-  <h2>Ratio Units</h2>
-  <p class="hint">Percent, ppm, ppb and plain ratios.</p>
-  <div class="card">
-    <h3>Ratio units</h3>
-    <div class="fields">
-      <div class="field"><label for="rt-pct">Percent (%)</label><input id="rt-pct" inputmode="decimal" placeholder="e.g. 0.1"></div>
-      <div class="field"><label for="rt-ppm">ppm</label><input id="rt-ppm" inputmode="decimal" placeholder="e.g. 1000"></div>
-      <div class="field"><label for="rt-ppb">ppb</label><input id="rt-ppb" inputmode="decimal" placeholder="e.g. 1e6"></div>
-      <div class="field"><label for="rt-ratio">Ratio (decimal)</label><input id="rt-ratio" inputmode="decimal" placeholder="e.g. 0.001"></div>
-    </div>
-    <p class="note">Edit any field and the rest follow. 1 % = 10 000 ppm = 10<sup>7</sup> ppb = 0.01 as a plain ratio.</p>
-    <button class="reset" data-reset="rt">Reset</button>
-  </div>
-</div>
+
+
 <div class="subpanel" id="sub-cv">
   <h2>Conversions</h2>
-  <p class="hint">Length, temperature, gain, and rectangular/polar.</p>
+  <p class="hint">Units, ratios and number bases. Every card here works both ways: edit any field and the rest follow.</p>
   <div class="card">
     <h3>Conversions</h3>
     <div class="fields">
@@ -1401,6 +1388,29 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
     </div>
     <p class="note">Edit either side of a pair; the rest follows. dB assumes 20&middot;log<sub>10</sub> for voltage and 10&middot;log<sub>10</sub> for power.</p>
     <button class="reset" data-reset="cv">Reset</button>
+  </div>
+<div class="card">
+    <h3>Ratio units</h3>
+    <div class="fields">
+      <div class="field"><label for="rt-pct">Percent (%)</label><input id="rt-pct" inputmode="decimal" placeholder="e.g. 0.1"></div>
+      <div class="field"><label for="rt-ppm">ppm</label><input id="rt-ppm" inputmode="decimal" placeholder="e.g. 1000"></div>
+      <div class="field"><label for="rt-ppb">ppb</label><input id="rt-ppb" inputmode="decimal" placeholder="e.g. 1e6"></div>
+      <div class="field"><label for="rt-ratio">Ratio (decimal)</label><input id="rt-ratio" inputmode="decimal" placeholder="e.g. 0.001"></div>
+    </div>
+    <p class="note">Edit any field and the rest follow. 1 % = 10 000 ppm = 10<sup>7</sup> ppb = 0.01 as a plain ratio.</p>
+    <button class="reset" data-reset="rt">Reset</button>
+  </div>
+<div class="card">
+    <h3>Number bases</h3>
+    <div class="fields">
+      <div class="field"><label for="nb-dec">Decimal</label><input id="nb-dec" placeholder="e.g. 4096"></div>
+      <div class="field"><label for="nb-hex">Hex</label><input id="nb-hex" placeholder="e.g. 0x1000"></div>
+      <div class="field"><label for="nb-bin">Binary</label><input id="nb-bin" placeholder="e.g. 0b1010"></div>
+      <div class="field"><label for="nb-oct">Octal</label><input id="nb-oct" placeholder="e.g. 0o7777"></div>
+    </div>
+    <dl class="results" id="nb-out"></dl>
+    <p class="note">Integers of any size. Prefixes (<code>0x</code>, <code>0b</code>, <code>0o</code>) are optional, and spaces or underscores may be used as digit separators. Negative decimals are shown as two&rsquo;s complement at each standard width that can hold them.</p>
+    <button class="reset" data-reset="nb">Reset</button>
   </div>
 </div>
 </section>
@@ -1945,25 +1955,34 @@ const fltGraph = { pts: [], st: null, box: null };
 function drawGraph(st) {
   const W = 560, H = 210, ML = 46, MR = 14, MT = 12, MB = 34;
   const pw = W - ML - MR, ph = H - MT - MB;
-  const DEC = 2;                                  // decades either side of f0
+  /* Ticks land on round decades - 10 Hz, 1 kHz - rather than on multiples of
+     f0, so the range is snapped outward to whole powers of ten. x is stored as
+     log10 of the absolute frequency. */
+  const d0 = Math.floor(Math.log10(st.f0) - 2), d1 = Math.ceil(Math.log10(st.f0) + 2);
   const pts = [];
   let lo = 0;
   for (let i = 0; i < FLT_SAMPLES; i++) {
-    const lx = -DEC + (2 * DEC) * i / (FLT_SAMPLES - 1);
-    const db = fltDb(Math.pow(10, lx), st);
+    const lx = d0 + (d1 - d0) * i / (FLT_SAMPLES - 1);
+    const db = fltDb(Math.pow(10, lx) / st.f0, st);
     pts.push([lx, db]);
     if (db < lo) lo = db;
   }
   const yMax = Math.max(5, Math.ceil(Math.max.apply(null, pts.map(function (q) { return q[1]; })) / 5) * 5 + 5);
   const yMin = Math.max(-120, Math.floor(Math.max(lo, -120) / 20) * 20);
-  const X = function (lx) { return ML + (lx + DEC) / (2 * DEC) * pw; };
+  const X = function (lx) { return ML + (lx - d0) / (d1 - d0) * pw; };
   const Y = function (db) { return MT + (yMax - db) / (yMax - yMin) * ph; };
 
   const out = ['<svg width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + " " + H + '">'];
-  for (let d = -DEC; d <= DEC; d++) {
+  for (let d = d0; d <= d1; d++) {
+    if (d < d1) {
+      for (let k = 2; k <= 9; k++) {
+        out.push('<path class="gridmin" d="M' + X(d + Math.log10(k)).toFixed(1) + " " + MT +
+                 " V" + (MT + ph) + '"/>');
+      }
+    }
     out.push('<path class="grid" d="M' + X(d).toFixed(1) + " " + MT + " V" + (MT + ph) + '"/>');
-    const f = st.f0 * Math.pow(10, d);
-    out.push('<text x="' + X(d).toFixed(1) + '" y="' + (H - 18) + '" text-anchor="middle">' + fmt(f, "Hz") + "</text>");
+    out.push('<text x="' + X(d).toFixed(1) + '" y="' + (H - 18) + '" text-anchor="middle">' +
+             fmt(Math.pow(10, d), "Hz") + "</text>");
   }
   for (let db = yMin; db <= yMax; db += 20) {
     out.push('<path class="grid" d="M' + ML + " " + Y(db).toFixed(1) + " H" + (ML + pw) + '"/>');
@@ -1979,7 +1998,7 @@ function drawGraph(st) {
   document.getElementById("flt-graph").innerHTML = out.join("");
   fltGraph.pts = pts;
   fltGraph.st = st;
-  fltGraph.box = { W: W, H: H, ML: ML, MT: MT, pw: pw, ph: ph, DEC: DEC, yMax: yMax, yMin: yMin };
+  fltGraph.box = { W: W, H: H, ML: ML, MT: MT, pw: pw, ph: ph, d0: d0, d1: d1, yMax: yMax, yMin: yMin };
 }
 
 /* The crosshair snaps to the nearest sample, so the reader aims at a
@@ -2002,9 +2021,9 @@ function showCursorAt(i) {
   if (!g || !fltGraph.st) return;
   fltGraph.index = i;
   const b = fltGraph.box, st = fltGraph.st, q = fltGraph.pts[i];
-  const x = b.ML + (q[0] + b.DEC) / (2 * b.DEC) * b.pw;
+  const x = b.ML + (q[0] - b.d0) / (b.d1 - b.d0) * b.pw;
   const y = b.MT + (b.yMax - q[1]) / (b.yMax - b.yMin) * b.ph;
-  const f = st.f0 * Math.pow(10, q[0]);
+  const f = Math.pow(10, q[0]);
   const right = x > b.ML + b.pw * 0.6;
   const tx = right ? x - 8 : x + 8;
   const anchor = right ? "end" : "start";
@@ -2484,6 +2503,10 @@ function miniPlot(hostId, spec) {
   const Y = function (v) { return MT + (y1 - v) / ((y1 - y0) || 1) * ph; };
 
   const out = ['<svg width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '">'];
+  (spec.xMinor || []).forEach(function (at) {
+    if (at < x0 || at > x1) return;
+    out.push('<path class="gridmin" d="M' + X(at).toFixed(1) + " " + MT + " V" + (MT + ph) + '"/>');
+  });
   spec.xTicks.forEach(function (t) {
     out.push('<path class="grid" d="M' + X(t.at).toFixed(1) + " " + MT + " V" + (MT + ph) + '"/>');
     out.push('<text x="' + X(t.at).toFixed(1) + '" y="' + (H - 14) + '" text-anchor="middle">' + t.label + "</text>");
@@ -2511,6 +2534,10 @@ function miniPlot(hostId, spec) {
     const last = se.pts[se.pts.length - 1];
     out.push('<text class="tag" x="' + (X(last[0]) + 6).toFixed(1) + '" y="' + (Y(last[1]) + 3.5).toFixed(1) +
              '">' + se.name + "</text>");
+  });
+  (spec.hlines || []).forEach(function (m) {
+    out.push('<path class="hair" d="M' + ML + " " + Y(m.at).toFixed(1) + " H" + (ML + pw) + '"/>');
+    out.push('<text class="tag" x="' + (ML + 5) + '" y="' + (Y(m.at) - 4).toFixed(1) + '">' + m.label + "</text>");
   });
   (spec.marks || []).forEach(function (m) {
     out.push('<path class="hair" d="M' + X(m.at).toFixed(1) + " " + MT + " V" + (MT + ph) + '"/>');
@@ -2565,13 +2592,21 @@ function miniCursorAt(hostId, i) {
   g.innerHTML = parts.join("");
 }
 
-/* logarithmic decade ticks between two frequencies */
-function decadeTicks(lo, hi, unit) {
+/* Whole-decade ticks, labelled with the round value, plus the 2-9 lines
+   inside each decade. Callers snap their range to whole decades so the first
+   and last tick land on the axis ends. */
+function decadeTicks(loDec, hiDec, unit) {
   const ticks = [];
-  for (let d = Math.ceil(Math.log10(lo)); d <= Math.floor(Math.log10(hi)); d++) {
-    ticks.push({ at: d, label: fmt(Math.pow(10, d), unit) });
-  }
+  for (let d = loDec; d <= hiDec; d++) ticks.push({ at: d, label: fmt(Math.pow(10, d), unit) });
   return ticks;
+}
+
+function decadeMinors(loDec, hiDec) {
+  const at = [];
+  for (let d = loDec; d < hiDec; d++) {
+    for (let k = 2; k <= 9; k++) at.push(d + Math.log10(k));
+  }
+  return at;
 }
 
 /* ---- self-resonance: the V that every real part traces ---- */
@@ -2579,7 +2614,7 @@ function decadeTicks(lo, hi, unit) {
 function drawReactPlot(cap, ind) {
   if (!cap && !ind) { miniClear("re-graph"); return; }
   const centre = cap ? cap.srf : ind.srf;
-  const lo = Math.log10(centre) - 2.5, hi = Math.log10(centre) + 2.5;
+  const lo = Math.floor(Math.log10(centre) - 2.5), hi = Math.ceil(Math.log10(centre) + 2.5);
   const N = 121;
   const series = [];
   const zc = [], zl = [];
@@ -2610,7 +2645,8 @@ function drawReactPlot(cap, ind) {
   miniPlot("re-graph", {
     series: series,
     yMin: yLo, yMax: yHi,
-    xTicks: decadeTicks(Math.pow(10, lo), Math.pow(10, hi), "Hz"),
+    xTicks: decadeTicks(lo, hi, "Hz"),
+    xMinor: decadeMinors(lo, hi),
     yTicks: yTicks,
     yUnit: "|Z|",
     marks: [{ at: Math.log10(centre), label: "self-resonance" }],
@@ -2632,7 +2668,7 @@ function drawReactPlot(cap, ind) {
    only 41 % more current, which a single number never conveys. */
 
 function drawFusePlot(aCmil, ta, kOn, tNow) {
-  const N = 61, lo = -2, hi = 1.5;                 // 10 ms to about 30 s
+  const N = 61, lo = -2, hi = 2;                  // 10 ms to 100 s, whole decades
   const base = kOn * aCmil * Math.sqrt(Math.log10(1 + (1083 - ta) / (234 + ta)) / 33);
   const pts = [];
   for (let i = 0; i < N; i++) {
@@ -2650,7 +2686,8 @@ function drawFusePlot(aCmil, ta, kOn, tNow) {
   miniPlot("fu-graph", {
     series: [{ pts: pts, name: "fusing" }],
     yMin: yLo, yMax: yHi,
-    xTicks: decadeTicks(0.01, 30, "s"),
+    xTicks: decadeTicks(lo, hi, "s"),
+    xMinor: decadeMinors(lo, hi),
     yTicks: yTicks,
     yUnit: "I",
     marks: marks,
@@ -3711,22 +3748,142 @@ function calcDiff() {
 
 /* ---------- battery ---------- */
 
+/* ---------- battery ----------
+
+   The chemistry sets the three cell voltages, which then drive everything
+   else. They are written into the fields rather than held privately, so they
+   are visible, and typing over one makes it yours: pick Custom, or just
+   overwrite a number.
+
+   `full` is the resting voltage of a fully charged cell, not the constant-
+   voltage charge setpoint - they differ on lead-acid, and it is the resting
+   figure the discharge curve starts from. `chg` is the ordinary charge rate
+   for the chemistry; a real cell's limit is on its datasheet. Maximum
+   discharge is deliberately not tabulated: within one chemistry it ranges
+   over two orders of magnitude, so it comes from the cell's own C rating. */
+const CHEM = {
+  lipo:    { name: "LiPo",           nom: 3.7, full: 4.20, min: 3.00, cv: 4.20, chg: 1,   shape: "slope" },
+  lihv:    { name: "LiHV",           nom: 3.8, full: 4.35, min: 3.00, cv: 4.35, chg: 1,   shape: "slope" },
+  liion:   { name: "Li-ion",         nom: 3.6, full: 4.20, min: 2.50, cv: 4.20, chg: 0.5, shape: "slope" },
+  lifepo4: { name: "LiFePO4 / LiFe", nom: 3.2, full: 3.40, min: 2.50, cv: 3.65, chg: 1,   shape: "flat" },
+  nimh:    { name: "NiMH",           nom: 1.2, full: 1.40, min: 1.00, cv: 0,    chg: 0.5, shape: "flat" },
+  lead:    { name: "Lead-acid",      nom: 2.0, full: 2.13, min: 1.75, cv: 2.40, chg: 0.2, shape: "slope" }
+};
+
+/* Normalised discharge shapes: fraction of the full-to-empty voltage span
+   against fraction of capacity drawn. Indicative of the chemistry's character
+   - a lithium-iron plateau against a sloping lithium-polymer - not any
+   particular cell. */
+const DISCHARGE_SHAPE = {
+  slope: [[0, 1], [0.1, 0.88], [0.3, 0.74], [0.5, 0.62], [0.7, 0.50], [0.85, 0.38], [0.95, 0.22], [1, 0]],
+  flat:  [[0, 1], [0.05, 0.80], [0.15, 0.72], [0.5, 0.66], [0.85, 0.58], [0.95, 0.40], [1, 0]]
+};
+
+function shapeAt(knots, x) {
+  for (let i = 1; i < knots.length; i++) {
+    if (x <= knots[i][0]) {
+      const a = knots[i - 1], b = knots[i];
+      const f = (x - a[0]) / ((b[0] - a[0]) || 1);
+      return a[1] + f * (b[1] - a[1]);
+    }
+  }
+  return 0;
+}
+
+/* Fill a field from the chemistry, leaving anything the user typed alone. */
+function chemFill(id, v) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (el.value.trim() === "" || el.classList.contains("computed")) setComputed(id, v);
+}
+
+function drawBatteryCurve(vfull, vnom, vmin, S, shape, usable) {
+  const span = vfull - vmin;
+  if (!(span > 0)) { miniClear("bat-graph"); return; }
+  const knots = DISCHARGE_SHAPE[shape] || DISCHARGE_SHAPE.slope;
+  /* Bend the shape so it passes through the nominal voltage at half capacity.
+     That ties the curve to the three numbers on the card, so a custom
+     chemistry gets a curve that honours its own figures instead of borrowing
+     someone else's. */
+  const target = Math.min(0.95, Math.max(0.05, (vnom - vmin) / span));
+  const mid = shapeAt(knots, 0.5);
+  let pw = Math.log(target) / Math.log(mid);
+  const clamped = !isFinite(pw) || pw < 0.4 || pw > 3;
+  pw = clamped ? 1 : pw;
+
+  const N = 81, pts = [];
+  for (let i = 0; i < N; i++) {
+    const x = i / (N - 1);
+    pts.push([x * 100, (vmin + span * Math.pow(Math.max(shapeAt(knots, x), 0), pw)) * S]);
+  }
+  miniPlot("bat-graph", {
+    series: [{ pts: pts, name: "pack" }],
+    yMin: vmin * S - span * S * 0.08,
+    yMax: vfull * S + span * S * 0.08,
+    xTicks: [0, 20, 40, 60, 80, 100].map(function (v) { return { at: v, label: v + " %" }; }),
+    yTicks: [vmin, vnom, vfull].map(function (v) { return { at: v * S, label: (v * S).toPrecision(3) }; }),
+    yUnit: "V",
+    hlines: [{ at: vmin * S, label: "minimum" }],
+    marks: usable < 100 ? [{ at: usable, label: usable + " % used" }] : [],
+    label: "Typical discharge curve: pack voltage falling as capacity is drawn, from full to the minimum recommended cell voltage",
+    note: "Indicative of the chemistry's shape, bent to pass through your nominal voltage at half capacity" +
+          (clamped ? " &mdash; except that these three voltages give no sensible curvature, so a straight blend is drawn instead" : "") +
+          ". It is not your cell's measured curve, and load and temperature both move it.",
+    read: function (i) {
+      return [pts[i][1].toPrecision(4) + " V", "at " + pts[i][0].toFixed(0) + " % drawn"];
+    }
+  });
+}
+
 function calcBattery() {
+  miniClear("bat-graph");
+  const chem = CHEM[document.getElementById("bat-chem").value];
+  if (chem) {
+    chemFill("bat-vfull", chem.full);
+    chemFill("bat-v", chem.nom);
+    chemFill("bat-vmin", chem.min);
+  }
   const mah = val("bat-mah");
   const vc = numOr("bat-v", 3.7, 0.1);
+  const vfull = numOr("bat-vfull", 4.2, 0.1);
+  const vmin = numOr("bat-vmin", 3.0, 0.01);
   const S = Math.max(1, Math.round(numOr("bat-s", 1, 1) || 1));
   const P = Math.max(1, Math.round(numOr("bat-p", 1, 1) || 1));
   const load = val("bat-load");
   const usable = numOr("bat-usable", 80, 1, 100);
-  if (!isFinite(mah) || !(mah > 0) || !isFinite(vc) || !isFinite(usable)) { render("bat-out", []); return; }
+  const crate = val("bat-crate");
+  if (!isFinite(mah) || !(mah > 0) || !isFinite(vc) || !isFinite(usable) ||
+      !isFinite(vfull) || !isFinite(vmin)) { render("bat-out", []); return; }
+
   const packV = vc * S;
   const packAh = mah / 1000 * P;
   const wh = packV * packAh;
   const rows = [
-    ["Pack", S + "S" + P + "P at " + fmt(packV, "V") + " nominal"],
+    ["Pack", S + "S" + P + "P at " + fmt(packV, "V") + " nominal" + (chem ? ", " + chem.name : "")],
     ["Capacity", packAh.toPrecision(4) + " Ah"],
     ["Energy", wh.toPrecision(4) + " Wh (" + (wh * usable / 100).toPrecision(4) + " Wh usable at " + usable + " %)"]
   ];
+
+  if (vmin >= vfull) {
+    rows.push(["", "The minimum cell voltage is not below the full voltage, so there is nothing to discharge.", "err"]);
+    render("bat-out", rows);
+    return;
+  }
+
+  rows.push(["Charge to", (vfull * S).toPrecision(4) + " V pack (" + vfull + " V per cell)" +
+             (chem && chem.cv && chem.cv !== chem.full
+                ? " &mdash; hold at " + (chem.cv * S).toPrecision(4) + " V while charging, " + chem.cv + " V per cell"
+                : "")]);
+  if (chem && chem.chg) {
+    rows.push(["Typical charge current", fmt(chem.chg * packAh, "A") + " at " + chem.chg +
+               " C, the ordinary rate for " + chem.name + " &mdash; the cell&rsquo;s datasheet overrides this"]);
+  }
+  rows.push(["Discharge no lower than", (vmin * S).toPrecision(4) + " V pack (" + vmin + " V per cell)"]);
+
+  if (isFinite(crate) && crate > 0) {
+    rows.push(["Maximum continuous discharge", fmt(crate * packAh, "A") + " at the " + crate + " C rating you gave"]);
+  }
+
   if (isFinite(load) && load > 0) {
     const watts = document.getElementById("bat-loadunit").value === "W";
     const amps = watts ? load / packV : load;
@@ -3734,10 +3891,19 @@ function calcBattery() {
     const hours = packAh * usable / 100 / amps;
     rows.push(["Load", fmt(amps, "A") + " at " + fmt(power, "W")]);
     rows.push(["C-rate", (amps / packAh).toPrecision(3) + " C"]);
+    if (isFinite(crate) && crate > 0) {
+      const head = crate * packAh / amps;
+      rows.push(["Against the rating", head >= 1
+                   ? "within it, " + (head >= 2 ? head.toPrecision(2) + "× headroom"
+                                                : ((head - 1) * 100).toFixed(0) + " % headroom")
+                   : "over it by " + ((1 / head - 1) * 100).toFixed(0) + " % &mdash; the pack cannot supply this continuously",
+                 head >= 1 ? "good" : "warn"]);
+    }
     rows.push(["Runtime", hours >= 1 ? hours.toPrecision(3) + " h (" + (hours * 60).toPrecision(3) + " min)"
                                      : (hours * 60).toPrecision(3) + " min"]);
   }
   render("bat-out", rows);
+  drawBatteryCurve(vfull, vc, vmin, S, chem ? chem.shape : "slope", usable);
 }
 
 /* ---------- dBm chain (disabled: card hidden) ---------- */
@@ -3766,7 +3932,7 @@ const CALCS = {
   pad: { calc: calcPad, inputs: ["pad-a","pad-z0","pad-z2","pad-series"] },
   ee:  { calc: calcEreff, inputs: ["ee-w","ee-h","ee-er","ee-f","ee-oz"] },
   dp:  { calc: calcDiff, inputs: ["dp-struct","dp-w","dp-s","dp-h","dp-er","dp-target","dp-oz"] },
-  bat: { calc: calcBattery, inputs: ["bat-mah","bat-v","bat-s","bat-p","bat-load","bat-loadunit","bat-usable"] },
+  bat: { calc: calcBattery, inputs: ["bat-chem","bat-mah","bat-vfull","bat-v","bat-vmin","bat-s","bat-p","bat-load","bat-loadunit","bat-usable","bat-crate"] },
   ohm: { calc: calcOhm, inputs: ["ohm-v","ohm-i","ohm-r","ohm-p"] },
   div: { calc: calcDivider, inputs: ["div-vin","div-vout","div-r1","div-r2","div-rtot","div-iload","div-series"] },
   sp:  { calc: calcSP, inputs: ["sp-list","sp-type","sp-v"] },
@@ -3879,6 +4045,30 @@ for (const nbf of NB_FIELDS) {
     showBases(v, nid);
   });
 }
+
+/* Choosing a chemistry replaces all three cell voltages, including any the
+   user typed - that is the point of picking a different chemistry. Editing a
+   single voltage afterwards keeps it, because calcBattery only fills fields
+   that are blank or still showing a computed value. */
+(function () {
+  const sel = document.getElementById("bat-chem");
+  if (!sel) return;
+  sel.addEventListener("change", function () {
+    const chem = CHEM[sel.value];
+    if (chem) {
+      setComputed("bat-vfull", chem.full);
+      setComputed("bat-v", chem.nom);
+      setComputed("bat-vmin", chem.min);
+    }
+    calcBattery();
+  });
+})();
+
+["bat-graph"].forEach(function (hostId) {
+  const host = document.getElementById(hostId);
+  if (!host) return;
+  host.addEventListener("pointermove", function (e) { miniCursor(hostId, e.clientX); });
+});
 
 /* The explanatory plots share one hover layer. Listeners sit on the
    container, which persists, so a redraw never has to re-attach them. */
