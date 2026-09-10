@@ -431,13 +431,12 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
 
 <div class="wrap">
 <nav class="tabs" role="tablist" id="tabbar">
-  <button role="tab" data-tab="ohm" aria-selected="true">Ohm&rsquo;s Law</button>
+  <button role="tab" data-tab="fund" aria-selected="true">Fundamentals</button>
   <button role="tab" data-tab="res" aria-selected="false">Resistors</button>
-  <button role="tab" data-tab="rc" aria-selected="false">RC Filter</button>
-  <button role="tab" data-tab="react" aria-selected="false">Reactance</button>
-  <button role="tab" data-tab="pcb" aria-selected="false">PCB</button>
-  <button role="tab" data-tab="z" aria-selected="false">Impedance</button>
-  <button role="tab" data-tab="xtal" aria-selected="false">Crystal</button>
+  <button role="tab" data-tab="filt" aria-selected="false">Filters &amp; Resonance</button>
+  <button role="tab" data-tab="copper" aria-selected="false">PCB Copper</button>
+  <button role="tab" data-tab="signal" aria-selected="false">PCB Signal</button>
+  <button role="tab" data-tab="pwr" aria-selected="false">Power &amp; Thermal</button>
   <button role="tab" data-tab="util" aria-selected="false">Utilities</button>
 </nav>
 <p class="legend"><b>Highlighted</b> fields are calculated from what you entered — type in one and it becomes an input instead.</p>
@@ -445,10 +444,11 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
 
 <main class="wrap">
 
-<section class="panel active" id="panel-ohm">
-  <h2>Ohm&rsquo;s Law &amp; Power</h2>
-  <p class="hint">Fill in any two of the four values; the other two are calculated. Inputs accept SI suffixes (<code>4k7</code>, <code>10m</code>, <code>2.2M</code>).</p>
+<section class="panel active" id="panel-fund">
+  <h2>Fundamentals</h2>
+  <p class="hint">Basic network arithmetic. Every field accepts SI suffixes (<code>4k7</code>, <code>10n</code>, <code>2.2M</code>).</p>
   <div class="card">
+    <h3>Ohm&rsquo;s law and power</h3>
     <div class="cardrow">
     <div class="fields">
       <div class="field"><label for="ohm-v">Voltage V (V)</label><input id="ohm-v" inputmode="decimal" placeholder="e.g. 12"></div>
@@ -471,13 +471,42 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
     <dl class="results" id="ohm-out"></dl>
     <button class="reset" data-reset="ohm">Reset</button>
   </div>
+  <div class="card">
+    <h3>Series / parallel</h3>
+    <div class="cardrow">
+    <div class="fields">
+      <div class="field" style="flex:1 1 100%"><label for="sp-list">Values (&Omega;)</label><textarea id="sp-list" rows="3" placeholder="e.g. 10k, 4k7, 1k"></textarea></div>
+    </div>
+    <svg class="schem" width="260" height="125" viewBox="0 0 260 125" role="img" aria-label="Resistors in series and in parallel">
+      <path class="wire" d="M8 40 H26"/>
+      <rect class="wire" x="26" y="32" width="34" height="16"/>
+      <text x="35" y="27">R1</text>
+      <path class="wire" d="M60 40 H76"/>
+      <rect class="wire" x="76" y="32" width="34" height="16"/>
+      <text x="85" y="27">R2</text>
+      <path class="wire" d="M110 40 H128"/>
+      <text x="42" y="72">Series</text>
+      <path class="wire" d="M205 12 V22 M205 22 H180 V35 M205 22 H230 V35"/>
+      <circle class="dot" cx="205" cy="22" r="2.5"/>
+      <rect class="wire" x="171" y="35" width="18" height="42"/>
+      <rect class="wire" x="221" y="35" width="18" height="42"/>
+      <text x="163" y="30">R1</text>
+      <text x="228" y="30">R2</text>
+      <path class="wire" d="M180 77 V90 H230 V77 M205 90 V100"/>
+      <circle class="dot" cx="205" cy="90" r="2.5"/>
+      <text x="181" y="118">Parallel</text>
+    </svg>
+    </div>
+    <dl class="results" id="sp-out"></dl>
+    <button class="reset" data-reset="sp">Reset</button>
+  </div>
 </section>
 
 <section class="panel" id="panel-res">
   <nav class="subtabs" role="tablist" id="subbar-res">
     <button role="tab" data-sub="div" aria-selected="true">Divider</button>
-    <button role="tab" data-sub="sp" aria-selected="false">Series / Parallel</button>
     <button role="tab" data-sub="led" aria-selected="false">LED Resistor</button>
+    <button role="tab" data-sub="pad" aria-selected="false">Attenuator Pads</button>
     <button role="tab" data-sub="acc" aria-selected="false">Accuracy</button>
   <span class="serieswrap"><label for="g-series">E-series</label>
     <select id="g-series">
@@ -533,42 +562,11 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
     <button class="reset" data-reset="div">Reset</button>
   </div>
 </div>
-<div class="subpanel" id="sub-sp">
-  <h2>Series / Parallel Resistance</h2>
-  <p class="hint">Enter resistor values separated by commas, spaces, or new lines. Both combinations are calculated at once. Works for inductors too; for capacitors the two results swap.</p>
-  <div class="card">
-    <div class="cardrow">
-    <div class="fields">
-      <div class="field" style="flex:1 1 100%"><label for="sp-list">Values (&Omega;)</label><textarea id="sp-list" rows="3" placeholder="e.g. 10k, 4k7, 1k"></textarea></div>
-    </div>
-    <svg class="schem" width="260" height="125" viewBox="0 0 260 125" role="img" aria-label="Resistors in series and in parallel">
-      <path class="wire" d="M8 40 H26"/>
-      <rect class="wire" x="26" y="32" width="34" height="16"/>
-      <text x="35" y="27">R1</text>
-      <path class="wire" d="M60 40 H76"/>
-      <rect class="wire" x="76" y="32" width="34" height="16"/>
-      <text x="85" y="27">R2</text>
-      <path class="wire" d="M110 40 H128"/>
-      <text x="42" y="72">Series</text>
-      <path class="wire" d="M205 12 V22 M205 22 H180 V35 M205 22 H230 V35"/>
-      <circle class="dot" cx="205" cy="22" r="2.5"/>
-      <rect class="wire" x="171" y="35" width="18" height="42"/>
-      <rect class="wire" x="221" y="35" width="18" height="42"/>
-      <text x="163" y="30">R1</text>
-      <text x="228" y="30">R2</text>
-      <path class="wire" d="M180 77 V90 H230 V77 M205 90 V100"/>
-      <circle class="dot" cx="205" cy="90" r="2.5"/>
-      <text x="181" y="118">Parallel</text>
-    </svg>
-    </div>
-    <dl class="results" id="sp-out"></dl>
-    <button class="reset" data-reset="sp">Reset</button>
-  </div>
-</div>
 <div class="subpanel" id="sub-led">
   <h2>LED Series Resistor</h2>
-  <p class="hint">R = (V<sub>supply</sub> &minus; V<sub>f</sub>) / I<sub>f</sub>. The suggestion is the next value up in the E-series chosen at the top, so the LED runs at or below the requested current.</p>
+  <p class="hint">R = (V<sub>supply</sub> &minus; V<sub>f</sub>) / I<sub>f</sub>, or the current a resistor you already have will give. The suggestion is the next value up in the E-series chosen above.</p>
   <div class="card">
+    <h3>LED series resistor</h3>
     <div class="cardrow">
     <div class="fields">
       <div class="field"><label for="led-vs">V<sub>supply</sub> (V)</label><input id="led-vs" inputmode="decimal" placeholder="e.g. 5"></div>
@@ -640,12 +638,11 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
 </div>
 </section>
 
-
-
-<section class="panel" id="panel-rc">
-  <h2>RC Filter Cutoff</h2>
-  <p class="hint">f<sub>c</sub> = 1 / (2&pi;RC), the &minus;3 dB point of a first-order RC low-pass or high-pass. Fill in any two values.</p>
+<section class="panel" id="panel-filt">
+  <h2>Filters &amp; Resonance</h2>
+  <p class="hint">How passives behave against frequency &mdash; cutoff, reactance, resonance, and the crystal arithmetic that depends on the same ideas.</p>
   <div class="card">
+    <h3>RC cutoff</h3>
     <div class="cardrow">
     <div class="fields">
       <div class="field"><label for="rc-r">R (&Omega;)</label><input id="rc-r" inputmode="decimal" placeholder="e.g. 10k"></div>
@@ -674,12 +671,8 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
     <dl class="results" id="rc-out"></dl>
     <button class="reset" data-reset="rc">Reset</button>
   </div>
-</section>
-
-<section class="panel" id="panel-react">
-  <h2>Reactance</h2>
-  <p class="hint">X<sub>C</sub> = 1 / (2&pi;fC) and X<sub>L</sub> = 2&pi;fL at the given frequency. Enter a frequency plus a capacitance and/or an inductance.</p>
   <div class="card">
+    <h3>Reactance</h3>
     <div class="cardrow">
     <div class="fields">
       <div class="field"><label for="re-f">Frequency f (Hz)</label><input id="re-f" inputmode="decimal" placeholder="e.g. 100k"></div>
@@ -702,12 +695,44 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
     <dl class="results" id="re-out"></dl>
     <button class="reset" data-reset="re">Reset</button>
   </div>
+  <div class="card">
+    <h3>Load capacitance</h3>
+    <div class="cardrow">
+    <div class="fields">
+      <div class="field"><label for="xc-cl">Crystal C<sub>L</sub> spec (F)</label><input id="xc-cl" inputmode="decimal" placeholder="e.g. 12p"></div>
+      <div class="field"><label for="xc-c1">C1 (F)</label><input id="xc-c1" inputmode="decimal" placeholder="e.g. 18p"></div>
+      <div class="field"><label for="xc-c2">C2 (F)</label><input id="xc-c2" inputmode="decimal" placeholder="e.g. 18p"></div>
+      <div class="field"><label for="xc-cs">Stray C (F)</label><input id="xc-cs" inputmode="decimal" placeholder="3p"></div>
+    </div>
+    <svg class="schem" width="220" height="130" viewBox="0 0 220 130" role="img" aria-label="Crystal with two load capacitors to ground">
+      <path class="wire" d="M40 30 H180"/>
+      <rect class="wire" x="95" y="20" width="30" height="20"/>
+      <path class="wire" d="M88 15 V45 M132 15 V45"/>
+      <text x="98" y="60">XTAL</text>
+      <path class="wire" d="M60 30 V62 M48 62 H72 M48 72 H72 M60 72 V92 M48 92 H72 M53 99 H67 M58 106 H62"/>
+      <text x="26" y="72">C1</text>
+      <path class="wire" d="M160 30 V62 M148 62 H172 M148 72 H172 M160 72 V92 M148 92 H172 M153 99 H167 M158 106 H162"/>
+      <text x="178" y="72">C2</text>
+    </svg>
+    </div>
+    <dl class="results" id="xc-out"></dl>
+    <p class="note">C<sub>L</sub> = C1&middot;C2/(C1+C2) + C<sub>stray</sub>. Give C1 and C2 to check the load the crystal sees, or just the C<sub>L</sub> spec to get the required C1 = C2. Stray defaults to 3 pF (pads + pins).</p>
+    <button class="reset" data-reset="xc">Reset</button>
+  </div>
+  <div class="card">
+    <h3>Frequency error (ppm)</h3>
+    <div class="fields">
+      <div class="field"><label for="pp-f">Frequency (Hz)</label><input id="pp-f" inputmode="decimal" placeholder="e.g. 16M"></div>
+      <div class="field"><label for="pp-ppm">Tolerance (ppm)</label><input id="pp-ppm" inputmode="decimal" placeholder="e.g. 20"></div>
+      <div class="field"><label for="pp-df">&Delta;f (Hz)</label><input id="pp-df" inputmode="decimal" placeholder="or e.g. 320"></div>
+    </div>
+    <dl class="results" id="pp-out"></dl>
+    <button class="reset" data-reset="pp">Reset</button>
+  </div>
 </section>
-
-
-<section class="panel" id="panel-pcb">
-  <h2>PCB</h2>
-  <p class="hint">Copper sizing for current. Dimension fields take mm by default and accept <code>mil</code>, <code>um</code> and <code>in</code> suffixes (e.g. <code>10mil</code>).</p>
+<section class="panel" id="panel-copper">
+  <h2>PCB Copper</h2>
+  <p class="hint">Will the copper carry the current and meet the clearances. Dimension fields take mm by default and accept <code>mil</code>, <code>um</code> and <code>in</code> suffixes.</p>
   <div class="card">
     <h3>Trace width &harr; current (IPC-2221)</h3>
     <div class="cardrow">
@@ -788,10 +813,9 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
     <button class="reset" data-reset="spc">Reset</button>
   </div>
 </section>
-
-<section class="panel" id="panel-z">
-  <h2>Impedance</h2>
-  <p class="hint">First-order IPC-2141 formulas &mdash; good to a few percent inside their validity range. For a real stackup, confirm with the fab&rsquo;s field solver.</p>
+<section class="panel" id="panel-signal">
+  <h2>PCB Signal</h2>
+  <p class="hint">Will the signal arrive intact. First-order models &mdash; good to a few percent inside their stated validity range, which each card prints. For a real stackup, confirm with the fab&rsquo;s field solver.</p>
   <div class="card">
     <h3>Single-ended Z<sub>0</sub></h3>
     <div class="cardrow">
@@ -833,49 +857,13 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
     <button class="reset" data-reset="wl">Reset</button>
   </div>
 </section>
-
-<section class="panel" id="panel-xtal">
-  <h2>Crystal</h2>
-  <p class="hint">Pierce-oscillator load capacitance and frequency-tolerance arithmetic.</p>
-  <div class="card">
-    <h3>Load capacitance</h3>
-    <div class="cardrow">
-    <div class="fields">
-      <div class="field"><label for="xc-cl">Crystal C<sub>L</sub> spec (F)</label><input id="xc-cl" inputmode="decimal" placeholder="e.g. 12p"></div>
-      <div class="field"><label for="xc-c1">C1 (F)</label><input id="xc-c1" inputmode="decimal" placeholder="e.g. 18p"></div>
-      <div class="field"><label for="xc-c2">C2 (F)</label><input id="xc-c2" inputmode="decimal" placeholder="e.g. 18p"></div>
-      <div class="field"><label for="xc-cs">Stray C (F)</label><input id="xc-cs" inputmode="decimal" placeholder="3p"></div>
-    </div>
-    <svg class="schem" width="220" height="130" viewBox="0 0 220 130" role="img" aria-label="Crystal with two load capacitors to ground">
-      <path class="wire" d="M40 30 H180"/>
-      <rect class="wire" x="95" y="20" width="30" height="20"/>
-      <path class="wire" d="M88 15 V45 M132 15 V45"/>
-      <text x="98" y="60">XTAL</text>
-      <path class="wire" d="M60 30 V62 M48 62 H72 M48 72 H72 M60 72 V92 M48 92 H72 M53 99 H67 M58 106 H62"/>
-      <text x="26" y="72">C1</text>
-      <path class="wire" d="M160 30 V62 M148 62 H172 M148 72 H172 M160 72 V92 M148 92 H172 M153 99 H167 M158 106 H162"/>
-      <text x="178" y="72">C2</text>
-    </svg>
-    </div>
-    <dl class="results" id="xc-out"></dl>
-    <p class="note">C<sub>L</sub> = C1&middot;C2/(C1+C2) + C<sub>stray</sub>. Give C1 and C2 to check the load the crystal sees, or just the C<sub>L</sub> spec to get the required C1 = C2. Stray defaults to 3 pF (pads + pins).</p>
-    <button class="reset" data-reset="xc">Reset</button>
-  </div>
-  <div class="card">
-    <h3>Frequency error (ppm)</h3>
-    <div class="fields">
-      <div class="field"><label for="pp-f">Frequency (Hz)</label><input id="pp-f" inputmode="decimal" placeholder="e.g. 16M"></div>
-      <div class="field"><label for="pp-ppm">Tolerance (ppm)</label><input id="pp-ppm" inputmode="decimal" placeholder="e.g. 20"></div>
-      <div class="field"><label for="pp-df">&Delta;f (Hz)</label><input id="pp-df" inputmode="decimal" placeholder="or e.g. 320"></div>
-    </div>
-    <dl class="results" id="pp-out"></dl>
-    <button class="reset" data-reset="pp">Reset</button>
-  </div>
+<section class="panel" id="panel-pwr">
+  <h2>Power &amp; Thermal</h2>
+  <p class="hint">Getting power in and heat out.</p>
 </section>
-
 <section class="panel" id="panel-util">
   <h2>Utilities</h2>
-  <p class="hint">Wire data and everyday conversions.</p>
+  <p class="hint">Wire data, number formats and everyday conversions.</p>
   <div class="card">
     <h3>AWG wire</h3>
     <div class="fields">
@@ -1933,8 +1921,15 @@ document.querySelectorAll("button.reset").forEach(function (btn) {
 
 /* ---------- tabs ---------- */
 
+/* Sub-tabs are looked up per panel rather than hard-coded to one bar, so any
+   panel can carry them. Deep links are "#panel" or "#panel-sub". */
+
 const tabbar = document.getElementById("tabbar");
-const subbar = document.getElementById("subbar-res");
+
+function subbarOf(panelId) {
+  const pnl = document.getElementById("panel-" + panelId);
+  return pnl ? pnl.querySelector("nav.subtabs") : null;
+}
 
 function showTab(name) {
   let found = false;
@@ -1950,47 +1945,62 @@ function showTab(name) {
   return true;
 }
 
-function showSub(name) {
+function showSub(panelId, name) {
+  const bar = subbarOf(panelId);
+  if (!bar) return false;
   let found = false;
-  subbar.querySelectorAll("button[data-sub]").forEach(function (b) {
+  bar.querySelectorAll("button[data-sub]").forEach(function (b) {
     const on = b.dataset.sub === name;
     if (on) found = true;
     b.setAttribute("aria-selected", on ? "true" : "false");
   });
   if (!found) return false;
-  document.querySelectorAll("#panel-res .subpanel").forEach(function (sp) {
+  document.querySelectorAll("#panel-" + panelId + " .subpanel").forEach(function (sp) {
     sp.classList.toggle("active", sp.id === "sub-" + name);
   });
   return true;
 }
 
-function currentSub() {
-  const on = subbar.querySelector('button[aria-selected="true"]');
-  return on ? on.dataset.sub : "div";
+function currentSub(panelId) {
+  const bar = subbarOf(panelId);
+  if (!bar) return null;
+  const on = bar.querySelector('button[aria-selected="true"]');
+  return on ? on.dataset.sub : null;
+}
+
+function hashFor(panelId) {
+  const sub = currentSub(panelId);
+  return sub ? panelId + "-" + sub : panelId;
 }
 
 tabbar.addEventListener("click", function (e) {
   const btn = e.target.closest("button[data-tab]");
   if (!btn) return;
   showTab(btn.dataset.tab);
-  try { location.hash = btn.dataset.tab === "res" ? "res-" + currentSub() : btn.dataset.tab; } catch (err) {}
+  try { location.hash = hashFor(btn.dataset.tab); } catch (err) {}
 });
 
-subbar.addEventListener("click", function (e) {
-  const btn = e.target.closest("button[data-sub]");
-  if (!btn) return;
-  showSub(btn.dataset.sub);
-  try { location.hash = "res-" + btn.dataset.sub; } catch (err) {}
+document.querySelectorAll("nav.subtabs").forEach(function (bar) {
+  const panelId = bar.closest(".panel").id.replace("panel-", "");
+  bar.addEventListener("click", function (e) {
+    const btn = e.target.closest("button[data-sub]");
+    if (!btn) return;
+    showSub(panelId, btn.dataset.sub);
+    try { location.hash = panelId + "-" + btn.dataset.sub; } catch (err) {}
+  });
 });
 
-/* Deep links: #pcb, #res-acc, and the pre-grouping #div / #sp / #led. */
-const SUBS = { div: 1, sp: 1, led: 1, acc: 1 };
+/* Deep links, including the pre-regrouping ones so old links keep working. */
+const LEGACY_HASH = {
+  ohm: "fund", sp: "fund", div: "res-div", led: "res-led", acc: "res-acc",
+  rc: "filt", react: "filt", xtal: "filt", pcb: "copper", z: "signal", util: "util"
+};
 (function () {
-  const h = location.hash.replace("#", "");
+  let h = location.hash.replace("#", "");
   if (!h) return;
-  const m = h.match(/^res-(\w+)$/);
-  if (m && SUBS[m[1]]) { showTab("res"); showSub(m[1]); return; }
-  if (SUBS[h]) { showTab("res"); showSub(h); return; }
+  if (LEGACY_HASH[h]) h = LEGACY_HASH[h];
+  const dash = h.indexOf("-");
+  if (dash > 0 && showTab(h.slice(0, dash))) { showSub(h.slice(0, dash), h.slice(dash + 1)); return; }
   showTab(h);
 })();
 
