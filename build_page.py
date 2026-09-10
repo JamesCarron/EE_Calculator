@@ -1,11 +1,11 @@
 """Generate EE_Calculator.html - a self-contained tabbed EE calculator page.
 
-Written 2026-08-26 for C:\\Auterion\\Tools\\EE_Calculator.
+Written 2026-08-26.
 
 All calculator logic is in-page JavaScript because the page is interactive at
-runtime with no server; Python here is only the build harness. The Auterion
-house stylesheet and brand fonts are inlined via Tools\\brand\\auterion_inline
-so the output works offline, opened straight from the filesystem.
+runtime with no server; Python here is only the build harness. The house
+stylesheet and its two webfonts are inlined via the local `theme_inline`
+module, so the output works offline, opened straight from the filesystem.
 
 Verified by: building and exercising every tab in a browser (divider results
 cross-checked by hand: 12 V, 10k/4k7 -> 3.837 V, 816.3 uA).
@@ -34,11 +34,18 @@ HTML = r"""<!doctype html>
   .tabs { display: flex; flex-wrap: wrap; gap: .4rem; border-bottom: var(--a-border) solid var(--a-line); padding-bottom: .6rem; margin-bottom: 1.4rem; }
   .tabs button { font: inherit; font-size: var(--a-text-sm); color: var(--a-ink-secondary); background: var(--a-bg-subtle); border: var(--a-border) solid var(--a-line); border-radius: var(--a-radius-chip); padding: .4rem .85rem; cursor: pointer; }
   .tabs button:hover { color: var(--a-ink); border-color: var(--a-line-strong); }
-  .tabs button[aria-selected="true"] { background: var(--a-bg-accent); color: var(--a-on-accent); border-color: var(--a-bg-accent); }
+  .tabs button[aria-selected="true"] { background: var(--a-link); color: var(--a-on-accent); border-color: var(--a-link); }
   .tabs button:focus-visible { outline: 2px solid var(--a-focus); outline-offset: 2px; }
   .serieswrap { margin-left: auto; display: flex; align-items: center; gap: .45rem; font-size: var(--a-text-xs); color: var(--a-ink-secondary); }
   .serieswrap select { font: inherit; font-family: var(--a-font-mono); color: var(--a-ink); background: var(--a-bg); border: var(--a-border) solid var(--a-line-strong); border-radius: var(--a-radius-sm); padding: .3rem .45rem; }
   .serieswrap select:focus-visible { outline: 2px solid var(--a-focus); outline-offset: 1px; }
+  .subtabs { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem; margin: 0 0 1.4rem; }
+  .subtabs button { font: inherit; font-size: var(--a-text-sm); color: var(--a-ink-secondary); background: none; border: none; border-bottom: 2px solid transparent; padding: .35rem .2rem; margin-right: .7rem; cursor: pointer; }
+  .subtabs button:hover { color: var(--a-ink); }
+  .subtabs button[aria-selected="true"] { color: var(--a-ink); border-bottom-color: var(--a-link); }
+  .subtabs button:focus-visible { outline: 2px solid var(--a-focus); outline-offset: 2px; }
+  .subpanel { display: none; }
+  .subpanel.active { display: block; }
   .panel { display: none; padding-bottom: 3rem; }
   .panel.active { display: block; }
   .panel h2 { font-family: var(--a-font-display); margin: 0 0 .3rem; }
@@ -69,37 +76,36 @@ HTML = r"""<!doctype html>
   table.finder th, table.finder td { text-align: left; padding: .4rem .7rem; border-bottom: var(--a-border) solid var(--a-line); font-family: var(--a-font-mono); white-space: nowrap; }
   table.finder th { font-family: var(--a-font); color: var(--a-ink-secondary); font-weight: 600; }
   .tablewrap { overflow-x: auto; }
-  button.reset { font: inherit; font-size: var(--a-text-xs); color: var(--a-link); background: none; border: none; cursor: pointer; padding: 0; margin-top: 1rem; }
+  button.reset { font: inherit; font-size: var(--a-text-xs); color: var(--a-link); background: none; border: none; cursor: pointer; padding: 0; }
   button.reset:hover { color: var(--a-link-hover); text-decoration: underline; }
+  .field input.computed { background: var(--a-bg-accent); color: var(--a-ink); border-color: var(--a-link); }
+  .cardfoot { display: flex; align-items: center; gap: 1.1rem; margin-top: 1rem; }
+  .cardfoot button { font: inherit; font-size: var(--a-text-xs); color: var(--a-link); background: none; border: none; cursor: pointer; padding: 0; }
+  .cardfoot button:hover { color: var(--a-link-hover); text-decoration: underline; }
+  .cardfoot button:focus-visible { outline: 2px solid var(--a-focus); outline-offset: 2px; }
+  .cardfoot .copied { color: var(--a-good); text-decoration: none; }
+  .legend { font-size: var(--a-text-xs); color: var(--a-ink-muted); margin: 1.1rem 0 0; }
+  .legend b { display: inline-block; background: var(--a-bg-accent); color: var(--a-ink); border: var(--a-border) solid var(--a-link); border-radius: var(--a-radius-sm); padding: 0 .35rem; font-weight: 400; }
   footer.site { border-top: var(--a-border) solid var(--a-line); color: var(--a-ink-muted); font-size: var(--a-text-xs); padding: 1rem 0 2rem; }
 </style>
 </head>
 <body>
 <header class="site wrap">
-  <p class="eyebrow">Auterion &middot; Tools</p>
   <h1>EE Calculator</h1>
 </header>
 
 <div class="wrap">
 <nav class="tabs" role="tablist" id="tabbar">
   <button role="tab" data-tab="ohm" aria-selected="true">Ohm&rsquo;s Law</button>
-  <button role="tab" data-tab="div" aria-selected="false">Resistor Divider</button>
-  <button role="tab" data-tab="sp" aria-selected="false">Series / Parallel</button>
+  <button role="tab" data-tab="res" aria-selected="false">Resistors</button>
   <button role="tab" data-tab="rc" aria-selected="false">RC Filter</button>
   <button role="tab" data-tab="react" aria-selected="false">Reactance</button>
-  <button role="tab" data-tab="led" aria-selected="false">LED Resistor</button>
-  <button role="tab" data-tab="pcb" aria-selected="false">PCB Power</button>
+  <button role="tab" data-tab="pcb" aria-selected="false">PCB</button>
   <button role="tab" data-tab="z" aria-selected="false">Impedance</button>
   <button role="tab" data-tab="xtal" aria-selected="false">Crystal</button>
   <button role="tab" data-tab="util" aria-selected="false">Utilities</button>
-  <span class="serieswrap"><label for="g-series">E-series</label>
-    <select id="g-series">
-      <option value="E12">E12 (10 %)</option>
-      <option value="E24">E24 (5 %)</option>
-      <option value="E96" selected>E96 (1 %)</option>
-    </select>
-  </span>
 </nav>
+<p class="legend"><b>Highlighted</b> fields are calculated from what you entered — type in one and it becomes an input instead.</p>
 </div>
 
 <main class="wrap">
@@ -132,7 +138,21 @@ HTML = r"""<!doctype html>
   </div>
 </section>
 
-<section class="panel" id="panel-div">
+<section class="panel" id="panel-res">
+  <nav class="subtabs" role="tablist" id="subbar-res">
+    <button role="tab" data-sub="div" aria-selected="true">Divider</button>
+    <button role="tab" data-sub="sp" aria-selected="false">Series / Parallel</button>
+    <button role="tab" data-sub="led" aria-selected="false">LED Resistor</button>
+    <button role="tab" data-sub="acc" aria-selected="false">Accuracy</button>
+  <span class="serieswrap"><label for="g-series">E-series</label>
+    <select id="g-series">
+      <option value="E12">E12 (10 %)</option>
+      <option value="E24">E24 (5 %)</option>
+      <option value="E96" selected>E96 (1 %)</option>
+    </select>
+  </span>
+  </nav>
+<div class="subpanel active" id="sub-div">
   <h2>Resistor Divider</h2>
   <p class="hint">R1 on top, R2 to ground; unloaded, V<sub>out</sub> = V<sub>in</sub> &middot; R2 / (R1 + R2). The solver fills in whatever is missing as soon as it has enough &mdash; give it three of the four values, or just the two voltages to search standard E-series pairs.</p>
   <div class="card">
@@ -177,9 +197,8 @@ HTML = r"""<!doctype html>
     <p class="note">Fill in any three of V<sub>in</sub>, V<sub>out</sub>, R1 and R2 &mdash; the fourth is calculated as soon as enough is entered, and a solved resistor gets a nearest-standard-value suggestion. With only V<sub>in</sub> and V<sub>out</sub>, the best standard-value pairs are searched instead (total R, if given, sets the exact solution and steers the search; with one leg known it stands in for the other). The load is a constant current drawn out of the midpoint, so R1 carries the R2 current plus the load; leave it empty for an unloaded divider.</p>
     <button class="reset" data-reset="div">Reset</button>
   </div>
-</section>
-
-<section class="panel" id="panel-sp">
+</div>
+<div class="subpanel" id="sub-sp">
   <h2>Series / Parallel Resistance</h2>
   <p class="hint">Enter resistor values separated by commas, spaces, or new lines. Both combinations are calculated at once. Works for inductors too; for capacitors the two results swap.</p>
   <div class="card">
@@ -210,7 +229,83 @@ HTML = r"""<!doctype html>
     <dl class="results" id="sp-out"></dl>
     <button class="reset" data-reset="sp">Reset</button>
   </div>
+</div>
+<div class="subpanel" id="sub-led">
+  <h2>LED Series Resistor</h2>
+  <p class="hint">R = (V<sub>supply</sub> &minus; V<sub>f</sub>) / I<sub>f</sub>. The suggestion is the next value up in the E-series chosen at the top, so the LED runs at or below the requested current.</p>
+  <div class="card">
+    <div class="cardrow">
+    <div class="fields">
+      <div class="field"><label for="led-vs">V<sub>supply</sub> (V)</label><input id="led-vs" inputmode="decimal" placeholder="e.g. 5"></div>
+      <div class="field"><label for="led-vf">LED V<sub>f</sub> (V)</label><input id="led-vf" inputmode="decimal" placeholder="e.g. 2.1"></div>
+      <div class="field"><label for="led-if">LED I<sub>f</sub> (A)</label><input id="led-if" inputmode="decimal" placeholder="e.g. 10m"></div>
+      <div class="field"><label for="led-r">Series R (&Omega;)</label><input id="led-r" inputmode="decimal" placeholder="solved, or enter"></div>
+    </div>
+    <svg class="schem" width="250" height="125" viewBox="0 0 250 125" role="img" aria-label="Supply, series resistor, LED to ground">
+      <circle class="wire" cx="18" cy="45" r="3.5"/>
+      <text x="8" y="30">Vs</text>
+      <path class="wire" d="M21.5 45 H50"/>
+      <rect class="wire" x="50" y="37" width="40" height="16"/>
+      <text x="64" y="32">R</text>
+      <path class="wire" d="M90 45 H128"/>
+      <path class="wire" d="M128 31 L128 59 L154 45 Z"/>
+      <path class="wire" d="M154 31 V59"/>
+      <path class="wire" d="M146 26 L157 15 M153 29 L164 18"/>
+      <path class="dot" d="M157 15 L159 21 L163 17 Z"/>
+      <path class="dot" d="M164 18 L166 24 L170 20 Z"/>
+      <text x="126" y="76">LED</text>
+      <path class="wire" d="M154 45 H190 V80"/>
+      <path class="wire" d="M176 80 H204 M181 87 H199 M186 94 H194"/>
+    </svg>
+    </div>
+    <dl class="results" id="led-out"></dl>
+    <button class="reset" data-reset="led">Reset</button>
+  </div>
+</div>
+<div class="subpanel" id="sub-acc">
+  <h2>Divider Accuracy</h2>
+  <p class="hint">What tolerance, temperature coefficient and ageing do to a divider&rsquo;s ratio. A divider only cares about how the two legs move <em>relative to each other</em>, so matched parts beat tight parts.</p>
+  <div class="card">
+    <h3>Error budget</h3>
+    <div class="cardrow">
+    <div class="fields">
+      <div class="field"><label for="ac-r1">R1 &mdash; top (&Omega;)</label><input id="ac-r1" inputmode="decimal" placeholder="e.g. 10k"></div>
+      <div class="field"><label for="ac-r2">R2 &mdash; bottom (&Omega;)</label><input id="ac-r2" inputmode="decimal" placeholder="e.g. 4k7"></div>
+      <div class="field"><label for="ac-vin">V<sub>in</sub> (V, optional)</label><input id="ac-vin" inputmode="decimal" placeholder="e.g. 12"></div>
+      <div class="field"><label for="ac-tol1">R1 tolerance (%)</label><input id="ac-tol1" inputmode="decimal" placeholder="1"></div>
+      <div class="field"><label for="ac-tol2">R2 tolerance (%)</label><input id="ac-tol2" inputmode="decimal" placeholder="1"></div>
+      <div class="field"><label for="ac-tcr1">R1 TCR (ppm/&deg;C)</label><input id="ac-tcr1" inputmode="decimal" placeholder="100"></div>
+      <div class="field"><label for="ac-tcr2">R2 TCR (ppm/&deg;C)</label><input id="ac-tcr2" inputmode="decimal" placeholder="100"></div>
+      <div class="field"><label for="ac-tmin">T min (&deg;C)</label><input id="ac-tmin" inputmode="decimal" placeholder="-40"></div>
+      <div class="field"><label for="ac-tmax">T max (&deg;C)</label><input id="ac-tmax" inputmode="decimal" placeholder="85"></div>
+      <div class="field"><label for="ac-tnom">T nominal (&deg;C)</label><input id="ac-tnom" inputmode="decimal" placeholder="25"></div>
+      <div class="field"><label for="ac-age">Ageing / drift (ppm, optional)</label><input id="ac-age" inputmode="decimal" placeholder="e.g. 500"></div>
+    </div>
+    <svg class="schem" width="150" height="180" viewBox="0 0 150 180" role="img" aria-label="Divider with tolerance bands on each leg">
+      <circle class="wire" cx="55" cy="14" r="3.5"/>
+      <text x="66" y="18">Vin</text>
+      <path class="wire" d="M55 17.5 V38"/>
+      <rect class="wire" x="44" y="38" width="22" height="40"/>
+      <text x="74" y="56">R1 &plusmn;</text>
+      <path class="wire" d="M55 78 V100"/>
+      <circle class="dot" cx="55" cy="100" r="3"/>
+      <path class="wire" d="M55 100 H100"/>
+      <circle class="wire" cx="103.5" cy="100" r="3.5"/>
+      <text x="112" y="104">out</text>
+      <path class="wire" d="M55 100 V116"/>
+      <rect class="wire" x="44" y="116" width="22" height="40"/>
+      <text x="74" y="140">R2 &plusmn;</text>
+      <path class="wire" d="M55 156 V166 M41 166 H69 M46 172 H64 M51 178 H59"/>
+    </svg>
+    </div>
+    <dl class="results" id="ac-out"></dl>
+    <p class="note">Worst case is exact (both legs at their opposing extremes); RSS treats the contributions as independent random variables, which is the realistic figure for a production run but assumes the two TCRs are uncorrelated. Blank fields default to 1 %, 100 ppm/&deg;C, and &minus;40/+85/25 &deg;C.</p>
+    <button class="reset" data-reset="ac">Reset</button>
+  </div>
+</div>
 </section>
+
+
 
 <section class="panel" id="panel-rc">
   <h2>RC Filter Cutoff</h2>
@@ -274,40 +369,9 @@ HTML = r"""<!doctype html>
   </div>
 </section>
 
-<section class="panel" id="panel-led">
-  <h2>LED Series Resistor</h2>
-  <p class="hint">R = (V<sub>supply</sub> &minus; V<sub>f</sub>) / I<sub>f</sub>. The suggestion is the next value up in the E-series chosen at the top, so the LED runs at or below the requested current.</p>
-  <div class="card">
-    <div class="cardrow">
-    <div class="fields">
-      <div class="field"><label for="led-vs">V<sub>supply</sub> (V)</label><input id="led-vs" inputmode="decimal" placeholder="e.g. 5"></div>
-      <div class="field"><label for="led-vf">LED V<sub>f</sub> (V)</label><input id="led-vf" inputmode="decimal" placeholder="e.g. 2.1"></div>
-      <div class="field"><label for="led-if">LED I<sub>f</sub> (A)</label><input id="led-if" inputmode="decimal" placeholder="e.g. 10m"></div>
-    </div>
-    <svg class="schem" width="250" height="125" viewBox="0 0 250 125" role="img" aria-label="Supply, series resistor, LED to ground">
-      <circle class="wire" cx="18" cy="45" r="3.5"/>
-      <text x="8" y="30">Vs</text>
-      <path class="wire" d="M21.5 45 H50"/>
-      <rect class="wire" x="50" y="37" width="40" height="16"/>
-      <text x="64" y="32">R</text>
-      <path class="wire" d="M90 45 H128"/>
-      <path class="wire" d="M128 31 L128 59 L154 45 Z"/>
-      <path class="wire" d="M154 31 V59"/>
-      <path class="wire" d="M146 26 L157 15 M153 29 L164 18"/>
-      <path class="dot" d="M157 15 L159 21 L163 17 Z"/>
-      <path class="dot" d="M164 18 L166 24 L170 20 Z"/>
-      <text x="126" y="76">LED</text>
-      <path class="wire" d="M154 45 H190 V80"/>
-      <path class="wire" d="M176 80 H204 M181 87 H199 M186 94 H194"/>
-    </svg>
-    </div>
-    <dl class="results" id="led-out"></dl>
-    <button class="reset" data-reset="led">Reset</button>
-  </div>
-</section>
 
 <section class="panel" id="panel-pcb">
-  <h2>PCB Power</h2>
+  <h2>PCB</h2>
   <p class="hint">Copper sizing for current. Dimension fields take mm by default and accept <code>mil</code>, <code>um</code> and <code>in</code> suffixes (e.g. <code>10mil</code>).</p>
   <div class="card">
     <h3>Trace width &harr; current (IPC-2221)</h3>
@@ -487,6 +551,29 @@ HTML = r"""<!doctype html>
     <button class="reset" data-reset="awg">Reset</button>
   </div>
   <div class="card">
+    <h3>Number bases</h3>
+    <div class="fields">
+      <div class="field"><label for="nb-dec">Decimal</label><input id="nb-dec" placeholder="e.g. 4096"></div>
+      <div class="field"><label for="nb-hex">Hex</label><input id="nb-hex" placeholder="e.g. 0x1000"></div>
+      <div class="field"><label for="nb-bin">Binary</label><input id="nb-bin" placeholder="e.g. 0b1010"></div>
+      <div class="field"><label for="nb-oct">Octal</label><input id="nb-oct" placeholder="e.g. 0o7777"></div>
+    </div>
+    <dl class="results" id="nb-out"></dl>
+    <p class="note">Integers of any size. Prefixes (<code>0x</code>, <code>0b</code>, <code>0o</code>) are optional, and spaces or underscores may be used as digit separators. Negative decimals are shown as two&rsquo;s complement at each standard width that can hold them.</p>
+    <button class="reset" data-reset="nb">Reset</button>
+  </div>
+  <div class="card">
+    <h3>Ratio units</h3>
+    <div class="fields">
+      <div class="field"><label for="rt-pct">Percent (%)</label><input id="rt-pct" inputmode="decimal" placeholder="e.g. 0.1"></div>
+      <div class="field"><label for="rt-ppm">ppm</label><input id="rt-ppm" inputmode="decimal" placeholder="e.g. 1000"></div>
+      <div class="field"><label for="rt-ppb">ppb</label><input id="rt-ppb" inputmode="decimal" placeholder="e.g. 1e6"></div>
+      <div class="field"><label for="rt-ratio">Ratio (decimal)</label><input id="rt-ratio" inputmode="decimal" placeholder="e.g. 0.001"></div>
+    </div>
+    <p class="note">Edit any field and the rest follow. 1 % = 10 000 ppm = 10<sup>7</sup> ppb = 0.01 as a plain ratio.</p>
+    <button class="reset" data-reset="rt">Reset</button>
+  </div>
+  <div class="card">
     <h3>Conversions</h3>
     <div class="fields">
       <div class="field"><label for="cv-mm">mm</label><input id="cv-mm" inputmode="decimal" placeholder="e.g. 0.254"></div>
@@ -565,6 +652,48 @@ function render(id, rows) {
   }).join("");
 }
 
+/* ---------- solved values go back into the input boxes ----------
+
+   A solver writes its answer into the field it solved for and tags it
+   `computed`, so the page reads like a filled-in form rather than a form plus
+   a separate answer sheet. Two rules keep that honest:
+     - every recalculation first empties the fields still tagged `computed`,
+       so a stale answer can never be mistaken for an input, and
+     - typing in a field drops the tag (see the input wiring), so the value
+       the user just entered survives that clearing and becomes an input.
+   Derived quantities with no box of their own (ratios, powers, currents)
+   still go to the results list. */
+
+function clearComputed(ids) {
+  for (const id of ids) {
+    const el = document.getElementById(id);
+    if (el && el.classList.contains("computed")) { el.value = ""; el.classList.remove("computed"); }
+  }
+}
+
+/* Compact SI form for writing back into a field: 4286 -> "4.286k".
+   Round-trips through parseVal, so a computed value can be re-read as input. */
+function fmtField(v) {
+  if (!isFinite(v)) return "";
+  if (v === 0) return "0";
+  const neg = v < 0 ? "-" : "";
+  v = Math.abs(v);
+  const PRE = [[1e9,"G"],[1e6,"M"],[1e3,"k"],[1,""],[1e-3,"m"],[1e-6,"u"],[1e-9,"n"],[1e-12,"p"]];
+  let f = 1e-12, pre = "p";
+  for (const [fac, sym] of PRE) { if (v >= fac * 0.9999995) { f = fac; pre = sym; break; } }
+  let str = (v / f).toPrecision(5);
+  if (str.indexOf("e") === -1 && str.indexOf(".") !== -1) str = str.replace(/\.?0+$/, "");
+  return neg + str + pre;
+}
+
+function setComputed(id, v) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.value = typeof v === "string" ? v : fmtField(v);
+  el.classList.add("computed");
+  el.classList.remove("bad");
+}
+
 /* ---------- E-series ---------- */
 
 const E12 = [1.0,1.2,1.5,1.8,2.2,2.7,3.3,3.9,4.7,5.6,6.8,8.2];
@@ -598,13 +727,23 @@ function snap(sorted, x) {
 /* ---------- Ohm's law ---------- */
 
 function calcOhm() {
+  clearComputed(["ohm-v","ohm-i","ohm-r","ohm-p"]);
   const V = val("ohm-v"), I = val("ohm-i"), R = val("ohm-r"), P = val("ohm-p");
   const given = [["V",V],["I",I],["R",R],["P",P]].filter(function (x) { return isFinite(x[1]); });
   if (given.length < 2) { render("ohm-out", given.length ? [["", "Enter one more value.", ""]] : []); return; }
-  if (given.length > 2) { render("ohm-out", [["", "More than two values entered \u2014 using " + given[0][0] + " and " + given[1][0] + ".", "warn"]].concat(solveOhm(given[0], given[1]))); return; }
-  render("ohm-out", solveOhm(given[0], given[1]));
+  const rows = [];
+  if (given.length > 2) rows.push(["", "More than two values entered — solving from " + given[0][0] + " and " + given[1][0] + ".", "warn"]);
+  const g = solveOhm(given[0], given[1]);
+  if (!isFinite(g.V) || !isFinite(g.I) || !isFinite(g.R) || !isFinite(g.P)) {
+    render("ohm-out", [["", "Those values give no real solution — check for a zero or negative entry.", "err"]]);
+    return;
+  }
+  const box = { V: "ohm-v", I: "ohm-i", R: "ohm-r", P: "ohm-p" };
+  for (const k in box) if (!isFinite(val(box[k]))) setComputed(box[k], g[k]);
+  render("ohm-out", rows);
 }
 
+/* Returns all four quantities from any two. */
 function solveOhm(a, b) {
   const g = {}; g[a[0]] = a[1]; g[b[0]] = b[1];
   let V = g.V, I = g.I, R = g.R, P = g.P;
@@ -614,7 +753,7 @@ function solveOhm(a, b) {
   else if (I != null && R != null) { V = I * R; P = I * I * R; }
   else if (I != null && P != null) { V = P / I; R = P / (I * I); }
   else if (R != null && P != null) { V = Math.sqrt(P * R); I = Math.sqrt(P / R); }
-  return [["Voltage", fmt(V, "V")], ["Current", fmt(I, "A")], ["Resistance", fmt(R, "\u03a9")], ["Power", fmt(P, "W")]];
+  return { V: V, I: I, R: R, P: P };
 }
 
 /* ---------- resistor divider ---------- */
@@ -630,6 +769,7 @@ function solveOhm(a, b) {
    known it stands in for the other. Vin+Vout alone also trigger a search of
    E-series pairs, steered toward T when given. */
 function calcDivider() {
+  clearComputed(["div-vin","div-vout","div-r1","div-r2","div-rtot"]);
   const vin = val("div-vin"), vout = val("div-vout");
   let r1 = val("div-r1"), r2 = val("div-r2");
   const ilRaw = val("div-iload"), rtotRaw = val("div-rtot");
@@ -648,10 +788,10 @@ function calcDivider() {
     legFromTotal = true;
     if (isFinite(r1)) {
       if (rtot <= r1) { render("div-out", [["", "Total R must exceed R1.", "err"]]); return; }
-      r2 = rtot - r1; rows.push(["R2 from total", fmt(r2, "Ω")]);
+      r2 = rtot - r1; setComputed("div-r2", r2);
     } else {
       if (rtot <= r2) { render("div-out", [["", "Total R must exceed R2.", "err"]]); return; }
-      r1 = rtot - r2; rows.push(["R1 from total", fmt(r1, "Ω")]);
+      r1 = rtot - r2; setComputed("div-r1", r1);
     }
   }
 
@@ -673,7 +813,8 @@ function calcDivider() {
       if (!isFinite(er1) || !(er1 > 0) || !(er2 > 0)) {
         rows.push(["", "No exact solution at this total — the load current is too large for it. Lower the total R or the load.", "err"]);
       } else {
-        rows.push(["Exact R1 / R2 for this total", fmt(er1, "Ω") + " / " + fmt(er2, "Ω")]);
+        setComputed("div-r1", er1);
+        setComputed("div-r2", er2);
         const i1 = (vin - vout) / er1;
         rows.push(["Current in R1 / R2", fmt(i1, "A") + " / " + fmt(i1 - il, "A")]);
         if (il > 0) {
@@ -707,28 +848,30 @@ function calcDivider() {
     } else {
       exact = (vin - vout) / (vout / r2 + il);
     }
+    setComputed(solve === "R1" ? "div-r1" : "div-r2", exact);
+    if (solve === "R1") sr1 = exact; else sr2 = exact;
     const std = snap(seriesValues(series, -1, 7), exact);   // 100 mohm .. 97.6 Mohm
-    if (solve === "R1") sr1 = std; else sr2 = std;
-    rows.push(["Exact " + solve, fmt(exact, "Ω")]);
-    rows.push(["Nearest " + series, fmt(std, "Ω")]);
-    svout = (svin - sr1 * il) / (1 + sr1 / sr2);
-    rows.push(["V<sub>out</sub> with " + series + " value", fmt(svout, "V") + " (" + ((svout - vout) / vout * 100).toFixed(3) + " %)"]);
+    const vStd = solve === "R1" ? (svin - std * il) / (1 + std / sr2)
+                                : (svin - sr1 * il) / (1 + sr1 / std);
+    rows.push(["Nearest " + series, fmt(std, "Ω") + " — gives " + fmt(vStd, "V") + " (" + ((vStd - vout) / vout * 100).toFixed(3) + " %)"]);
   } else if (solve === "Vout") {
     svout = (vin - r1 * il) / (1 + r1 / r2);
     if (svout <= 0) { render("div-out", [["", "The load pulls the midpoint to zero — V<sub>out</sub> would be negative.", "err"]]); return; }
-    rows.push(["V<sub>out</sub>", fmt(svout, "V")]);
+    if (count !== 4) setComputed("div-vout", svout);
+    else rows.push(["V<sub>out</sub> from R1 / R2", fmt(svout, "V") + " (entered " + fmt(vout, "V") + ")"]);
   } else {                                                  // solve Vin
     if (!(vout > 0)) { render("div-out", [["", "V<sub>out</sub> must be positive.", "err"]]); return; }
     svin = vout + r1 * (vout / r2 + il);
-    rows.push(["Required V<sub>in</sub>", fmt(svin, "V")]);
+    setComputed("div-vin", svin);
   }
+
+  if (!isFinite(rtot) && isFinite(sr1) && isFinite(sr2)) setComputed("div-rtot", sr1 + sr2);
 
   const i1 = (svin - svout) / sr1, i2 = svout / sr2;
   rows.push(["Ratio V<sub>out</sub>/V<sub>in</sub>", (svout / svin).toPrecision(4)]);
   rows.push(["Current in R1", fmt(i1, "A")]);
   rows.push(["Current in R2", fmt(i2, "A")]);
   rows.push(["P in R1 / R2", fmt(i1 * i1 * sr1, "W") + " / " + fmt(i2 * i2 * sr2, "W")]);
-  rows.push(["Total R1&#8202;+&#8202;R2", fmt(sr1 + sr2, "Ω")]);
   rows.push(["Total power from V<sub>in</sub>", fmt(svin * i1, "W")]);
   if (il > 0) {
     const ratio = i2 / il;
@@ -799,19 +942,16 @@ function calcSP() {
 /* ---------- RC filter ---------- */
 
 function calcRC() {
+  clearComputed(["rc-r","rc-c","rc-f"]);
   const R = val("rc-r"), C = val("rc-c"), F = val("rc-f");
   const have = [isFinite(R), isFinite(C), isFinite(F)].filter(Boolean).length;
   if (have < 2) { render("rc-out", []); return; }
   const TAU = 2 * Math.PI;
   let r = R, c = C, f = F;
-  if (isFinite(R) && isFinite(C)) f = 1 / (TAU * R * C);
-  else if (isFinite(R) && isFinite(F)) c = 1 / (TAU * R * F);
-  else c = C, r = 1 / (TAU * C * F);
-  render("rc-out", [
-    ["R", fmt(r, "\u03a9")], ["C", fmt(c, "F")],
-    ["Cutoff f<sub>c</sub>", fmt(f, "Hz")],
-    ["Time constant \u03c4 = RC", fmt(r * c, "s")]
-  ]);
+  if (isFinite(R) && isFinite(C)) { f = 1 / (TAU * R * C); if (!isFinite(F)) setComputed("rc-f", f); }
+  else if (isFinite(R) && isFinite(F)) { c = 1 / (TAU * R * F); setComputed("rc-c", c); }
+  else { r = 1 / (TAU * C * F); setComputed("rc-r", r); }
+  render("rc-out", [["Time constant τ = RC", fmt(r * c, "s")]]);
 }
 
 /* ---------- reactance ---------- */
@@ -830,23 +970,129 @@ function calcReact() {
 /* ---------- LED resistor ---------- */
 
 function calcLED() {
-  const vs = val("led-vs"), vf = val("led-vf"), iF = val("led-if");
-  if (![vs, vf, iF].every(isFinite)) { render("led-out", []); return; }
+  clearComputed(["led-if","led-r"]);
+  const vs = val("led-vs"), vf = val("led-vf");
+  let iF = val("led-if"), r = val("led-r");
+  if (!isFinite(vs) || !isFinite(vf)) { render("led-out", []); return; }
   if (vs <= vf) { render("led-out", [["", "Supply must exceed the LED forward voltage.", "err"]]); return; }
-  if (iF <= 0) { render("led-out", [["", "Forward current must be positive.", "err"]]); return; }
-  const r = (vs - vf) / iF;
+  if (!isFinite(iF) && !isFinite(r)) { render("led-out", [["", "Enter a forward current, or a resistor to check.", ""]]); return; }
+  if (isFinite(iF) && iF <= 0) { render("led-out", [["", "Forward current must be positive.", "err"]]); return; }
+  if (isFinite(r) && r <= 0) { render("led-out", [["", "Resistance must be positive.", "err"]]); return; }
+  const rows = [];
+  if (isFinite(iF) && !isFinite(r)) { r = (vs - vf) / iF; setComputed("led-r", r); }
+  else if (isFinite(r) && !isFinite(iF)) { iF = (vs - vf) / r; setComputed("led-if", iF); }
+  else rows.push(["Current through " + fmt(r, "Ω"), fmt((vs - vf) / r, "A")]);
   const series = document.getElementById("g-series").value;
   const vals = seriesValues(series, -1, 7);
   let std = vals[vals.length - 1];
   for (const v of vals) if (v >= r) { std = v; break; }
   const iStd = (vs - vf) / std;
-  render("led-out", [
-    ["Exact resistor", fmt(r, "\u03a9")],
-    ["Next " + series + " up", fmt(std, "\u03a9")],
-    ["Current with " + series + " value", fmt(iStd, "A")],
-    ["Resistor power", fmt(iStd * iStd * std, "W")],
-    ["LED power", fmt(vf * iStd, "W")]
-  ]);
+  rows.push(["Next " + series + " up", fmt(std, "Ω") + " — gives " + fmt(iStd, "A")]);
+  rows.push(["Resistor power", fmt(iStd * iStd * std, "W")]);
+  rows.push(["LED power", fmt(vf * iStd, "W")]);
+  render("led-out", rows);
+}
+
+/* ---------- divider accuracy ----------
+
+   A divider's ratio k = R2/(R1+R2) only moves when the two legs move
+   RELATIVE to each other: to first order dk/k = (1-k)*(d2 - d1). Two
+   consequences worth seeing: the (1-k) factor means a lightly-dividing
+   network is inherently more accurate than a heavy one, and matched parts
+   with a common TCR contribute nothing at all, because their drift cancels
+   in the difference. Worst case here is exact rather than first-order --
+   both legs are evaluated at their opposing extremes. */
+
+function calcAccuracy() {
+  const r1 = val("ac-r1"), r2 = val("ac-r2"), vin = val("ac-vin");
+  if (!isFinite(r1) || !isFinite(r2) || !(r1 > 0) || !(r2 > 0)) { render("ac-out", []); return; }
+  const num = function (id, dflt) { const v = val(id); return isFinite(v) ? v : dflt; };
+  const tol1 = num("ac-tol1", 1) / 100, tol2 = num("ac-tol2", 1) / 100;
+  const tcr1 = num("ac-tcr1", 100), tcr2 = num("ac-tcr2", 100);
+  const tmin = num("ac-tmin", -40), tmax = num("ac-tmax", 85), tnom = num("ac-tnom", 25);
+  const age = num("ac-age", 0) * 1e-6;
+  if (tmax < tmin) { render("ac-out", [["", "T max must be at or above T min.", "err"]]); return; }
+  const dT = Math.max(Math.abs(tmax - tnom), Math.abs(tmin - tnom));
+  const drift1 = Math.abs(tcr1) * 1e-6 * dT, drift2 = Math.abs(tcr2) * 1e-6 * dT;
+  const d1 = tol1 + drift1 + age, d2 = tol2 + drift2 + age;   // worst-case relative spread per leg
+  const k = r2 / (r1 + r2);
+
+  // exact worst case: legs pushed to opposing extremes
+  const kLo = (r2 * (1 - d2)) / (r1 * (1 + d1) + r2 * (1 - d2));
+  const kHi = (r2 * (1 + d2)) / (r1 * (1 - d1) + r2 * (1 + d2));
+  const wc = Math.max(Math.abs(kHi / k - 1), Math.abs(kLo / k - 1));
+
+  // RSS: contributions treated as independent
+  const s1 = Math.sqrt(tol1 * tol1 + drift1 * drift1 + age * age);
+  const s2 = Math.sqrt(tol2 * tol2 + drift2 * drift2 + age * age);
+  const rss = (1 - k) * Math.sqrt(s1 * s1 + s2 * s2);
+
+  const pc = function (x) { return (x * 100).toPrecision(3) + " %"; };
+  const pm = function (x) { return (x * 1e6).toFixed(0) + " ppm"; };
+  const rows = [
+    ["Nominal ratio", k.toPrecision(5) + " (" + pc(k) + " of V<sub>in</sub>)"],
+    ["Tolerance contribution", "±" + pc((1 - k) * (tol1 + tol2)) + " worst case"],
+    ["TCR contribution over ΔT " + dT.toFixed(0) + " °C",
+     "±" + pc((1 - k) * (drift1 + drift2)) + " worst case, " +
+     (tcr1 === tcr2 ? "0 % if the parts truly track" : "±" + pc((1 - k) * Math.abs(tcr2 - tcr1) * 1e-6 * dT) + " if they track")]
+  ];
+  if (age > 0) rows.push(["Ageing contribution", "±" + pc((1 - k) * 2 * age) + " worst case"]);
+  rows.push(["Total ratio error — worst case", "±" + pc(wc) + " (±" + pm(wc) + ")"]);
+  rows.push(["Total ratio error — RSS", "±" + pc(rss) + " (±" + pm(rss) + ")"]);
+  if (isFinite(vin) && vin > 0) {
+    rows.push(["V<sub>out</sub> nominal", fmt(vin * k, "V")]);
+    rows.push(["V<sub>out</sub> worst-case window", fmt(vin * kLo, "V") + " … " + fmt(vin * kHi, "V")]);
+  }
+  rows.push(["Effective bits", "ratio resolved to " + Math.max(0, Math.log2(1 / (2 * wc))).toFixed(1) + " bits worst case"]);
+  rows.push(["R1 spread", fmt(r1 * (1 - d1), "Ω") + " … " + fmt(r1 * (1 + d1), "Ω")]);
+  rows.push(["R2 spread", fmt(r2 * (1 - d2), "Ω") + " … " + fmt(r2 * (1 + d2), "Ω")]);
+  render("ac-out", rows);
+}
+
+/* ---------- number bases ---------- */
+
+/* Parse an integer in a given radix, tolerating prefixes and separators. */
+function parseInt_(raw, radix) {
+  let t = String(raw).trim().replace(/[_\s]/g, "");
+  if (!t) return null;
+  let neg = false;
+  if (t[0] === "-") { neg = true; t = t.slice(1); }
+  else if (t[0] === "+") t = t.slice(1);
+  const pre = { 16: /^0x/i, 2: /^0b/i, 8: /^0o/i }[radix];
+  if (pre) t = t.replace(pre, "");
+  if (!t) return null;
+  const ok = { 10: /^[0-9]+$/, 16: /^[0-9a-f]+$/i, 2: /^[01]+$/, 8: /^[0-7]+$/ }[radix];
+  if (!ok.test(t)) return null;
+  let v;
+  try { v = radix === 10 ? BigInt(t) : BigInt((radix === 16 ? "0x" : radix === 8 ? "0o" : "0b") + t); }
+  catch (e) { return null; }
+  return neg ? -v : v;
+}
+
+const NB_FIELDS = [["nb-dec", 10], ["nb-hex", 16], ["nb-bin", 2], ["nb-oct", 8]];
+
+function showBases(v, fromId) {
+  for (const [id, radix] of NB_FIELDS) {
+    if (id === fromId) continue;
+    const el = document.getElementById(id);
+    const neg = v < 0n;
+    const body = (neg ? -v : v).toString(radix);
+    el.value = (neg ? "-" : "") + (radix === 16 ? "0x" + body.toUpperCase() : radix === 2 ? "0b" + body : radix === 8 ? "0o" + body : body);
+    el.classList.add("computed");
+  }
+  const mag = v < 0n ? -v : v;
+  const bits = mag === 0n ? 1 : mag.toString(2).length;
+  const rows = [["Magnitude needs", bits + (bits === 1 ? " bit" : " bits") + (v < 0n ? ", plus a sign" : "")]];
+  for (const w of [8, 16, 32, 64]) {
+    const lim = 1n << BigInt(w);
+    const fits = v < 0n ? (v >= -(lim >> 1n)) : (v < lim);
+    if (!fits) continue;
+    const tc = v < 0n ? lim + v : v;
+    const hex = tc.toString(16).toUpperCase().padStart(w / 4, "0");
+    rows.push([w + "-bit" + (v < 0n ? " two’s complement" : ""), "0x" + hex.replace(/(.{4})(?=.)/g, "$1 ")]);
+    if (v >= 0n) break;
+  }
+  render("nb-out", rows);
 }
 
 /* ---------- PCB power ---------- */
@@ -882,6 +1128,7 @@ function traceR(wMM, tMM, lenMM, tempC) {
 }
 
 function calcTrace() {
+  clearComputed(["tw-i","tw-w"]);
   const i = val("tw-i"), w = valDim("tw-w"), lenMM = valDim("tw-len");
   const dtRaw = val("tw-dt"), taRaw = val("tw-ta");
   const dT = isFinite(dtRaw) && dtRaw > 0 ? dtRaw : 10;
@@ -895,11 +1142,13 @@ function calcTrace() {
     if (!(i > 0)) { render("tw-out", [["", "Current must be positive.", "err"]]); return; }
     const aMil2 = ipcArea(i, dT, k);
     wMM = (aMil2 / (tMM / MIL)) * MIL;
-    rows.push(["Required width", fmt(wMM / 1000, "m") + " (" + (wMM / MIL).toFixed(1) + " mil)"]);
+    setComputed("tw-w", +wMM.toPrecision(4) + "");
+    rows.push(["Required width", (wMM / MIL).toFixed(1) + " mil"]);
   } else if (isFinite(w) && !isFinite(i)) {
     if (!(w > 0)) { render("tw-out", [["", "Width must be positive.", "err"]]); return; }
     iVal = ipcCurrent((w / MIL) * (tMM / MIL), dT, k);
-    rows.push(["Max current at &Delta;T " + dT + " &deg;C", fmt(iVal, "A")]);
+    setComputed("tw-i", iVal);
+    rows.push(["Width", (w / MIL).toFixed(1) + " mil"]);
   } else {
     const imax = ipcCurrent((w / MIL) * (tMM / MIL), dT, k);
     rows.push(["Max current at &Delta;T " + dT + " &deg;C", fmt(imax, "A")]);
@@ -1036,39 +1285,41 @@ function calcWave() {
 /* ---------- crystal ---------- */
 
 function calcXtal() {
+  clearComputed(["xc-cl","xc-c1","xc-c2"]);
   const cl = val("xc-cl"), c1 = val("xc-c1"), c2 = val("xc-c2"), csRaw = val("xc-cs");
   const cs = isFinite(csRaw) && csRaw >= 0 ? csRaw : 3e-12;
   const rows = [];
   if (isFinite(c1) && isFinite(c2) && c1 > 0 && c2 > 0) {
     const clAct = c1 * c2 / (c1 + c2) + cs;
-    rows.push(["C<sub>L</sub> the crystal sees", fmt(clAct, "F")]);
-    if (isFinite(cl) && cl > 0) {
+    if (!isFinite(cl)) setComputed("xc-cl", clAct);
+    else {
       const err = (clAct - cl) / cl * 100;
+      rows.push(["Load the crystal sees", fmt(clAct, "F")]);
       rows.push(["vs. spec " + fmt(cl, "F"), err.toFixed(1) + " %" + (Math.abs(err) > 10 ? " — retune C1/C2" : ""), Math.abs(err) > 10 ? "warn" : ""]);
     }
   } else if (isFinite(cl) && cl > 0) {
     const c = 2 * (cl - cs);
     if (c <= 0) { render("xc-out", [["", "Stray capacitance already exceeds the C<sub>L</sub> spec.", "err"]]); return; }
-    rows.push(["Required C1 = C2", fmt(c, "F")]);
+    if (!isFinite(c1)) setComputed("xc-c1", c);
+    if (!isFinite(c2)) setComputed("xc-c2", c);
     rows.push(["Nearest E12 value", fmt(snap(seriesValues("E12", -12, -10), c), "F")]);
   }
+  if (isFinite(cs) && rows.length === 0 && !isFinite(cl) && !isFinite(c1)) { render("xc-out", []); return; }
   render("xc-out", rows);
 }
 
 function calcPPM() {
+  clearComputed(["pp-ppm","pp-df"]);
   const f = val("pp-f"), ppm = val("pp-ppm"), df = val("pp-df");
-  const rows = [];
   let p = ppm;
-  if (isFinite(f) && f > 0 && isFinite(ppm)) {
-    rows.push(["&Delta;f at " + fmt(f, "Hz"), "&plusmn;" + fmt(f * ppm * 1e-6, "Hz")]);
-  } else if (isFinite(f) && f > 0 && isFinite(df)) {
-    p = df / f * 1e6;
-    rows.push(["Tolerance", "&plusmn;" + p.toPrecision(3) + " ppm"]);
-  } else if (!isFinite(ppm)) { render("pp-out", []); return; }
-  if (isFinite(p)) {
-    rows.push(["Clock drift", "&plusmn;" + (p * 0.0864).toPrecision(3) + " s/day, &plusmn;" + (p * 0.0864 * 365.25 / 60).toPrecision(3) + " min/year"]);
-  }
-  render("pp-out", rows);
+  if (isFinite(f) && f > 0 && isFinite(ppm) && !isFinite(df)) setComputed("pp-df", f * ppm * 1e-6);
+  else if (isFinite(f) && f > 0 && isFinite(df) && !isFinite(ppm)) { p = df / f * 1e6; setComputed("pp-ppm", p); }
+  else if (isFinite(f) && f > 0 && isFinite(df) && isFinite(ppm)) p = ppm;
+  if (!isFinite(p)) { render("pp-out", []); return; }
+  render("pp-out", [
+    ["Clock drift", "±" + (p * 0.0864).toPrecision(3) + " s/day, ±" + (p * 0.0864 * 365.25 / 60).toPrecision(3) + " min/year"],
+    ["Worst-case pair separation", "±" + (2 * p).toPrecision(3) + " ppm between two such parts"]
+  ]);
 }
 
 /* ---------- utilities ---------- */
@@ -1116,13 +1367,16 @@ function wirePair(specs) {
   });
 }
 
+/* ---------- wiring ---------- */
+
 const CALCS = {
   ohm: { calc: calcOhm, inputs: ["ohm-v","ohm-i","ohm-r","ohm-p"] },
   div: { calc: calcDivider, inputs: ["div-vin","div-vout","div-r1","div-r2","div-rtot","div-iload"] },
   sp:  { calc: calcSP, inputs: ["sp-list"] },
+  led: { calc: calcLED, inputs: ["led-vs","led-vf","led-if","led-r"] },
+  ac:  { calc: calcAccuracy, inputs: ["ac-r1","ac-r2","ac-vin","ac-tol1","ac-tol2","ac-tcr1","ac-tcr2","ac-tmin","ac-tmax","ac-tnom","ac-age"] },
   rc:  { calc: calcRC, inputs: ["rc-r","rc-c","rc-f"] },
   re:  { calc: calcReact, inputs: ["re-f","re-c","re-l"] },
-  led: { calc: calcLED, inputs: ["led-vs","led-vf","led-if"] },
   tw:  { calc: calcTrace, inputs: ["tw-i","tw-w","tw-dt","tw-oz","tw-layer","tw-len","tw-ta"] },
   via: { calc: calcVia, inputs: ["via-d","via-tp","via-h","via-dt","via-pad","via-anti","via-er"] },
   fu:  { calc: calcFuse, inputs: ["fu-w","fu-oz","fu-t","fu-ta"] },
@@ -1132,59 +1386,233 @@ const CALCS = {
   xc:  { calc: calcXtal, inputs: ["xc-cl","xc-c1","xc-c2","xc-cs"] },
   pp:  { calc: calcPPM, inputs: ["pp-f","pp-ppm","pp-df"] },
   awg: { calc: calcAWG, inputs: ["awg-n"] },
+  nb:  { calc: function () { render("nb-out", []); }, inputs: ["nb-dec","nb-hex","nb-bin","nb-oct"] },
+  rt:  { calc: function () {}, inputs: ["rt-pct","rt-ppm","rt-ppb","rt-ratio"] },
   cv:  { calc: function () {}, inputs: ["cv-mm","cv-mil","cv-c","cv-f","cv-db","cv-vr","cv-pr"] }
 };
 
+/* Typing in a field makes it an input again: the `computed` tag comes off
+   before the calculator runs, so the value survives the clearing pass. */
 for (const key in CALCS) {
   const c = CALCS[key];
-  for (const id of c.inputs) {
-    const el = document.getElementById(id);
-    el.addEventListener("input", c.calc);
-    el.addEventListener("change", c.calc);
+  for (const fid of c.inputs) {
+    const el = document.getElementById(fid);
+    if (!el) continue;
+    const handler = function () { el.classList.remove("computed"); c.calc(); };
+    el.addEventListener("input", handler);
+    el.addEventListener("change", handler);
   }
 }
 
-// the top-level E-series setting feeds every calculator that suggests standard values
+// the E-series setting feeds every calculator that suggests standard values
 document.getElementById("g-series").addEventListener("change", function () {
   calcDivider(); calcLED();
 });
 
-const id = function (x) { return x; };
-wirePair([["cv-mm", id, id], ["cv-mil", function (v) { return v * MIL; }, function (c) { return c / MIL; }]]);
-wirePair([["cv-c", id, id],
+const idf = function (x) { return x; };
+wirePair([["cv-mm", idf, idf], ["cv-mil", function (v) { return v * MIL; }, function (c) { return c / MIL; }]]);
+wirePair([["cv-c", idf, idf],
           ["cv-f", function (v) { return (v - 32) * 5 / 9; }, function (c) { return c * 9 / 5 + 32; }]]);
-wirePair([["cv-db", id, id],
+wirePair([["cv-db", idf, idf],
           ["cv-vr", function (v) { return 20 * Math.log10(v); }, function (c) { return Math.pow(10, c / 20); }],
           ["cv-pr", function (v) { return 10 * Math.log10(v); }, function (c) { return Math.pow(10, c / 10); }]]);
+// ratio units share one canonical: the plain decimal ratio
+wirePair([["rt-ratio", idf, idf],
+          ["rt-pct", function (v) { return v / 100; }, function (c) { return c * 100; }],
+          ["rt-ppm", function (v) { return v * 1e-6; }, function (c) { return c * 1e6; }],
+          ["rt-ppb", function (v) { return v * 1e-9; }, function (c) { return c * 1e9; }]]);
 
+// number bases drive each other directly, in BigInt so nothing is rounded
+for (const nbf of NB_FIELDS) {
+  const nid = nbf[0], radix = nbf[1];
+  const el = document.getElementById(nid);
+  el.addEventListener("input", function () {
+    el.classList.remove("computed");
+    const raw = el.value.trim();
+    if (!raw) {
+      for (const o of NB_FIELDS) {
+        if (o[0] === nid) continue;
+        const oe = document.getElementById(o[0]);
+        oe.value = ""; oe.classList.remove("computed");
+      }
+      el.classList.remove("bad"); render("nb-out", []); return;
+    }
+    const v = parseInt_(raw, radix);
+    el.classList.toggle("bad", v === null);
+    if (v === null) return;
+    showBases(v, nid);
+  });
+}
+
+/* ---------- copy results to the clipboard ----------
+
+   One handler serves every card: it reads that card's own inputs and results
+   back out of the DOM, so a card gains a working Copy button just by
+   existing, and the text always matches what is on screen. */
+
+function cardText(card) {
+  const holder = card.closest(".panel, .subpanel");
+  const title = card.querySelector("h3") || (holder && holder.querySelector("h2"));
+  const lines = title ? [title.textContent.trim()] : [];
+  const inputs = [];
+  card.querySelectorAll(".field").forEach(function (f) {
+    const el = f.querySelector("input, select, textarea");
+    const lab = f.querySelector("label");
+    if (!el || !lab) return;
+    const v = el.tagName === "SELECT" ? el.options[el.selectedIndex].textContent.trim() : el.value.trim();
+    if (!v) return;
+    inputs.push("  " + lab.textContent.trim().replace(/\s+/g, " ") + ": " + v +
+                (el.classList.contains("computed") ? "   [calculated]" : ""));
+  });
+  if (inputs.length) lines.push("", "Inputs", inputs.join("\n"));
+  const out = [];
+  card.querySelectorAll("dl.results").forEach(function (dl) {
+    const dts = dl.querySelectorAll("dt"), dds = dl.querySelectorAll("dd");
+    for (let i = 0; i < dts.length; i++) {
+      const k = dts[i].textContent.trim(), v = dds[i] ? dds[i].textContent.trim() : "";
+      if (!k && !v) continue;
+      out.push("  " + (k ? k + ": " : "") + v);
+    }
+  });
+  card.querySelectorAll("table").forEach(function (t) {
+    if (t.hidden) return;
+    t.querySelectorAll("tr").forEach(function (tr) {
+      const cells = [];
+      tr.querySelectorAll("th, td").forEach(function (c) { cells.push(c.textContent.trim()); });
+      if (cells.length) out.push("  " + cells.join("\t"));
+    });
+  });
+  if (out.length) lines.push("", "Results", out.join("\n"));
+  return lines.join("\n") + "\n";
+}
+
+function copyText(text, btn) {
+  const was = btn.dataset.label;
+  const done = function (ok) {
+    btn.textContent = ok ? "Copied" : "Copy failed";
+    btn.classList.toggle("copied", ok);
+    setTimeout(function () { btn.textContent = was; btn.classList.remove("copied"); }, 1600);
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(function () { done(true); },
+                                            function () { done(legacyCopy(text)); });
+  } else {
+    done(legacyCopy(text));
+  }
+}
+
+/* A file:// page has no async clipboard in some browsers; fall back. */
+function legacyCopy(text) {
+  const ta = document.createElement("textarea");
+  ta.value = text;
+  ta.setAttribute("readonly", "");
+  ta.style.position = "fixed";
+  ta.style.opacity = "0";
+  document.body.appendChild(ta);
+  ta.select();
+  let ok = false;
+  try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+  document.body.removeChild(ta);
+  return ok;
+}
+
+// every Reset button gains a Copy sibling; the pair becomes the card's footer
 document.querySelectorAll("button.reset").forEach(function (btn) {
+  const card = btn.closest(".card");
+  const foot = document.createElement("div");
+  foot.className = "cardfoot";
+  btn.parentNode.insertBefore(foot, btn);
+  const copy = document.createElement("button");
+  copy.type = "button";
+  copy.textContent = "Copy results";
+  copy.dataset.label = "Copy results";
+  copy.addEventListener("click", function () { copyText(cardText(card), copy); });
+  foot.appendChild(copy);
+  foot.appendChild(btn);
   btn.addEventListener("click", function () {
     const c = CALCS[btn.dataset.reset];
-    for (const id of c.inputs) {
-      const el = document.getElementById(id);
-      if (el.tagName === "SELECT") el.selectedIndex = el.querySelector("[selected]") ? Array.prototype.indexOf.call(el.options, el.querySelector("[selected]")) : 0;
-      else el.value = "";
+    if (!c) return;
+    for (const fid of c.inputs) {
+      const el = document.getElementById(fid);
+      if (!el) continue;
+      if (el.tagName === "SELECT") {
+        const marked = el.querySelector("[selected]");
+        el.selectedIndex = marked ? Array.prototype.indexOf.call(el.options, marked) : 0;
+      } else {
+        el.value = "";
+      }
       el.classList.remove("bad");
+      el.classList.remove("computed");
     }
     c.calc();
   });
 });
 
+/* ---------- tabs ---------- */
+
 const tabbar = document.getElementById("tabbar");
+const subbar = document.getElementById("subbar-res");
+
+function showTab(name) {
+  let found = false;
+  tabbar.querySelectorAll("button[data-tab]").forEach(function (b) {
+    const on = b.dataset.tab === name;
+    if (on) found = true;
+    b.setAttribute("aria-selected", on ? "true" : "false");
+  });
+  if (!found) return false;
+  document.querySelectorAll(".panel").forEach(function (pnl) {
+    pnl.classList.toggle("active", pnl.id === "panel-" + name);
+  });
+  return true;
+}
+
+function showSub(name) {
+  let found = false;
+  subbar.querySelectorAll("button[data-sub]").forEach(function (b) {
+    const on = b.dataset.sub === name;
+    if (on) found = true;
+    b.setAttribute("aria-selected", on ? "true" : "false");
+  });
+  if (!found) return false;
+  document.querySelectorAll("#panel-res .subpanel").forEach(function (sp) {
+    sp.classList.toggle("active", sp.id === "sub-" + name);
+  });
+  return true;
+}
+
+function currentSub() {
+  const on = subbar.querySelector('button[aria-selected="true"]');
+  return on ? on.dataset.sub : "div";
+}
+
 tabbar.addEventListener("click", function (e) {
   const btn = e.target.closest("button[data-tab]");
   if (!btn) return;
-  tabbar.querySelectorAll("button").forEach(function (b) { b.setAttribute("aria-selected", b === btn ? "true" : "false"); });
-  document.querySelectorAll(".panel").forEach(function (p) { p.classList.toggle("active", p.id === "panel-" + btn.dataset.tab); });
-  try { location.hash = btn.dataset.tab; } catch (err) {}
+  showTab(btn.dataset.tab);
+  try { location.hash = btn.dataset.tab === "res" ? "res-" + currentSub() : btn.dataset.tab; } catch (err) {}
 });
 
-// deep-link: #div opens the divider tab
-const hash = location.hash.replace("#", "");
-if (hash && document.getElementById("panel-" + hash)) {
-  const btn = tabbar.querySelector('button[data-tab="' + hash + '"]');
-  if (btn) btn.click();
-}
+subbar.addEventListener("click", function (e) {
+  const btn = e.target.closest("button[data-sub]");
+  if (!btn) return;
+  showSub(btn.dataset.sub);
+  try { location.hash = "res-" + btn.dataset.sub; } catch (err) {}
+});
+
+/* Deep links: #pcb, #res-acc, and the pre-grouping #div / #sp / #led. */
+const SUBS = { div: 1, sp: 1, led: 1, acc: 1 };
+(function () {
+  const h = location.hash.replace("#", "");
+  if (!h) return;
+  const m = h.match(/^res-(\w+)$/);
+  if (m && SUBS[m[1]]) { showTab("res"); showSub(m[1]); return; }
+  if (SUBS[h]) { showTab("res"); showSub(h); return; }
+  showTab(h);
+})();
+
+// first paint: a browser may have restored values into the fields
+for (const key in CALCS) CALCS[key].calc();
 </script>
 </body>
 </html>
@@ -1194,11 +1622,10 @@ if (hash && document.getElementById("panel-" + hash)) {
 def main() -> None:
     html = HTML
     try:
-        sys.path.insert(0, r"C:\Auterion\Tools\brand")
-        from auterion_inline import inline_into
+        from theme_inline import inline_into
         html = inline_into(html)
     except ImportError:
-        print("build_page: Tools\\brand helper not found - writing page without house styling", file=sys.stderr)
+        print("build_page: theme_inline not found - writing page without house styling", file=sys.stderr)
     OUT.write_text(html, encoding="utf-8")
     print(f"wrote {OUT} ({OUT.stat().st_size:,} bytes)")
 

@@ -1,5 +1,5 @@
 [workspace]
-authors = ["jamescarron-auterion <james.carron@auterion.com>"]
+authors = ["James Carron"]
 channels = ["conda-forge"]
 name = "EE_Calculator"
 platforms = ["win-64"]
