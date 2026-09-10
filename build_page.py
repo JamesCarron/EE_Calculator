@@ -92,7 +92,7 @@ HTML = r"""<!doctype html>
   .globals input:focus-visible, .globals select:focus-visible { outline: 2px solid var(--a-focus); outline-offset: 1px; }
   .globals .unit { color: var(--a-ink-muted); }
   .globals .gnote { margin-left: auto; color: var(--a-ink-muted); }
-  .legend { font-size: var(--a-text-xs); color: var(--a-ink-muted); margin: 1.1rem 0 0; }
+  .legend { font-size: var(--a-text-xs); color: var(--a-ink-muted); margin: 0 0 .35rem; }
   .legend b { display: inline-block; background: var(--a-bg-accent); color: var(--a-ink); border: var(--a-border) solid var(--a-link); border-radius: var(--a-radius-sm); padding: 0 .35rem; font-weight: 400; }
   footer.site { border-top: var(--a-border) solid var(--a-line); color: var(--a-ink-muted); font-size: var(--a-text-xs); padding: 1rem 0 2rem; }
 </style>
@@ -112,15 +112,14 @@ HTML = r"""<!doctype html>
   <button role="tab" data-tab="pwr" aria-selected="false">Power &amp; Thermal</button>
   <button role="tab" data-tab="util" aria-selected="false">Utilities</button>
 </nav>
-<div class="globals">
-  <span><label for="g-oz">Copper</label>
+<div class="globals" id="globals" hidden>
+  <span data-g="g-oz"><label for="g-oz">Copper</label>
     <select id="g-oz"><option value="17.5">0.5 oz (17.5 &micro;m)</option><option value="35" selected>1 oz (35 &micro;m)</option><option value="70">2 oz (70 &micro;m)</option><option value="105">3 oz (105 &micro;m)</option></select>
   </span>
-  <span><label for="g-dt">Temp rise</label><input id="g-dt" inputmode="decimal" placeholder="10"><span class="unit">&deg;C</span></span>
-  <span><label for="g-ta">Ambient</label><input id="g-ta" inputmode="decimal" placeholder="25"><span class="unit">&deg;C</span></span>
-  <span class="gnote">shared by every card that needs them</span>
+  <span data-g="g-dt"><label for="g-dt">Temp rise</label><input id="g-dt" inputmode="decimal" placeholder="10"><span class="unit">&deg;C</span></span>
+  <span data-g="g-ta"><label for="g-ta">Ambient</label><input id="g-ta" inputmode="decimal" placeholder="25"><span class="unit">&deg;C</span></span>
+  <span class="gnote">shared by the cards on this tab</span>
 </div>
-<p class="legend"><b>Highlighted</b> fields are calculated from what you entered — type in one and it becomes an input instead.</p>
 </div>
 
 <main class="wrap">
@@ -202,7 +201,7 @@ HTML = r"""<!doctype html>
   </span>
   </nav>
 <div class="subpanel active" id="sub-div">
-  <h2>Resistor Divider</h2>
+  <h2>Divider</h2>
   <p class="hint">R1 on top, R2 to ground; unloaded, V<sub>out</sub> = V<sub>in</sub> &middot; R2 / (R1 + R2). The solver fills in whatever is missing as soon as it has enough &mdash; give it three of the four values, or just the two voltages to search standard E-series pairs.</p>
   <div class="card">
     <h3>Divider solver</h3>
@@ -248,8 +247,8 @@ HTML = r"""<!doctype html>
   </div>
 </div>
 <div class="subpanel" id="sub-led">
-  <h2>LED Series Resistor</h2>
-  <p class="hint">R = (V<sub>supply</sub> &minus; V<sub>f</sub>) / I<sub>f</sub>, or the current a resistor you already have will give. The suggestion is the next value up in the E-series chosen above.</p>
+  <h2>LED Resistor</h2>
+  <p class="hint">R = (V<sub>supply</sub> &minus; V<sub>f</sub>) / I<sub>f</sub>, or the current a resistor you already have will give.</p>
   <div class="card">
     <h3>LED series resistor</h3>
     <div class="cardrow">
@@ -282,7 +281,7 @@ HTML = r"""<!doctype html>
 </div>
 <div class="subpanel" id="sub-pad">
   <h2>Attenuator Pads</h2>
-  <p class="hint">Resistive attenuators that keep the source and load matched. Values are exact; the E-series suggestion shows the attenuation you would actually get from stock parts.</p>
+  <p class="hint">Resistive attenuators that keep source and load matched. The E-series suggestion shows the attenuation stock parts would actually give.</p>
   <div class="card">
     <h3>PI, T and L pads</h3>
     <div class="cardrow">
@@ -314,8 +313,8 @@ HTML = r"""<!doctype html>
   </div>
 </div>
 <div class="subpanel" id="sub-acc">
-  <h2>Divider Accuracy</h2>
-  <p class="hint">What tolerance, temperature coefficient and ageing do to a divider&rsquo;s ratio. A divider only cares about how the two legs move <em>relative to each other</em>, so matched parts beat tight parts.</p>
+  <h2>Accuracy</h2>
+  <p class="hint">What tolerance, temperature coefficient and ageing do to a divider&rsquo;s ratio. A divider only cares how the two legs move <em>relative to each other</em>, so matched parts beat tight parts.</p>
   <div class="card">
     <h3>Error budget</h3>
     <div class="cardrow">
@@ -357,52 +356,39 @@ HTML = r"""<!doctype html>
 </section>
 
 <section class="panel" id="panel-filt">
-  <h2>Filters &amp; Resonance</h2>
-  <p class="hint">How passives behave against frequency &mdash; cutoff, reactance, resonance, and the crystal arithmetic that depends on the same ideas.</p>
+  <nav class="subtabs" role="tablist" id="subbar-filt">
+    <button role="tab" data-sub="flt" aria-selected="true">Filter Design</button>
+    <button role="tab" data-sub="re" aria-selected="false">Reactance</button>
+    <button role="tab" data-sub="xc" aria-selected="false">Crystal Load</button>
+    <button role="tab" data-sub="cs" aria-selected="false">Capacitor SRF</button>
+  </nav>
+<div class="subpanel active" id="sub-flt">
+  <h2>Filter Design</h2>
+  <p class="hint">Pick a topology and give it any two values; the third follows. First-order RC and RL give a cutoff and a time constant, LC gives resonance and, with a resistance, Q and bandwidth.</p>
   <div class="card">
-    <h3>RC cutoff</h3>
-    <div class="cardrow">
+    <h3>Filter design</h3>
     <div class="fields">
-      <div class="field"><label for="rc-r">R (&Omega;)</label><input id="rc-r" inputmode="decimal" placeholder="e.g. 10k"></div>
-      <div class="field"><label for="rc-c">C (F)</label><input id="rc-c" inputmode="decimal" placeholder="e.g. 100n"></div>
-      <div class="field"><label for="rc-f">f<sub>c</sub> (Hz)</label><input id="rc-f" inputmode="decimal" placeholder="e.g. 1k"></div>
-    </div>
-    <svg class="schem" width="230" height="150" viewBox="0 0 230 150" role="img" aria-label="RC low-pass: series R from Vin to Vout, C from Vout to ground">
-      <circle class="wire" cx="18" cy="40" r="3.5"/>
-      <text x="8" y="26">Vin</text>
-      <path class="wire" d="M21.5 40 H58"/>
-      <rect class="wire" x="58" y="32" width="40" height="16"/>
-      <text x="72" y="27">R</text>
-      <path class="wire" d="M98 40 H140"/>
-      <circle class="dot" cx="140" cy="40" r="3"/>
-      <path class="wire" d="M140 40 H172"/>
-      <circle class="wire" cx="175.5" cy="40" r="3.5"/>
-      <text x="186" y="44">Vout</text>
-      <path class="wire" d="M140 40 V72"/>
-      <path class="wire" d="M126 72 H154 M126 82 H154"/>
-      <text x="162" y="82">C</text>
-      <path class="wire" d="M140 82 V106"/>
-      <path class="wire" d="M126 106 H154 M131 113 H149 M136 120 H144"/>
-      <text x="8" y="142">Swap R and C for a high-pass; same f<tspan dy="3" font-size="9">c</tspan><tspan dy="-3">.</tspan></text>
-    </svg>
-    </div>
-    <dl class="results" id="rc-out"></dl>
-    <button class="reset" data-reset="rc">Reset</button>
-  </div>
-  <div class="card">
-    <h3>LC / RL cutoff and Q</h3>
-    <div class="fields">
-      <div class="field"><label for="lc-l">Inductance (H)</label><input id="lc-l" inputmode="decimal" placeholder="e.g. 10u"></div>
-      <div class="field"><label for="lc-c">Capacitance (F)</label><input id="lc-c" inputmode="decimal" placeholder="e.g. 100n"></div>
-      <div class="field"><label for="lc-r">Resistance (&Omega;)</label><input id="lc-r" inputmode="decimal" placeholder="e.g. 1"></div>
-      <div class="field"><label for="lc-topo">Topology</label>
-        <select id="lc-topo"><option value="series" selected>Series RLC</option><option value="parallel">Parallel RLC</option></select>
+      <div class="field"><label for="flt-type">Filter</label>
+        <select id="flt-type">
+          <option value="rc" selected>RC, first order</option>
+          <option value="rl">RL, first order</option>
+          <option value="lcs">LC series resonant</option>
+          <option value="lcp">LC parallel resonant</option>
+        </select>
       </div>
+      <div class="field"><label for="flt-r">R (&Omega;)</label><input id="flt-r" inputmode="decimal" placeholder="e.g. 10k"></div>
+      <div class="field"><label for="flt-c">C (F)</label><input id="flt-c" inputmode="decimal" placeholder="e.g. 100n"></div>
+      <div class="field"><label for="flt-l">L (H)</label><input id="flt-l" inputmode="decimal" placeholder="e.g. 10u"></div>
+      <div class="field"><label for="flt-f">Frequency (Hz)</label><input id="flt-f" inputmode="decimal" placeholder="solved"></div>
     </div>
-    <dl class="results" id="lc-out"></dl>
-    <p class="note">L and C give the resonant frequency; adding R gives Q, bandwidth and damping. Series RLC has Q = (1/R)&radic;(L/C) and is a notch to ground; parallel RLC has Q = R&radic;(C/L) and is a tank. With R and L alone the card gives the first-order RL corner instead, f = R/2&pi;L.</p>
-    <button class="reset" data-reset="lc">Reset</button>
+    <dl class="results" id="flt-out"></dl>
+    <p class="note" id="flt-note"></p>
+    <button class="reset" data-reset="flt">Reset</button>
   </div>
+</div>
+<div class="subpanel" id="sub-re">
+  <h2>Reactance</h2>
+  <p class="hint">X<sub>C</sub> and X<sub>L</sub> at a frequency, and the resonance of an LC pair.</p>
   <div class="card">
     <h3>Reactance</h3>
     <div class="cardrow">
@@ -427,6 +413,10 @@ HTML = r"""<!doctype html>
     <dl class="results" id="re-out"></dl>
     <button class="reset" data-reset="re">Reset</button>
   </div>
+</div>
+<div class="subpanel" id="sub-xc">
+  <h2>Crystal Load</h2>
+  <p class="hint">Pierce-oscillator load capacitance: what the crystal sees, or the partner a chosen leg needs.</p>
   <div class="card">
     <h3>Load capacitance</h3>
     <div class="cardrow">
@@ -451,20 +441,36 @@ HTML = r"""<!doctype html>
     <p class="note">C<sub>L</sub> = C1&middot;C2/(C1+C2) + C<sub>stray</sub>. Give C1 and C2 to check the load the crystal sees, or just the C<sub>L</sub> spec to get the required C1 = C2. Stray defaults to 3 pF (pads + pins).</p>
     <button class="reset" data-reset="xc">Reset</button>
   </div>
+</div>
+<div class="subpanel" id="sub-cs">
+  <h2>Capacitor SRF</h2>
+  <p class="hint">A real capacitor is C, ESL and ESR in series &mdash; capacitive below self-resonance, inductive above it.</p>
   <div class="card">
-    <h3>Frequency error (ppm)</h3>
+    <h3>Capacitor impedance and self-resonance</h3>
     <div class="fields">
-      <div class="field"><label for="pp-f">Frequency (Hz)</label><input id="pp-f" inputmode="decimal" placeholder="e.g. 16M"></div>
-      <div class="field"><label for="pp-ppm">Tolerance (ppm)</label><input id="pp-ppm" inputmode="decimal" placeholder="e.g. 20"></div>
-      <div class="field"><label for="pp-df">&Delta;f (Hz)</label><input id="pp-df" inputmode="decimal" placeholder="or e.g. 320"></div>
+      <div class="field"><label for="cs-c">Capacitance (F)</label><input id="cs-c" inputmode="decimal" placeholder="e.g. 100n"></div>
+      <div class="field"><label for="cs-esl">ESL (H)</label><input id="cs-esl" inputmode="decimal" placeholder="e.g. 500p"></div>
+      <div class="field"><label for="cs-esr">ESR (&Omega;)</label><input id="cs-esr" inputmode="decimal" placeholder="e.g. 10m"></div>
+      <div class="field"><label for="cs-f">Frequency of interest (Hz)</label><input id="cs-f" inputmode="decimal" placeholder="e.g. 10M"></div>
+      <div class="field"><label for="cs-n">Capacitors in parallel</label><input id="cs-n" inputmode="numeric" placeholder="1"></div>
     </div>
-    <dl class="results" id="pp-out"></dl>
-    <button class="reset" data-reset="pp">Reset</button>
+    <dl class="results" id="cs-out"></dl>
+    <p class="note">A real capacitor is C, ESL and ESR in series: it is capacitive below self-resonance, resistive at it, and <em>inductive above it</em>. |Z| = &radic;(ESR&sup2; + (2&pi;fL &minus; 1/2&pi;fC)&sup2;). Paralleling n identical parts divides ESR and ESL by n and multiplies C by n, which moves the impedance floor down without moving self-resonance.</p>
+    <button class="reset" data-reset="cs">Reset</button>
   </div>
+</div>
 </section>
+
 <section class="panel" id="panel-copper">
-  <h2>PCB Copper</h2>
-  <p class="hint">Will the copper carry the current and meet the clearances. Dimension fields take mm by default and accept <code>mil</code>, <code>um</code> and <code>in</code> suffixes.</p>
+  <nav class="subtabs" role="tablist" id="subbar-copper">
+    <button role="tab" data-sub="tw" aria-selected="true">Trace Current</button>
+    <button role="tab" data-sub="via" aria-selected="false">Via</button>
+    <button role="tab" data-sub="fu" aria-selected="false">Fusing Current</button>
+    <button role="tab" data-sub="spc" aria-selected="false">Conductor Spacing</button>
+  </nav>
+<div class="subpanel active" id="sub-tw">
+  <h2>Trace Current</h2>
+  <p class="hint">Will the copper carry the current. Dimension fields take mm by default and accept <code>mil</code>, <code>um</code> and <code>in</code>.</p>
   <div class="card">
     <h3>Trace width &harr; current (IPC-2221)</h3>
     <div class="cardrow">
@@ -491,6 +497,10 @@ HTML = r"""<!doctype html>
     <p class="note">IPC-2221: I = k&middot;&Delta;T<sup>0.44</sup>&middot;A<sup>0.725</sup> (k = 0.048 external, 0.024 internal, A in mil&sup2;). Enter current to get width, width to get max current, or both to check margin. Blank temp rise defaults to 10 &deg;C, ambient to 25 &deg;C. IPC-2152 allows somewhat more; this is the conservative classic.</p>
     <button class="reset" data-reset="tw">Reset</button>
   </div>
+</div>
+<div class="subpanel" id="sub-via">
+  <h2>Via</h2>
+  <p class="hint">Electrical, thermal and fabrication properties of a plated through hole.</p>
   <div class="card">
     <h3>Via</h3>
     <div class="cardrow">
@@ -520,6 +530,10 @@ HTML = r"""<!doctype html>
     <p class="note">Ampacity uses the IPC-2221 internal-layer constant on the barrel cross-section; L and C are the classic first-order via formulas (C needs pad and antipad diameters). Blank plating/thickness default to 25 &micro;m and 1.6 mm.</p>
     <button class="reset" data-reset="via">Reset</button>
   </div>
+</div>
+<div class="subpanel" id="sub-fu">
+  <h2>Fusing Current</h2>
+  <p class="hint">What destroys the trace, as opposed to what merely warms it.</p>
   <div class="card">
     <h3>Fusing current (Onderdonk)</h3>
     <div class="fields">
@@ -531,6 +545,10 @@ HTML = r"""<!doctype html>
     <p class="note">Onderdonk&rsquo;s equation, copper melting at 1083 &deg;C, adiabatic &mdash; valid for events up to a few seconds; longer events shed heat and survive more.</p>
     <button class="reset" data-reset="fu">Reset</button>
   </div>
+</div>
+<div class="subpanel" id="sub-spc">
+  <h2>Conductor Spacing</h2>
+  <p class="hint">IPC-2221 Table 6-1 minimum clearance, all seven environments at once.</p>
   <div class="card">
     <h3>Conductor spacing (IPC-2221 Table 6-1)</h3>
     <div class="fields">
@@ -540,10 +558,19 @@ HTML = r"""<!doctype html>
     <p class="note">Minimum spacing per environment. B1 internal layers; B2 external uncoated &le;3050 m; B3 external uncoated &gt;3050 m; B4 external with permanent polymer coating; A5 external conformal coated; A6 external component leads uncoated; A7 component leads conformal coated.</p>
     <button class="reset" data-reset="spc">Reset</button>
   </div>
+</div>
 </section>
+
 <section class="panel" id="panel-signal">
-  <h2>PCB Signal</h2>
-  <p class="hint">Will the signal arrive intact. First-order models &mdash; good to a few percent inside their stated validity range, which each card prints. For a real stackup, confirm with the fab&rsquo;s field solver.</p>
+  <nav class="subtabs" role="tablist" id="subbar-signal">
+    <button role="tab" data-sub="z" aria-selected="true">Impedance</button>
+    <button role="tab" data-sub="dp" aria-selected="false">Differential Pair</button>
+    <button role="tab" data-sub="ee" aria-selected="false">Effective &epsilon;<sub>r</sub></button>
+    <button role="tab" data-sub="wl" aria-selected="false">Wavelength</button>
+  </nav>
+<div class="subpanel active" id="sub-z">
+  <h2>Impedance</h2>
+  <p class="hint">Five structures on one consistent model. Each result names the model and its validity window; for a real stackup, confirm with the fab&rsquo;s field solver.</p>
   <div class="card">
     <h3>Single-ended Z<sub>0</sub></h3>
     <div class="cardrow">
@@ -580,6 +607,10 @@ HTML = r"""<!doctype html>
     <dl class="results" id="z-out"></dl>
     <button class="reset" data-reset="z">Reset</button>
   </div>
+</div>
+<div class="subpanel" id="sub-dp">
+  <h2>Differential Pair</h2>
+  <p class="hint">Edge-coupled pairs against a target impedance band.</p>
   <div class="card">
     <h3>Differential pair</h3>
     <div class="cardrow">
@@ -618,6 +649,10 @@ HTML = r"""<!doctype html>
     <p class="note"><b>Validity: 0.1 &lt; w/h &lt; 3.0 and 0.1 &lt; s/h &lt; 3.0.</b> Empirical coupling fits &mdash; treat the result as a starting geometry and have the fabricator field-solve the real stackup before release. Z<sub>diff</sub> = 2Z<sub>0</sub>(1 &minus; k&middot;e<sup>&minus;m&middot;s/h</sup>).</p>
     <button class="reset" data-reset="dp">Reset</button>
   </div>
+</div>
+<div class="subpanel" id="sub-ee">
+  <h2>Effective &epsilon;<sub>r</sub></h2>
+  <p class="hint">What a microstrip&rsquo;s field actually sees, with dispersion.</p>
   <div class="card">
     <h3>Effective permittivity</h3>
     <div class="fields">
@@ -630,6 +665,10 @@ HTML = r"""<!doctype html>
     <p class="note">Hammerstad&ndash;Jensen for the static value, with Kirschning&ndash;Jansen dispersion when a frequency is given. A microstrip&rsquo;s field is partly in air, so &epsilon;<sub>eff</sub> always lies between (&epsilon;<sub>r</sub>+1)/2 and &epsilon;<sub>r</sub>, rising towards &epsilon;<sub>r</sub> as the trace widens. Valid for 0.01 &le; w/h &le; 100.</p>
     <button class="reset" data-reset="ee">Reset</button>
   </div>
+</div>
+<div class="subpanel" id="sub-wl">
+  <h2>Wavelength</h2>
+  <p class="hint">Wavelength, knee frequency and the length beyond which a trace is a transmission line.</p>
   <div class="card">
     <h3>Wavelength &amp; critical length</h3>
     <div class="fields">
@@ -645,7 +684,9 @@ HTML = r"""<!doctype html>
     <p class="note">Enter a frequency for wavelength fractions, or a rise time for the knee frequency (0.35/t<sub>r</sub>) and the critical length beyond which a trace behaves as a transmission line (t<sub>r</sub>/2 of propagation delay). &epsilon;<sub>eff</sub> defaults to 3.3; stripline in FR4 is &asymp; &epsilon;<sub>r</sub>.</p>
     <button class="reset" data-reset="wl">Reset</button>
   </div>
+</div>
 </section>
+
 <section class="panel" id="panel-pwr">
   <h2>Power &amp; Thermal</h2>
   <p class="hint">Getting power in and heat out.</p>
@@ -685,41 +726,6 @@ HTML = r"""<!doctype html>
     <button class="reset" data-reset="th">Reset</button>
   </div>
   <div class="card">
-    <h3>Capacitor impedance and self-resonance</h3>
-    <div class="fields">
-      <div class="field"><label for="cs-c">Capacitance (F)</label><input id="cs-c" inputmode="decimal" placeholder="e.g. 100n"></div>
-      <div class="field"><label for="cs-esl">ESL (H)</label><input id="cs-esl" inputmode="decimal" placeholder="e.g. 500p"></div>
-      <div class="field"><label for="cs-esr">ESR (&Omega;)</label><input id="cs-esr" inputmode="decimal" placeholder="e.g. 10m"></div>
-      <div class="field"><label for="cs-f">Frequency of interest (Hz)</label><input id="cs-f" inputmode="decimal" placeholder="e.g. 10M"></div>
-      <div class="field"><label for="cs-n">Capacitors in parallel</label><input id="cs-n" inputmode="numeric" placeholder="1"></div>
-    </div>
-    <dl class="results" id="cs-out"></dl>
-    <p class="note">A real capacitor is C, ESL and ESR in series: it is capacitive below self-resonance, resistive at it, and <em>inductive above it</em>. |Z| = &radic;(ESR&sup2; + (2&pi;fL &minus; 1/2&pi;fC)&sup2;). Paralleling n identical parts divides ESR and ESL by n and multiplies C by n, which moves the impedance floor down without moving self-resonance.</p>
-    <button class="reset" data-reset="cs">Reset</button>
-  </div>
-  <div class="card">
-    <h3>Plane capacitance</h3>
-    <div class="cardrow">
-    <div class="fields">
-      <div class="field"><label for="pc-a">Overlap area (mm&sup2;)</label><input id="pc-a" inputmode="decimal" placeholder="e.g. 10000"></div>
-      <div class="field"><label for="pc-d">Plane separation (mm)</label><input id="pc-d" inputmode="decimal" placeholder="e.g. 0.1"></div>
-      <div class="field"><label for="pc-er">&epsilon;<sub>r</sub></label><input id="pc-er" inputmode="decimal" placeholder="4.3"></div>
-      <div class="field"><label for="pc-f">Frequency (Hz, optional)</label><input id="pc-f" inputmode="decimal" placeholder="e.g. 1M"></div>
-    </div>
-    <svg class="schem" width="170" height="90" viewBox="0 0 170 90" role="img" aria-label="Two parallel copper planes separated by dielectric">
-      <rect class="dot" x="20" y="22" width="130" height="7"/>
-      <rect class="wire" x="20" y="29" width="130" height="26"/>
-      <rect class="dot" x="20" y="55" width="130" height="7"/>
-      <path class="wire" d="M158 29 V55 M154 29 H162 M154 55 H162"/>
-      <text x="20" y="16">power plane</text>
-      <text x="20" y="78">ground plane</text>
-    </svg>
-    </div>
-    <dl class="results" id="pc-out"></dl>
-    <p class="note">C = &epsilon;<sub>0</sub>&epsilon;<sub>r</sub>A/d for the overlapping area of a plane pair. Useful as the high-frequency floor of a decoupling network, though on its own it is rarely more than a few nF.</p>
-    <button class="reset" data-reset="pc">Reset</button>
-  </div>
-  <div class="card">
     <h3>PDN target impedance</h3>
     <div class="fields">
       <div class="field"><label for="pdn-v">Rail voltage (V)</label><input id="pdn-v" inputmode="decimal" placeholder="e.g. 1.2"></div>
@@ -733,9 +739,19 @@ HTML = r"""<!doctype html>
     <button class="reset" data-reset="pdn">Reset</button>
   </div>
 </section>
+
 <section class="panel" id="panel-util">
-  <h2>Utilities</h2>
-  <p class="hint">Wire data, number formats and everyday conversions.</p>
+  <nav class="subtabs" role="tablist" id="subbar-util">
+    <button role="tab" data-sub="awg" aria-selected="true">AWG Wire</button>
+    <button role="tab" data-sub="bat" aria-selected="false">Battery</button>
+    <button role="tab" data-sub="pp" aria-selected="false">Frequency Error</button>
+    <button role="tab" data-sub="nb" aria-selected="false">Number Bases</button>
+    <button role="tab" data-sub="rt" aria-selected="false">Ratio Units</button>
+    <button role="tab" data-sub="cv" aria-selected="false">Conversions</button>
+  </nav>
+<div class="subpanel active" id="sub-awg">
+  <h2>AWG Wire</h2>
+  <p class="hint">Gauge data, and the drop over a real run.</p>
   <div class="card">
     <h3>AWG wire</h3>
     <div class="fields">
@@ -752,6 +768,10 @@ HTML = r"""<!doctype html>
     <p class="note">Solid copper at 20 &deg;C. The two ampacities are the classic handbook rules of thumb: &ldquo;chassis wiring&rdquo; (short runs in free air) and &ldquo;power transmission&rdquo; (bundled, conservative) &mdash; insulation rating and bundling govern real limits.</p>
     <button class="reset" data-reset="awg">Reset</button>
   </div>
+</div>
+<div class="subpanel" id="sub-bat">
+  <h2>Battery</h2>
+  <p class="hint">Pack energy, C-rate and runtime.</p>
   <div class="card">
     <h3>Battery energy and runtime</h3>
     <div class="fields">
@@ -769,6 +789,24 @@ HTML = r"""<!doctype html>
     <p class="note">Runtime assumes a flat discharge at the nominal voltage, which is optimistic at high C-rates and near the end of discharge. The usable fraction defaults to 80 %, a common reserve for lithium packs; set it to 100 for the nameplate figure.</p>
     <button class="reset" data-reset="bat">Reset</button>
   </div>
+</div>
+<div class="subpanel" id="sub-pp">
+  <h2>Frequency Error</h2>
+  <p class="hint">Parts per million against a centre frequency, and the drift that follows.</p>
+  <div class="card">
+    <h3>Frequency error (ppm)</h3>
+    <div class="fields">
+      <div class="field"><label for="pp-f">Frequency (Hz)</label><input id="pp-f" inputmode="decimal" placeholder="e.g. 16M"></div>
+      <div class="field"><label for="pp-ppm">Tolerance (ppm)</label><input id="pp-ppm" inputmode="decimal" placeholder="e.g. 20"></div>
+      <div class="field"><label for="pp-df">&Delta;f (Hz)</label><input id="pp-df" inputmode="decimal" placeholder="or e.g. 320"></div>
+    </div>
+    <dl class="results" id="pp-out"></dl>
+    <button class="reset" data-reset="pp">Reset</button>
+  </div>
+</div>
+<div class="subpanel" id="sub-nb">
+  <h2>Number Bases</h2>
+  <p class="hint">Decimal, hex, binary and octal, at any width.</p>
   <div class="card">
     <h3>Number bases</h3>
     <div class="fields">
@@ -781,6 +819,10 @@ HTML = r"""<!doctype html>
     <p class="note">Integers of any size. Prefixes (<code>0x</code>, <code>0b</code>, <code>0o</code>) are optional, and spaces or underscores may be used as digit separators. Negative decimals are shown as two&rsquo;s complement at each standard width that can hold them.</p>
     <button class="reset" data-reset="nb">Reset</button>
   </div>
+</div>
+<div class="subpanel" id="sub-rt">
+  <h2>Ratio Units</h2>
+  <p class="hint">Percent, ppm, ppb and plain ratios.</p>
   <div class="card">
     <h3>Ratio units</h3>
     <div class="fields">
@@ -792,6 +834,10 @@ HTML = r"""<!doctype html>
     <p class="note">Edit any field and the rest follow. 1 % = 10 000 ppm = 10<sup>7</sup> ppb = 0.01 as a plain ratio.</p>
     <button class="reset" data-reset="rt">Reset</button>
   </div>
+</div>
+<div class="subpanel" id="sub-cv">
+  <h2>Conversions</h2>
+  <p class="hint">Length, temperature, gain, and rectangular/polar.</p>
   <div class="card">
     <h3>Conversions</h3>
     <div class="fields">
@@ -820,23 +866,15 @@ HTML = r"""<!doctype html>
     <p class="note">Edit either side of a pair; the rest follows. dB assumes 20&middot;log<sub>10</sub> for voltage and 10&middot;log<sub>10</sub> for power.</p>
     <button class="reset" data-reset="cv">Reset</button>
   </div>
-  <div class="card">
-    <h3>dBm chain</h3>
-    <div class="fields">
-      <div class="field"><label for="db-in">Input level (dBm)</label><input id="db-in" inputmode="decimal" placeholder="e.g. -60"></div>
-      <div class="field"><label for="db-gain">Gain (dB)</label><input id="db-gain" inputmode="decimal" placeholder="e.g. 23"></div>
-      <div class="field"><label for="db-att">Attenuation (dB)</label><input id="db-att" inputmode="decimal" placeholder="e.g. 10"></div>
-      <div class="field"><label for="db-z">System impedance (&Omega;)</label><input id="db-z" inputmode="decimal" placeholder="50"></div>
-    </div>
-    <dl class="results" id="db-out"></dl>
-    <p class="note">The bench arrangement: a level in, an amplifier, an attenuator, then the measurement. Voltages are RMS into the stated impedance, where 0 dBm is 1 mW.</p>
-    <button class="reset" data-reset="db">Reset</button>
-  </div>
+</div>
 </section>
 
 </main>
 
-<footer class="site"><div class="wrap">EE Calculator &mdash; all calculation runs locally in this page; nothing leaves your machine.</div></footer>
+<footer class="site"><div class="wrap">
+<p class="legend"><b>Highlighted</b> fields are calculated from what you entered &mdash; type in one and it becomes an input instead.</p>
+<p>EE Calculator &mdash; all calculation runs locally in this page; nothing leaves your machine.</p>
+</div></footer>
 
 <script>
 "use strict";
@@ -1238,17 +1276,73 @@ function calcSP() {
 
 /* ---------- RC filter ---------- */
 
-function calcRC() {
-  clearComputed(["rc-r","rc-c","rc-f"]);
-  const R = val("rc-r"), C = val("rc-c"), F = val("rc-f");
-  const have = [isFinite(R), isFinite(C), isFinite(F)].filter(Boolean).length;
-  if (have < 2) { render("rc-out", []); return; }
+/* One card for the first- and second-order passives. RC and RL each solve
+   whichever of their three values is missing; LC gives resonance, and a
+   resistance turns that into Q, bandwidth and damping. */
+function calcFilter() {
+  clearComputed(["flt-r", "flt-c", "flt-l", "flt-f"]);
+  const type = document.getElementById("flt-type").value;
+  const R = val("flt-r"), C = val("flt-c"), L = val("flt-l"), F = val("flt-f");
+  const note = document.getElementById("flt-note");
   const TAU = 2 * Math.PI;
-  let r = R, c = C, f = F;
-  if (isFinite(R) && isFinite(C)) { f = 1 / (TAU * R * C); if (!isFinite(F)) setComputed("rc-f", f); }
-  else if (isFinite(R) && isFinite(F)) { c = 1 / (TAU * R * F); setComputed("rc-c", c); }
-  else { r = 1 / (TAU * C * F); setComputed("rc-r", r); }
-  render("rc-out", [["Time constant τ = RC", fmt(r * c, "s")]]);
+  const rows = [];
+  const bad = function (msg) { render("flt-out", [["", msg, "err"]]); };
+
+  if (type === "rc") {
+    note.innerHTML = "f<sub>c</sub> = 1 / (2&pi;RC), the &minus;3 dB corner. The same R and C make a low-pass or a high-pass depending on which element the output is taken across; the corner is identical either way.";
+    const have = [isFinite(R), isFinite(C), isFinite(F)].filter(Boolean).length;
+    if (have < 2) { render("flt-out", []); return; }
+    let r = R, c = C, f = F;
+    if (isFinite(R) && isFinite(C)) { f = 1 / (TAU * R * C); if (!isFinite(F)) setComputed("flt-f", f); }
+    else if (isFinite(R) && isFinite(F)) { c = 1 / (TAU * R * F); setComputed("flt-c", c); }
+    else { r = 1 / (TAU * C * F); setComputed("flt-r", r); }
+    if (!(r > 0) || !(c > 0) || !(f > 0)) { bad("R, C and the frequency must all be positive."); return; }
+    rows.push(["Cutoff f<sub>c</sub>", fmt(f, "Hz")]);
+    rows.push(["Time constant &tau; = RC", fmt(r * c, "s")]);
+    rows.push(["Rise time 10\u201390 %", fmt(2.197 * r * c, "s")]);
+    rows.push(["Settling to 1 %", fmt(4.6 * r * c, "s")]);
+  } else if (type === "rl") {
+    note.innerHTML = "f<sub>c</sub> = R / (2&pi;L) for a first-order RL corner, with time constant L/R.";
+    const have = [isFinite(R), isFinite(L), isFinite(F)].filter(Boolean).length;
+    if (have < 2) { render("flt-out", []); return; }
+    let r = R, l = L, f = F;
+    if (isFinite(R) && isFinite(L)) { f = R / (TAU * L); if (!isFinite(F)) setComputed("flt-f", f); }
+    else if (isFinite(R) && isFinite(F)) { l = R / (TAU * F); setComputed("flt-l", l); }
+    else { r = TAU * L * F; setComputed("flt-r", r); }
+    if (!(r > 0) || !(l > 0) || !(f > 0)) { bad("R, L and the frequency must all be positive."); return; }
+    rows.push(["Corner frequency", fmt(f, "Hz")]);
+    rows.push(["Time constant &tau; = L/R", fmt(l / r, "s")]);
+  } else {
+    const seriesTopo = type === "lcs";
+    note.innerHTML = seriesTopo
+      ? "A series LC is a notch to ground: impedance falls to R at resonance. Q = (1/R)&radic;(L/C)."
+      : "A parallel LC is a tank: impedance peaks at R on resonance. Q = R&radic;(C/L).";
+    if (!isFinite(L) || !isFinite(C) || !(L > 0) || !(C > 0)) {
+      if (isFinite(F) && F > 0 && (isFinite(L) !== isFinite(C))) {
+        /* one reactive part and a target frequency is enough to size the other */
+        if (isFinite(L) && L > 0) { const c = 1 / (L * Math.pow(TAU * F, 2)); setComputed("flt-c", c); rows.push(["C for resonance at " + fmt(F, "Hz"), fmt(c, "F")]); }
+        else if (isFinite(C) && C > 0) { const l = 1 / (C * Math.pow(TAU * F, 2)); setComputed("flt-l", l); rows.push(["L for resonance at " + fmt(F, "Hz"), fmt(l, "H")]); }
+        render("flt-out", rows); return;
+      }
+      render("flt-out", []); return;
+    }
+    const f0 = 1 / (TAU * Math.sqrt(L * C));
+    const z0 = Math.sqrt(L / C);
+    if (!isFinite(F)) setComputed("flt-f", f0);
+    rows.push(["Resonant frequency", fmt(f0, "Hz")]);
+    rows.push(["Characteristic impedance &radic;(L/C)", fmt(z0, "\u03a9")]);
+    if (isFinite(R) && R > 0) {
+      const Q = seriesTopo ? z0 / R : R / z0;
+      rows.push(["Q", Q.toPrecision(4)]);
+      rows.push(["Bandwidth", fmt(f0 / Q, "Hz")]);
+      rows.push(["Damping &zeta;", (1 / (2 * Q)).toPrecision(4) +
+                 (Q < 0.5 ? " \u2014 overdamped" : Q > 5 ? " \u2014 lightly damped, will ring" : "")]);
+      rows.push(["|Z| at resonance", fmt(R, "\u03a9") + (seriesTopo ? " (a minimum)" : " (a maximum)")]);
+    } else {
+      rows.push(["", "Add a resistance for Q, bandwidth and damping.", ""]);
+    }
+  }
+  render("flt-out", rows);
 }
 
 /* ---------- reactance ---------- */
@@ -1986,6 +2080,7 @@ function calcCapSRF() {
   render("cs-out", rows);
 }
 
+/* Disabled: the card is hidden. Kept so it can be restored in one edit. */
 function calcPlaneC() {
   const EPS0 = 8.8541878128e-12;
   const a = val("pc-a"), d = val("pc-d"), f = val("pc-f");
@@ -2181,34 +2276,6 @@ function calcDiff() {
   render("dp-out", rows);
 }
 
-/* ---------- LC / RL ---------- */
-
-function calcLCRL() {
-  const L = val("lc-l"), C = val("lc-c"), R = val("lc-r");
-  const series = document.getElementById("lc-topo").value === "series";
-  const rows = [];
-  if (isFinite(L) && L > 0 && isFinite(C) && C > 0) {
-    const f0 = 1 / (2 * Math.PI * Math.sqrt(L * C));
-    const z0 = Math.sqrt(L / C);
-    rows.push(["Resonant frequency", fmt(f0, "Hz")]);
-    rows.push(["Characteristic impedance &radic;(L/C)", fmt(z0, "\u03a9")]);
-    if (isFinite(R) && R > 0) {
-      const Q = series ? z0 / R : R / z0;
-      rows.push(["Q (" + (series ? "series" : "parallel") + ")", Q.toPrecision(4)]);
-      rows.push(["Bandwidth", fmt(f0 / Q, "Hz")]);
-      rows.push(["Damping \u03b6", (1 / (2 * Q)).toPrecision(4) +
-                 (Q < 0.5 ? " \u2014 overdamped" : Q > 5 ? " \u2014 lightly damped, will ring" : "")]);
-      rows.push(["|Z| at resonance", series ? fmt(R, "\u03a9") + " (minimum)" : fmt(R, "\u03a9") + " (maximum)"]);
-    }
-  } else if (isFinite(R) && R > 0 && isFinite(L) && L > 0) {
-    rows.push(["RL corner frequency", fmt(R / (2 * Math.PI * L), "Hz")]);
-    rows.push(["Time constant L/R", fmt(L / R, "s")]);
-  } else if (isFinite(R) && R > 0 && isFinite(C) && C > 0) {
-    rows.push(["", "That is an RC network \u2014 use the RC cutoff card above.", ""]);
-  }
-  render("lc-out", rows);
-}
-
 /* ---------- battery ---------- */
 
 function calcBattery() {
@@ -2240,7 +2307,7 @@ function calcBattery() {
   render("bat-out", rows);
 }
 
-/* ---------- dBm chain ---------- */
+/* ---------- dBm chain (disabled: card hidden) ---------- */
 
 function calcDbm() {
   const lin = val("db-in"), g = val("db-gain"), att = val("db-att");
@@ -2263,20 +2330,17 @@ function calcDbm() {
 const CALCS = {
   th:  { calc: calcThermal, inputs: ["th-p","th-jc","th-cs","th-sa","th-ja","th-tjmax","th-tjtarget","th-tj"] },
   cs:  { calc: calcCapSRF, inputs: ["cs-c","cs-esl","cs-esr","cs-f","cs-n"] },
-  pc:  { calc: calcPlaneC, inputs: ["pc-a","pc-d","pc-er","pc-f"] },
   pdn: { calc: calcPDN, inputs: ["pdn-v","pdn-ripple","pdn-i","pdn-tr","pdn-fmax"] },
   pad: { calc: calcPad, inputs: ["pad-a","pad-z0","pad-z2"] },
   ee:  { calc: calcEreff, inputs: ["ee-w","ee-h","ee-er","ee-f"] },
   dp:  { calc: calcDiff, inputs: ["dp-struct","dp-w","dp-s","dp-h","dp-er","dp-target"] },
-  lc:  { calc: calcLCRL, inputs: ["lc-l","lc-c","lc-r","lc-topo"] },
-  db:  { calc: calcDbm, inputs: ["db-in","db-gain","db-att","db-z"] },
   bat: { calc: calcBattery, inputs: ["bat-mah","bat-v","bat-s","bat-p","bat-load","bat-loadunit","bat-usable"] },
   ohm: { calc: calcOhm, inputs: ["ohm-v","ohm-i","ohm-r","ohm-p"] },
   div: { calc: calcDivider, inputs: ["div-vin","div-vout","div-r1","div-r2","div-rtot","div-iload"] },
   sp:  { calc: calcSP, inputs: ["sp-list","sp-type","sp-v"] },
   led: { calc: calcLED, inputs: ["led-vs","led-vf","led-if","led-r"] },
   ac:  { calc: calcAccuracy, inputs: ["ac-r1","ac-r2","ac-vin","ac-tol1","ac-tol2","ac-tcr1","ac-tcr2","ac-tmin","ac-tmax","ac-tnom","ac-age"] },
-  rc:  { calc: calcRC, inputs: ["rc-r","rc-c","rc-f"] },
+  flt: { calc: calcFilter, inputs: ["flt-type","flt-r","flt-c","flt-l","flt-f"] },
   re:  { calc: calcReact, inputs: ["re-f","re-c","re-l"] },
   tw:  { calc: calcTrace, inputs: ["tw-i","tw-w","tw-layer","tw-len","tw-f"] },
   via: { calc: calcVia, inputs: ["via-d","via-tp","via-h","via-pad","via-anti","via-er","via-i","via-n","via-arlimit","via-stub"] },
@@ -2306,6 +2370,20 @@ for (const key in CALCS) {
 }
 
 // the E-series setting feeds every calculator that suggests standard values
+/* Copper weight, temperature rise and ambient are only meaningful on some
+   tabs, so the strip shows just the controls the current tab actually uses
+   and disappears entirely where none apply. */
+const GLOBALS_FOR = { copper: ["g-oz", "g-dt", "g-ta"], signal: ["g-oz"], pwr: ["g-ta"] };
+
+function showGlobals(tabName) {
+  const strip = document.getElementById("globals");
+  const wanted = GLOBALS_FOR[tabName] || [];
+  strip.hidden = wanted.length === 0;
+  strip.querySelectorAll("span[data-g]").forEach(function (sp) {
+    sp.hidden = wanted.indexOf(sp.dataset.g) === -1;
+  });
+}
+
 /* A board setting affects most cards, so recalculate all of them. */
 ["g-oz", "g-dt", "g-ta"].forEach(function (gid) {
   const el = document.getElementById(gid);
@@ -2498,6 +2576,23 @@ function subbarOf(panelId) {
   return pnl ? pnl.querySelector("nav.subtabs") : null;
 }
 
+/* Remember where the user was. localStorage can be unavailable or throw
+   outright (a private window, a browser set to block site data, a file://
+   origin treated as opaque), so every access is guarded and the page simply
+   opens on the first tab when it cannot read or write. */
+const LAST_TAB_KEY = "eecalc.lastTab";
+
+function remember(tabName) {
+  try {
+    const sub = currentSub(tabName);
+    localStorage.setItem(LAST_TAB_KEY, sub ? tabName + "-" + sub : tabName);
+  } catch (e) { /* nothing to do; the tool works fine without it */ }
+}
+
+function recall() {
+  try { return localStorage.getItem(LAST_TAB_KEY) || ""; } catch (e) { return ""; }
+}
+
 function showTab(name) {
   let found = false;
   tabbar.querySelectorAll("button[data-tab]").forEach(function (b) {
@@ -2509,6 +2604,7 @@ function showTab(name) {
   document.querySelectorAll(".panel").forEach(function (pnl) {
     pnl.classList.toggle("active", pnl.id === "panel-" + name);
   });
+  showGlobals(name);
   return true;
 }
 
@@ -2545,6 +2641,7 @@ tabbar.addEventListener("click", function (e) {
   if (!btn) return;
   showTab(btn.dataset.tab);
   try { location.hash = hashFor(btn.dataset.tab); } catch (err) {}
+  remember(btn.dataset.tab);
 });
 
 document.querySelectorAll("nav.subtabs").forEach(function (bar) {
@@ -2554,6 +2651,7 @@ document.querySelectorAll("nav.subtabs").forEach(function (bar) {
     if (!btn) return;
     showSub(panelId, btn.dataset.sub);
     try { location.hash = panelId + "-" + btn.dataset.sub; } catch (err) {}
+    remember(panelId);
   });
 });
 
@@ -2563,12 +2661,14 @@ const LEGACY_HASH = {
   rc: "filt", react: "filt", xtal: "filt", pcb: "copper", z: "signal", util: "util"
 };
 (function () {
-  let h = location.hash.replace("#", "");
-  if (!h) return;
+  /* An explicit link wins over the remembered tab, which wins over the
+     default. */
+  let h = location.hash.replace("#", "") || recall();
+  if (!h) { showGlobals("fund"); return; }
   if (LEGACY_HASH[h]) h = LEGACY_HASH[h];
   const dash = h.indexOf("-");
   if (dash > 0 && showTab(h.slice(0, dash))) { showSub(h.slice(0, dash), h.slice(dash + 1)); return; }
-  showTab(h);
+  if (!showTab(h)) showGlobals("fund");
 })();
 
 // first paint: a browser may have restored values into the fields

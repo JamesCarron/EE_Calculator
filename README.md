@@ -1,10 +1,10 @@
 # EE Calculator
 
-A single self-contained HTML page (`EE_Calculator.html`) with 29 calculators across seven tabs, for everyday electronics and PCB work. It opens straight from the filesystem — no server, no network, nothing leaves the machine.
+A single self-contained HTML page (`EE_Calculator.html`) with 26 calculators across seven tabs, for everyday electronics and PCB work. It opens straight from the filesystem — no server, no network, nothing leaves the machine.
 
 Where a card is a solver it writes its answer **into the relevant input box** and highlights it, rather than repeating it in a separate results list, so the card reads as one filled-in form. Type into a highlighted box and it becomes an input again, and whatever is now missing is solved instead. Every card has a **Copy results** button that puts its inputs and results on the clipboard as clean text.
 
-Copper weight, temperature rise and ambient sit in one **shared strip** under the tab bar, because they describe the board rather than any single calculation. The E-series used for standard-value suggestions lives on the Resistors tab and defaults to E96.
+Copper weight, temperature rise and ambient sit in one **shared strip** under the tab bar, because they describe the board rather than any single calculation. The strip appears only on the tabs that use them, showing just the controls that tab needs. A tab with more than three sections gets sub-tabs, and the page reopens on whichever tab you last used. The E-series used for standard-value suggestions lives on the Resistors tab and defaults to E96.
 
 ## Tabs
 
@@ -12,15 +12,15 @@ Copper weight, temperature rise and ambient sit in one **shared strip** under th
 
 **Resistors** — divider solver (any three of Vin, Vout, R1, R2, or just the two voltages, plus optional total resistance and midpoint load current) · LED series resistor, solving either direction · PI, T and L attenuator pads · accuracy, showing what tolerance, TCR and ageing do to a divider's ratio.
 
-**Filters & Resonance** — RC cutoff · LC and RL resonance with Q, bandwidth and damping · reactance and LC resonance · crystal load capacitance · frequency error in ppm with the resulting frequency window.
+**Filters & Resonance** — filter design, one card with a topology dropdown covering first-order RC and RL and series or parallel LC, solving whichever value is missing and giving Q, bandwidth and damping · reactance · crystal load capacitance · capacitor impedance with ESL and ESR.
 
 **PCB Copper** — trace current, showing what the design draws next to what the copper can carry, with current density, skin depth and the width needed if it falls short · via properties including lumped impedance, aspect ratio, parallel count and stub resonance · Onderdonk fusing current · IPC-2221 conductor spacing across all seven environments at once.
 
 **PCB Signal** — impedance for five structures (bare and covered microstrip, centred and offset stripline, grounded coplanar) with per-unit-length L and C · differential pairs against a target band · effective permittivity with dispersion · wavelength, knee frequency and critical length.
 
-**Power & Thermal** — junction temperature through a θ chain, with headroom, maximum power and the heatsink you would need · capacitor impedance with ESL and ESR, giving self-resonance · plane capacitance · PDN target impedance.
+**Power & Thermal** — junction temperature through a θ chain, with headroom, maximum power and the heatsink you would need · PDN target impedance.
 
-**Utilities** — AWG wire with run length, load current and voltage drop · battery energy, C-rate and runtime · number bases · ratio units · mm/mil, °C/°F, dB, rectangular/polar and degrees/radians · dBm chain.
+**Utilities** — AWG wire with run length, load current and voltage drop · battery energy, C-rate and runtime · frequency error in ppm · number bases · ratio units · mm/mil, °C/°F, dB, rectangular/polar and degrees/radians.
 
 ## Models and their limits
 
