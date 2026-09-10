@@ -51,7 +51,7 @@ Verification harness (session scratch, re-creatable): a Python script extracts t
 
 ## Open questions / blockers
 
-Both were put to the user when the work finished; their answers are recorded here.
+None outstanding. Both questions raised at the end of the 2026-09-10 session were answered by the owner:
 
-- **Vendored theme vs shared stylesheet.** The tool is now standalone, so a change to the shared house stylesheet will not reach it. The alternative is to keep pulling from the shared folder at build time and strip branding during the build, which preserves propagation but reintroduces an external path.
-- **Public release.** Nothing organisation-specific remains, so the tool could go to a public repo. That would need a remote, a licence decision (the owner's call), and the client-side-only release checks — a CSP meta tag and a scan for network APIs.
+- **Vendored theme vs shared stylesheet — keep vendored.** The tool stays standalone and brand-free; a change to the shared house stylesheet will not reach it, and re-vendoring `theme/` is a deliberate act when the tokens change. No refresh task was added.
+- **Public release — not yet, local only.** The repo stays local with no remote. The client-side-only release checks (a CSP meta tag, a scan for network APIs) and the licence decision are deferred until that changes; de-branding was done on its own merits, not as release prep.
