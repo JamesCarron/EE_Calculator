@@ -84,6 +84,14 @@ HTML = r"""<!doctype html>
   .cardfoot button:hover { color: var(--a-link-hover); text-decoration: underline; }
   .cardfoot button:focus-visible { outline: 2px solid var(--a-focus); outline-offset: 2px; }
   .cardfoot .copied { color: var(--a-good); text-decoration: none; }
+  .globals { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem 1.4rem; margin: 0 0 .2rem; padding: .55rem .8rem; background: var(--a-bg-subtle); border: var(--a-border) solid var(--a-line); border-radius: var(--a-radius-sm); font-size: var(--a-text-xs); }
+  .globals span { display: flex; align-items: center; gap: .4rem; }
+  .globals label { color: var(--a-ink-secondary); }
+  .globals input, .globals select { font: inherit; font-family: var(--a-font-mono); color: var(--a-ink); background: var(--a-bg); border: var(--a-border) solid var(--a-line-strong); border-radius: var(--a-radius-sm); padding: .2rem .4rem; }
+  .globals input { width: 4rem; }
+  .globals input:focus-visible, .globals select:focus-visible { outline: 2px solid var(--a-focus); outline-offset: 1px; }
+  .globals .unit { color: var(--a-ink-muted); }
+  .globals .gnote { margin-left: auto; color: var(--a-ink-muted); }
   .legend { font-size: var(--a-text-xs); color: var(--a-ink-muted); margin: 1.1rem 0 0; }
   .legend b { display: inline-block; background: var(--a-bg-accent); color: var(--a-ink); border: var(--a-border) solid var(--a-link); border-radius: var(--a-radius-sm); padding: 0 .35rem; font-weight: 400; }
   footer.site { border-top: var(--a-border) solid var(--a-line); color: var(--a-ink-muted); font-size: var(--a-text-xs); padding: 1rem 0 2rem; }
@@ -104,6 +112,14 @@ HTML = r"""<!doctype html>
   <button role="tab" data-tab="pwr" aria-selected="false">Power &amp; Thermal</button>
   <button role="tab" data-tab="util" aria-selected="false">Utilities</button>
 </nav>
+<div class="globals">
+  <span><label for="g-oz">Copper</label>
+    <select id="g-oz"><option value="17.5">0.5 oz (17.5 &micro;m)</option><option value="35" selected>1 oz (35 &micro;m)</option><option value="70">2 oz (70 &micro;m)</option><option value="105">3 oz (105 &micro;m)</option></select>
+  </span>
+  <span><label for="g-dt">Temp rise</label><input id="g-dt" inputmode="decimal" placeholder="10"><span class="unit">&deg;C</span></span>
+  <span><label for="g-ta">Ambient</label><input id="g-ta" inputmode="decimal" placeholder="25"><span class="unit">&deg;C</span></span>
+  <span class="gnote">shared by every card that needs them</span>
+</div>
 <p class="legend"><b>Highlighted</b> fields are calculated from what you entered — type in one and it becomes an input instead.</p>
 </div>
 
@@ -455,15 +471,10 @@ HTML = r"""<!doctype html>
     <div class="fields">
       <div class="field"><label for="tw-i">Current (A)</label><input id="tw-i" inputmode="decimal" placeholder="e.g. 3"></div>
       <div class="field"><label for="tw-w">Trace width (mm)</label><input id="tw-w" inputmode="decimal" placeholder="or e.g. 20mil"></div>
-      <div class="field"><label for="tw-dt">Temp rise (&deg;C)</label><input id="tw-dt" inputmode="decimal" placeholder="10"></div>
-      <div class="field"><label for="tw-oz">Copper</label>
-        <select id="tw-oz"><option value="17.5">0.5 oz (17.5 &micro;m)</option><option value="35" selected>1 oz (35 &micro;m)</option><option value="70">2 oz (70 &micro;m)</option><option value="105">3 oz (105 &micro;m)</option></select>
-      </div>
       <div class="field"><label for="tw-layer">Layer</label>
         <select id="tw-layer"><option value="ext" selected>External</option><option value="int">Internal</option></select>
       </div>
       <div class="field"><label for="tw-len">Length (mm, optional)</label><input id="tw-len" inputmode="decimal" placeholder="e.g. 50"></div>
-      <div class="field"><label for="tw-ta">Ambient (&deg;C)</label><input id="tw-ta" inputmode="decimal" placeholder="25"></div>
       <div class="field"><label for="tw-f">Frequency (Hz, optional)</label><input id="tw-f" inputmode="decimal" placeholder="e.g. 1M"></div>
     </div>
     <svg class="schem" width="230" height="110" viewBox="0 0 230 110" role="img" aria-label="Trace cross-section on a board">
@@ -487,7 +498,6 @@ HTML = r"""<!doctype html>
       <div class="field"><label for="via-d">Drill diameter (mm)</label><input id="via-d" inputmode="decimal" placeholder="e.g. 0.3"></div>
       <div class="field"><label for="via-tp">Plating (&micro;m)</label><input id="via-tp" inputmode="decimal" placeholder="25"></div>
       <div class="field"><label for="via-h">Board thickness (mm)</label><input id="via-h" inputmode="decimal" placeholder="1.6"></div>
-      <div class="field"><label for="via-dt">Temp rise (&deg;C)</label><input id="via-dt" inputmode="decimal" placeholder="10"></div>
       <div class="field"><label for="via-pad">Pad dia (mm, optional)</label><input id="via-pad" inputmode="decimal" placeholder="e.g. 0.6"></div>
       <div class="field"><label for="via-anti">Antipad dia (mm, optional)</label><input id="via-anti" inputmode="decimal" placeholder="e.g. 1.0"></div>
       <div class="field"><label for="via-er">&epsilon;<sub>r</sub></label><input id="via-er" inputmode="decimal" placeholder="4.3"></div>
@@ -514,11 +524,7 @@ HTML = r"""<!doctype html>
     <h3>Fusing current (Onderdonk)</h3>
     <div class="fields">
       <div class="field"><label for="fu-w">Trace width (mm)</label><input id="fu-w" inputmode="decimal" placeholder="e.g. 1"></div>
-      <div class="field"><label for="fu-oz">Copper</label>
-        <select id="fu-oz"><option value="17.5">0.5 oz (17.5 &micro;m)</option><option value="35" selected>1 oz (35 &micro;m)</option><option value="70">2 oz (70 &micro;m)</option><option value="105">3 oz (105 &micro;m)</option></select>
-      </div>
       <div class="field"><label for="fu-t">Fault duration (s)</label><input id="fu-t" inputmode="decimal" placeholder="e.g. 1"></div>
-      <div class="field"><label for="fu-ta">Ambient (&deg;C)</label><input id="fu-ta" inputmode="decimal" placeholder="25"></div>
       <div class="field"><label for="fu-k">Onderdonk multiplier</label><input id="fu-k" inputmode="decimal" placeholder="1"></div>
     </div>
     <dl class="results" id="fu-out"></dl>
@@ -553,9 +559,6 @@ HTML = r"""<!doctype html>
       </div>
       <div class="field"><label for="z-w">Trace width (mm)</label><input id="z-w" inputmode="decimal" placeholder="e.g. 0.3"></div>
       <div class="field"><label for="z-h" id="z-hlabel">Dielectric height h (mm)</label><input id="z-h" inputmode="decimal" placeholder="e.g. 0.2"></div>
-      <div class="field"><label for="z-oz">Copper</label>
-        <select id="z-oz"><option value="17.5">0.5 oz (17.5 &micro;m)</option><option value="35" selected>1 oz (35 &micro;m)</option><option value="70">2 oz (70 &micro;m)</option></select>
-      </div>
       <div class="field"><label for="z-er">&epsilon;<sub>r</sub></label><input id="z-er" inputmode="decimal" placeholder="4.3"></div>
       <div class="field"><label for="z-ermask">Cover &epsilon;<sub>r</sub></label><input id="z-ermask" inputmode="decimal" placeholder="3.8 (solder mask)"></div>
       <div class="field"><label for="z-c">Far plane distance (mm)</label><input id="z-c" inputmode="decimal" placeholder="offset stripline"></div>
@@ -588,9 +591,6 @@ HTML = r"""<!doctype html>
       <div class="field"><label for="dp-s">Edge-to-edge spacing (mm)</label><input id="dp-s" inputmode="decimal" placeholder="e.g. 0.2"></div>
       <div class="field"><label for="dp-h">Dielectric height (mm)</label><input id="dp-h" inputmode="decimal" placeholder="e.g. 0.2"></div>
       <div class="field"><label for="dp-er">&epsilon;<sub>r</sub></label><input id="dp-er" inputmode="decimal" placeholder="4.3"></div>
-      <div class="field"><label for="dp-oz">Copper</label>
-        <select id="dp-oz"><option value="17.5">0.5 oz</option><option value="35" selected>1 oz</option><option value="70">2 oz</option></select>
-      </div>
       <div class="field"><label for="dp-target">Target Z<sub>diff</sub> (&Omega;)</label>
         <select id="dp-target">
           <option value="">none</option>
@@ -624,9 +624,6 @@ HTML = r"""<!doctype html>
       <div class="field"><label for="ee-w">Trace width (mm)</label><input id="ee-w" inputmode="decimal" placeholder="e.g. 0.3"></div>
       <div class="field"><label for="ee-h">Dielectric height (mm)</label><input id="ee-h" inputmode="decimal" placeholder="e.g. 0.2"></div>
       <div class="field"><label for="ee-er">&epsilon;<sub>r</sub></label><input id="ee-er" inputmode="decimal" placeholder="4.3"></div>
-      <div class="field"><label for="ee-oz">Copper</label>
-        <select id="ee-oz"><option value="17.5">0.5 oz</option><option value="35" selected>1 oz</option><option value="70">2 oz</option></select>
-      </div>
       <div class="field"><label for="ee-f">Frequency (Hz, optional)</label><input id="ee-f" inputmode="decimal" placeholder="e.g. 1G"></div>
     </div>
     <dl class="results" id="ee-out"></dl>
@@ -657,7 +654,6 @@ HTML = r"""<!doctype html>
     <div class="cardrow">
     <div class="fields">
       <div class="field"><label for="th-p">Power dissipated (W)</label><input id="th-p" inputmode="decimal" placeholder="e.g. 5"></div>
-      <div class="field"><label for="th-ta">Ambient (&deg;C)</label><input id="th-ta" inputmode="decimal" placeholder="25"></div>
       <div class="field"><label for="th-jc">&theta; junction&ndash;case (&deg;C/W)</label><input id="th-jc" inputmode="decimal" placeholder="e.g. 1.5"></div>
       <div class="field"><label for="th-cs">&theta; case&ndash;sink (&deg;C/W)</label><input id="th-cs" inputmode="decimal" placeholder="e.g. 0.5"></div>
       <div class="field"><label for="th-sa">&theta; sink&ndash;ambient (&deg;C/W)</label><input id="th-sa" inputmode="decimal" placeholder="e.g. 8"></div>
@@ -968,6 +964,16 @@ function setComputed(id, v) {
   el.classList.add("computed");
   el.classList.remove("bad");
 }
+
+/* ---------- shared board settings ----------
+
+   Copper weight, temperature rise and ambient describe the board, not any one
+   calculation, so they live in one strip and every card reads them from here.
+   Before this they were repeated on six cards and could disagree. */
+
+function gCopperMM() { return parseFloat(document.getElementById("g-oz").value) / 1000; }
+function gTempRise() { return numOr("g-dt", 10, 0.01); }
+function gAmbient() { return numOr("g-ta", 25, -273.15); }
 
 /* ---------- E-series ---------- */
 
@@ -1421,10 +1427,10 @@ function traceR(wMM, tMM, lenMM, tempC) {
 function calcTrace() {
   clearComputed(["tw-i","tw-w"]);
   const i = val("tw-i"), w = valDim("tw-w"), lenMM = valDim("tw-len"), f = val("tw-f");
-  const dT = numOr("tw-dt", 10, 0.01);
-  const ta = numOr("tw-ta", 25, -273.15);
+  const dT = gTempRise();
+  const ta = gAmbient();
   if (!isFinite(dT) || !isFinite(ta)) { render("tw-out", []); return; }
-  const tMM = parseFloat(document.getElementById("tw-oz").value) / 1000;
+  const tMM = gCopperMM();
   const k = document.getElementById("tw-layer").value === "ext" ? 0.048 : 0.024;
   if (!isFinite(i) && !isFinite(w)) { render("tw-out", []); return; }
   const rows = [];
@@ -1497,7 +1503,7 @@ function calcVia() {
   const d = valDim("via-d");
   const tp = valDimUm("via-tp", 0.025);
   const h = numOr("via-h", 1.6, 1e-6);
-  const dT = numOr("via-dt", 10, 0.01);
+  const dT = gTempRise();
   const er = numOr("via-er", 4.3, 1);
   if (!isFinite(d) || !(d > 0)) { render("via-out", []); return; }
   if (![tp, h, dT, er].every(isFinite)) { render("via-out", []); return; }
@@ -1557,11 +1563,11 @@ function calcVia() {
 
 /* Onderdonk: 33*(I/A_cmil)^2 * t = log10(1 + (Tm-Ta)/(234+Ta)), Tm = 1083 C */
 function calcFuse() {
-  const w = valDim("fu-w"), t = val("fu-t"), taRaw = val("fu-ta");
+  const w = valDim("fu-w"), t = val("fu-t");
   if (!isFinite(w) || !isFinite(t)) { render("fu-out", []); return; }
   if (!(w > 0) || !(t > 0)) { render("fu-out", [["", "Width and duration must be positive.", "err"]]); return; }
-  const ta = isFinite(taRaw) ? taRaw : 25;
-  const tMM = parseFloat(document.getElementById("fu-oz").value) / 1000;
+  const ta = gAmbient();
+  const tMM = gCopperMM();
   const aMil2 = (w / MIL) * (tMM / MIL);
   const aCmil = aMil2 * 4 / Math.PI;
   const kOn = numOr("fu-k", 1, 0.01);
@@ -1628,7 +1634,7 @@ function calcZ() {
   const er = numOr("z-er", 4.3, 1);
   const ercov = numOr("z-ermask", 3.8, 1);
   const f = val("z-f");
-  const t = parseFloat(document.getElementById("z-oz").value) / 1000;
+  const t = gCopperMM();
   const lbl = document.getElementById("z-hlabel");
   if (lbl) {
     lbl.innerHTML = struct === "sl" ? "Plane-to-plane b (mm)"
@@ -1911,7 +1917,7 @@ function wirePair(specs) {
 function calcThermal() {
   clearComputed(["th-tj"]);
   const P = val("th-p");
-  const ta = numOr("th-ta", 25, -273.15);
+  const ta = gAmbient();
   const jc = val("th-jc"), cs = val("th-cs"), sa = val("th-sa"), ja = val("th-ja");
   const tjmax = val("th-tjmax");
   const target = isFinite(val("th-tjtarget")) ? val("th-tjtarget") : tjmax;
@@ -2105,7 +2111,7 @@ function kjEeff(u, er, ee0, hMM, fHz) {
 function calcEreff() {
   const w = valDim("ee-w"), h = valDim("ee-h"), f = val("ee-f");
   const er = numOr("ee-er", 4.3, 1);
-  const t = parseFloat(document.getElementById("ee-oz").value) / 1000;
+  const t = gCopperMM();
   if (!isFinite(w) || !isFinite(h) || !isFinite(er) || !(w > 0) || !(h > 0)) { render("ee-out", []); return; }
   const u = w / h + hjDeltaU(t / h);
   const rows = [];
@@ -2134,7 +2140,7 @@ function calcEreff() {
 function calcDiff() {
   const w = valDim("dp-w"), sp = valDim("dp-s"), h = valDim("dp-h");
   const er = numOr("dp-er", 4.3, 1);
-  const t = parseFloat(document.getElementById("dp-oz").value) / 1000;
+  const t = gCopperMM();
   const ms = document.getElementById("dp-struct").value === "ms";
   if (![w, sp, h, er].every(isFinite) || !(w > 0) || !(sp > 0) || !(h > 0)) { render("dp-out", []); return; }
   const rows = [];
@@ -2255,13 +2261,13 @@ function calcDbm() {
 /* ---------- wiring ---------- */
 
 const CALCS = {
-  th:  { calc: calcThermal, inputs: ["th-p","th-ta","th-jc","th-cs","th-sa","th-ja","th-tjmax","th-tjtarget","th-tj"] },
+  th:  { calc: calcThermal, inputs: ["th-p","th-jc","th-cs","th-sa","th-ja","th-tjmax","th-tjtarget","th-tj"] },
   cs:  { calc: calcCapSRF, inputs: ["cs-c","cs-esl","cs-esr","cs-f","cs-n"] },
   pc:  { calc: calcPlaneC, inputs: ["pc-a","pc-d","pc-er","pc-f"] },
   pdn: { calc: calcPDN, inputs: ["pdn-v","pdn-ripple","pdn-i","pdn-tr","pdn-fmax"] },
   pad: { calc: calcPad, inputs: ["pad-a","pad-z0","pad-z2"] },
-  ee:  { calc: calcEreff, inputs: ["ee-w","ee-h","ee-er","ee-oz","ee-f"] },
-  dp:  { calc: calcDiff, inputs: ["dp-struct","dp-w","dp-s","dp-h","dp-er","dp-oz","dp-target"] },
+  ee:  { calc: calcEreff, inputs: ["ee-w","ee-h","ee-er","ee-f"] },
+  dp:  { calc: calcDiff, inputs: ["dp-struct","dp-w","dp-s","dp-h","dp-er","dp-target"] },
   lc:  { calc: calcLCRL, inputs: ["lc-l","lc-c","lc-r","lc-topo"] },
   db:  { calc: calcDbm, inputs: ["db-in","db-gain","db-att","db-z"] },
   bat: { calc: calcBattery, inputs: ["bat-mah","bat-v","bat-s","bat-p","bat-load","bat-loadunit","bat-usable"] },
@@ -2272,11 +2278,11 @@ const CALCS = {
   ac:  { calc: calcAccuracy, inputs: ["ac-r1","ac-r2","ac-vin","ac-tol1","ac-tol2","ac-tcr1","ac-tcr2","ac-tmin","ac-tmax","ac-tnom","ac-age"] },
   rc:  { calc: calcRC, inputs: ["rc-r","rc-c","rc-f"] },
   re:  { calc: calcReact, inputs: ["re-f","re-c","re-l"] },
-  tw:  { calc: calcTrace, inputs: ["tw-i","tw-w","tw-dt","tw-oz","tw-layer","tw-len","tw-ta","tw-f"] },
-  via: { calc: calcVia, inputs: ["via-d","via-tp","via-h","via-dt","via-pad","via-anti","via-er","via-i","via-n","via-arlimit","via-stub"] },
-  fu:  { calc: calcFuse, inputs: ["fu-w","fu-oz","fu-t","fu-ta","fu-k"] },
+  tw:  { calc: calcTrace, inputs: ["tw-i","tw-w","tw-layer","tw-len","tw-f"] },
+  via: { calc: calcVia, inputs: ["via-d","via-tp","via-h","via-pad","via-anti","via-er","via-i","via-n","via-arlimit","via-stub"] },
+  fu:  { calc: calcFuse, inputs: ["fu-w","fu-t","fu-k"] },
   spc: { calc: calcSpacing, inputs: ["spc-v"] },
-  z:   { calc: calcZ, inputs: ["z-struct","z-w","z-h","z-oz","z-er","z-ermask","z-c","z-s","z-f"] },
+  z:   { calc: calcZ, inputs: ["z-struct","z-w","z-h","z-er","z-ermask","z-c","z-s","z-f"] },
   wl:  { calc: calcWave, inputs: ["wl-f","wl-tr","wl-eeff","wl-period","wl-div"] },
   xc:  { calc: calcXtal, inputs: ["xc-cl","xc-c1","xc-c2","xc-cs"] },
   pp:  { calc: calcPPM, inputs: ["pp-f","pp-ppm","pp-df"] },
@@ -2300,6 +2306,14 @@ for (const key in CALCS) {
 }
 
 // the E-series setting feeds every calculator that suggests standard values
+/* A board setting affects most cards, so recalculate all of them. */
+["g-oz", "g-dt", "g-ta"].forEach(function (gid) {
+  const el = document.getElementById(gid);
+  ["input", "change"].forEach(function (ev) {
+    el.addEventListener(ev, function () { for (const key in CALCS) CALCS[key].calc(); });
+  });
+});
+
 document.getElementById("g-series").addEventListener("change", function () {
   calcDivider(); calcLED(); calcPad();
 });
