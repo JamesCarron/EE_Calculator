@@ -51,7 +51,9 @@ Verification harness (session scratch, re-creatable): a Python script extracts t
 
 ## Open questions / blockers
 
-None outstanding. Both questions raised at the end of the 2026-09-10 session were answered by the owner:
+None. Everything raised during the build was put to the owner and settled; the answers are recorded here so they are not re-litigated.
 
 - **Vendored theme vs shared stylesheet — keep vendored.** The tool stays standalone and brand-free; a change to the shared house stylesheet will not reach it, and re-vendoring `theme/` is a deliberate act when the tokens change. No refresh task was added.
 - **Public release — not yet, local only.** The repo stays local with no remote. The client-side-only release checks (a CSP meta tag, a scan for network APIs) and the licence decision are deferred until that changes; de-branding was done on its own merits, not as release prep.
+- **Divider pair search — keep nearest-snap.** Measured over 6491 Vin/Vout combinations: at E96 snapping each candidate R2 to the nearest series value is never beaten by testing both neighbours, and at E24 it loses in 3 cases by at most 295 ppm, which is far inside a 5 % part's own tolerance. Not worth a second code path.
+- **Shared stylesheet contrast — no defect, nothing to change.** The `--a-bg-accent` / `--a-on-accent` mix-up was confined to this tool. The shared stylesheet documents `--a-on-accent` as 4.90:1 on `--a-link` and its own components pair them correctly; no other generator uses `--a-bg-accent` at all. An earlier claim in this session that other tools shared the bug was wrong.
