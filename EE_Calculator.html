@@ -877,7 +877,13 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
     <div class="cardrow">
     <div class="fields">
       <div class="field"><label for="z-struct">Structure</label>
-        <select id="z-struct"><option value="ms" selected>Microstrip (outer layer)</option><option value="sl">Stripline (inner layer)</option></select>
+        <select id="z-struct">
+          <option value="ms" selected>Microstrip, bare</option>
+          <option value="mscov">Microstrip, covered</option>
+          <option value="sl">Stripline, centred</option>
+          <option value="asym">Stripline, offset</option>
+          <option value="cpwg">Coplanar over ground</option>
+        </select>
       </div>
       <div class="field"><label for="z-w">Trace width (mm)</label><input id="z-w" inputmode="decimal" placeholder="e.g. 0.3"></div>
       <div class="field"><label for="z-h" id="z-hlabel">Dielectric height h (mm)</label><input id="z-h" inputmode="decimal" placeholder="e.g. 0.2"></div>
@@ -885,6 +891,10 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
         <select id="z-oz"><option value="17.5">0.5 oz (17.5 &micro;m)</option><option value="35" selected>1 oz (35 &micro;m)</option><option value="70">2 oz (70 &micro;m)</option></select>
       </div>
       <div class="field"><label for="z-er">&epsilon;<sub>r</sub></label><input id="z-er" inputmode="decimal" placeholder="4.3"></div>
+      <div class="field"><label for="z-ermask">Cover &epsilon;<sub>r</sub></label><input id="z-ermask" inputmode="decimal" placeholder="3.8 (solder mask)"></div>
+      <div class="field"><label for="z-c">Far plane distance (mm)</label><input id="z-c" inputmode="decimal" placeholder="offset stripline"></div>
+      <div class="field"><label for="z-s">Gap to ground (mm)</label><input id="z-s" inputmode="decimal" placeholder="coplanar"></div>
+      <div class="field"><label for="z-f">Frequency (Hz, optional)</label><input id="z-f" inputmode="decimal" placeholder="e.g. 1G"></div>
     </div>
     <svg class="schem" width="230" height="120" viewBox="0 0 230 120" role="img" aria-label="Microstrip and stripline cross-sections">
       <rect class="wire" x="15" y="45" width="90" height="30"/>
@@ -1887,28 +1897,136 @@ function calcSpacing() {
 
 /* ---------- impedance ---------- */
 
+/* Hilberg's approximation to K(k)/K(k'), accurate to about 2e-6 and
+   continuous across the branch at k = 1/sqrt(2). Used by the coplanar model,
+   which needs elliptic integrals and would otherwise need a library. */
+function kkRatio(k) {
+  const kp = Math.sqrt(Math.max(0, 1 - k * k));
+  if (k <= Math.SQRT1_2) return Math.PI / Math.log(2 * (1 + Math.sqrt(kp)) / (1 - Math.sqrt(kp)));
+  return Math.log(2 * (1 + Math.sqrt(k)) / (1 - Math.sqrt(k))) / Math.PI;
+}
+
+/* Hammerstad-Jensen with the upper half-space filled by ercov instead of air.
+   ercov = 1 gives plain H-J and ercov = er gives a homogeneous medium, both
+   exactly, so it is well behaved at the limits that matter. */
+function hjEeffCovered(u, er, ercov) {
+  const a = 1 + Math.log((Math.pow(u, 4) + Math.pow(u / 52, 2)) / (Math.pow(u, 4) + 0.432)) / 49
+              + Math.log1p(Math.pow(u / 18.1, 3)) / 18.7;
+  const b = 0.564 * Math.pow((er - 0.9) / (er + 3), 0.053);
+  return (er + ercov) / 2 + (er - ercov) / 2 * Math.pow(1 + 10 / u, -a * b);
+}
+
 function calcZ() {
-  const w = valDim("z-w"), h = valDim("z-h");
-  const er = numOr("z-er", 4.3, 1);   // 1 is air and is a legitimate entry
+  const struct = document.getElementById("z-struct").value;
+  const w = valDim("z-w"), h = valDim("z-h"), c = valDim("z-c"), gap = valDim("z-s");
+  const er = numOr("z-er", 4.3, 1);
+  const ercov = numOr("z-ermask", 3.8, 1);
+  const f = val("z-f");
   const t = parseFloat(document.getElementById("z-oz").value) / 1000;
-  const ms = document.getElementById("z-struct").value === "ms";
-  document.getElementById("z-hlabel").innerHTML = ms ? "Dielectric height h (mm)" : "Plane-to-plane b (mm)";
-  if (!isFinite(er) || !isFinite(w) || !isFinite(h) || !(w > 0) || !(h > 0)) { render("z-out", []); return; }
-  const rows = [];
-  let z0, eeff;
-  if (ms) {
-    z0 = 87 / Math.sqrt(er + 1.41) * Math.log(5.98 * h / (0.8 * w + t));
-    eeff = (er + 1) / 2 + (er - 1) / 2 / Math.sqrt(1 + 12 * h / w);
-    if (w / h < 0.1 || w / h > 2.0 || er > 15) rows.push(["", "Outside the formula's validity range (0.1 < w/h < 2, &epsilon;<sub>r</sub> < 15) — treat with suspicion.", "warn"]);
-  } else {
-    z0 = 60 / Math.sqrt(er) * Math.log(1.9 * h / (0.8 * w + t));
-    eeff = er;
-    if (w / h > 0.35 || t / h > 0.25) rows.push(["", "Outside the formula's validity range (w/b < 0.35, t/b < 0.25) — treat with suspicion.", "warn"]);
+  const lbl = document.getElementById("z-hlabel");
+  if (lbl) {
+    lbl.innerHTML = struct === "sl" ? "Plane-to-plane b (mm)"
+                  : struct === "asym" ? "Distance to near plane (mm)"
+                  : "Dielectric height h (mm)";
   }
-  if (!(z0 > 0)) { render("z-out", [["", "Geometry gives no real impedance — the trace is too wide for this height.", "err"]]); return; }
-  rows.push(["Z<sub>0</sub>", z0.toFixed(1) + " Ω"]);
-  rows.push(["&epsilon;<sub>eff</sub>", eeff.toFixed(2)]);
-  rows.push(["Propagation delay", (3.336 * Math.sqrt(eeff)).toFixed(2) + " ps/mm (" + (Math.sqrt(eeff) / 0.29979).toFixed(2) + " ns/m)"]);
+  if (!isFinite(er) || !isFinite(w) || !isFinite(h) || !(w > 0) || !(h > 0)) { render("z-out", []); return; }
+
+  const rows = [];
+  let z0 = NaN, eeff = NaN, validity = "";
+
+  if (struct === "ms" || struct === "mscov") {
+    const u = w / h + hjDeltaU(t / h);
+    validity = "Hammerstad\u2013Jensen, valid for 0.01 \u2264 w/h \u2264 100. Here w/h = " + u.toPrecision(3) + ".";
+    if (u < HJ_U_MIN || u > HJ_U_MAX) {
+      render("z-out", [["", "w/h of " + u.toPrecision(3) + " is outside Hammerstad\u2013Jensen's range of " +
+                        HJ_U_MIN + " to " + HJ_U_MAX + "; the formula breaks down there rather than merely losing accuracy.", "err"]]);
+      return;
+    }
+    const z01 = hjZ01(u);
+    const eeBare = hjEeff(u, er);
+    if (struct === "ms") {
+      eeff = eeBare;
+      z0 = z01 / Math.sqrt(eeff);
+    } else {
+      if (!isFinite(ercov)) { render("z-out", []); return; }
+      const eeFull = hjEeffCovered(u, er, ercov);
+      const zFull = z01 / Math.sqrt(eeFull);
+      const zBare = z01 / Math.sqrt(eeBare);
+      eeff = eeFull;
+      z0 = zFull;
+      rows.push(["Bare, for comparison", zBare.toFixed(1) + " \u03a9 at \u03b5<sub>eff</sub> " + eeBare.toFixed(3)]);
+      rows.push(["", "This is the <em>fully covered</em> limit, with the cover filling the space above the trace. " +
+                 "A real solder mask is thin, so the true impedance lies between " + zFull.toFixed(1) + " and " +
+                 zBare.toFixed(1) + " \u03a9, nearer the bare figure for a 25\u201350 \u00b5m mask. No interpolation is " +
+                 "offered because any curve between these two would be invented rather than sourced.", "warn"]);
+      validity += " Cover \u03b5<sub>r</sub> " + ercov + ".";
+    }
+    if (isFinite(f) && f > 0) {
+      const ee0 = eeff;
+      eeff = kjEeff(u, er, ee0, h, f);
+      z0 = z01 / Math.sqrt(eeff);
+      rows.push(["Dispersion at " + fmt(f, "Hz"), "\u03b5<sub>eff</sub> " + ee0.toFixed(4) + " \u2192 " + eeff.toFixed(4) +
+                 " (Kirschning\u2013Jansen)"]);
+    }
+  } else if (struct === "sl") {
+    validity = "IPC-2141 symmetric stripline, valid for w/b < 0.35 and t/b < 0.25. Here w/b = " +
+               (w / h).toPrecision(3) + ", t/b = " + (t / h).toPrecision(3) + ".";
+    const arg = 1.9 * h / (0.8 * w + t);
+    if (arg <= 1) { render("z-out", [["", "The trace is too wide for this plane spacing \u2014 the formula gives no real impedance.", "err"]]); return; }
+    eeff = er;
+    z0 = 60 / Math.sqrt(er) * Math.log(arg);
+    if (w / h > 0.35 || t / h > 0.25) rows.push(["", "Outside the stated validity range \u2014 treat with suspicion.", "warn"]);
+  } else if (struct === "asym") {
+    if (!isFinite(c) || !(c > 0)) { render("z-out", [["", "Enter the distance to the far plane.", ""]]); return; }
+    const b = h + c + t;
+    /* The IPC asymmetric expression uses an 80 coefficient where the symmetric
+       one uses 60, so the two disagree by about 17 % at the centred limit and
+       the raw formula can report a HIGHER impedance for an offset trace than a
+       centred one, which is backwards. Normalising against the same formula
+       evaluated at the centred position removes the mismatch and makes h = c
+       reproduce the symmetric result exactly. */
+    const raw = function (hh, cc) {
+      const a = 1.9 * (2 * hh + t) / (0.8 * w + t);
+      if (a <= 1) return NaN;
+      return 80 / Math.sqrt(er) * Math.log(a) * (1 - hh / (4 * (hh + cc + t)));
+    };
+    const half = (b - t) / 2;
+    const rawHere = raw(h, c), rawMid = raw(half, half);
+    const argSym = 1.9 * b / (0.8 * w + t);
+    if (!isFinite(rawHere) || !isFinite(rawMid) || argSym <= 1) {
+      render("z-out", [["", "The trace is too wide, or too close to a plane, for this formula.", "err"]]);
+      return;
+    }
+    const zSym = 60 / Math.sqrt(er) * Math.log(argSym);
+    eeff = er;
+    z0 = zSym * rawHere / rawMid;
+    validity = "IPC-2141 offset stripline, normalised so a centred trace reproduces the symmetric result. " +
+               "Plane-to-plane " + b.toPrecision(4) + " mm; the trace sits " + (h / b * 100).toFixed(0) + " % of the way across.";
+    rows.push(["Centred, for comparison", zSym.toFixed(1) + " \u03a9"]);
+  } else if (struct === "cpwg") {
+    if (!isFinite(gap) || !(gap > 0)) { render("z-out", [["", "Enter the gap between the track and the surrounding ground.", ""]]); return; }
+    const k = w / (w + 2 * gap);
+    const k3 = Math.tanh(Math.PI * w / (4 * h)) / Math.tanh(Math.PI * (w + 2 * gap) / (4 * h));
+    const r1 = kkRatio(k), r3 = kkRatio(k3);
+    eeff = (1 + er * (r3 / r1)) / (1 + r3 / r1);
+    z0 = 60 * Math.PI / (Math.sqrt(eeff) * (r1 + r3));
+    validity = "Grounded coplanar waveguide (Ghione &amp; Naldi), zero-thickness conductor assumed \u2014 " +
+               (t / gap > 0.1 ? "your copper is " + (t / gap * 100).toFixed(0) + " % of the gap, which this model ignores."
+                              : "copper thickness is small against the gap here, so that assumption holds.");
+  }
+
+  if (!isFinite(z0) || z0 <= 0) { render("z-out", [["", "That geometry gives no real impedance.", "err"]]); return; }
+
+  const tpd = Math.sqrt(eeff) / 299792458;          // seconds per metre
+  rows.unshift(["Z<sub>0</sub>", z0.toFixed(1) + " \u03a9"]);
+  rows.push(["&epsilon;<sub>eff</sub>", eeff.toFixed(4)]);
+  rows.push(["Propagation delay", (tpd * 1e12).toFixed(1) + " ps/m (" + (tpd * 1e12 * 0.0254).toFixed(2) + " ps/in)"]);
+  /* L and C follow from Zo and Tpd under one model, so sqrt(L/C) returns Zo
+     exactly - which the previous mix of IPC impedance and Hammerstad eps_eff
+     could not do. */
+  rows.push(["Inductance", (z0 * tpd * 1e9).toFixed(1) + " nH/m (" + (z0 * tpd * 1e9 * 0.0254).toFixed(3) + " nH/in)"]);
+  rows.push(["Capacitance", (tpd / z0 * 1e12).toFixed(1) + " pF/m (" + (tpd / z0 * 1e12 * 0.0254).toFixed(3) + " pF/in)"]);
+  if (validity) rows.push(["Model", validity]);
   render("z-out", rows);
 }
 
@@ -2452,7 +2570,7 @@ const CALCS = {
   via: { calc: calcVia, inputs: ["via-d","via-tp","via-h","via-dt","via-pad","via-anti","via-er","via-i","via-n","via-arlimit","via-stub"] },
   fu:  { calc: calcFuse, inputs: ["fu-w","fu-oz","fu-t","fu-ta","fu-k"] },
   spc: { calc: calcSpacing, inputs: ["spc-v"] },
-  z:   { calc: calcZ, inputs: ["z-struct","z-w","z-h","z-oz","z-er"] },
+  z:   { calc: calcZ, inputs: ["z-struct","z-w","z-h","z-oz","z-er","z-ermask","z-c","z-s","z-f"] },
   wl:  { calc: calcWave, inputs: ["wl-f","wl-tr","wl-eeff","wl-period","wl-div"] },
   xc:  { calc: calcXtal, inputs: ["xc-cl","xc-c1","xc-c2","xc-cs"] },
   pp:  { calc: calcPPM, inputs: ["pp-f","pp-ppm","pp-df"] },
