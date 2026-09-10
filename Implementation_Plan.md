@@ -80,7 +80,39 @@ Four defects were producing confident wrong numbers before any of this plan was 
 
 ### Still open from the review, not yet actioned
 
-The existing microstrip card mixes two models — Zo from IPC's 87-form, which implies ε_eff ≈ 2.72, while the displayed ε_eff is Hammerstad's 3.20. Planned per-unit-length L and C would inherit an ~8 % inconsistency between them. The reviewer recommends moving Zo to Hammerstad–Jensen and retiring the 87-form, which would change verified vectors. Also noted: Hammerstad–Jensen is static, so "with frequency dependence" needs Kirschning–Jansen or Kobayashi, and the model should be named on the card. **This is a decision, not a defect, and is the next thing to settle.**
+The existing microstrip card mixes two models — Zo from IPC's 87-form, which implies ε_eff ≈ 2.72, while the displayed ε_eff is Hammerstad's 3.20. Planned per-unit-length L and C would inherit an ~8 % inconsistency between them. The reviewer recommends moving Zo to Hammerstad–Jensen and retiring the 87-form, which would change verified vectors. Also noted: Hammerstad–Jensen is static, so "with frequency dependence" needs Kirschning–Jansen or Kobayashi, and the model should be named on the card. **Both settled — see the next section.**
+
+### Microstrip model, settled after review
+
+Both open questions from the review are decided: **Hammerstad–Jensen for Zo and ε_eff**, retiring the IPC-2141 87-form, and **Kirschning–Jansen for dispersion**. Verified in `C:\Auterion\Tools\claude\scratch\eecalc_hj_kj_check.py`.
+
+**Static model.** With u = w/h corrected for copper thickness:
+
+- Δ(w/h) = (t/h)/π · [1 + ln(2h/t)], added to u
+- a(u) = 1 + (1/49)·ln[(u⁴ + (u/52)²)/(u⁴ + 0.432)] + (1/18.7)·ln[1 + (u/18.1)³]
+- b(εr) = 0.564·[(εr − 0.9)/(εr + 3)]^0.053
+- ε_eff = (εr+1)/2 + (εr−1)/2·(1 + 10/u)^(−a·b)
+- Z₀₁ = (η₀/2π)·ln[F/u + √(1 + (2/u)²)] with F = 6 + (2π−6)·exp[−(30.666/u)^0.7528] and η₀ = 376.730313 Ω
+- Z₀ = Z₀₁/√ε_eff
+
+**Dispersion**, with normalised frequency fn = f[GHz]·h[mm]: ε_eff(f) = εr − (εr − ε_eff)/(1 + P), P = P₁P₂[(0.1844 + P₃P₄)·fn]^1.5763, where P₁ = 0.27488 + [0.6315 + 0.525/(1+0.0157fn)²⁰]u − 0.065683e^(−8.7513u), P₂ = 0.33622[1 − e^(−0.03442εr)], P₃ = 0.0363·e^(−4.6u)[1 − e^(−(fn/38.7)^4.97)], P₄ = 1 + 2.751[1 − e^(−(εr/15.916)⁸)].
+
+**Validation vector.** w = 0.3 mm, h = 0.2 mm, t = 35 µm, εr = 4.3:
+
+| Quantity | Value |
+|---|---|
+| u corrected for thickness | 1.6914 |
+| ε_eff | 3.2297 |
+| Z₀ | 54.33 Ω |
+| Tpd | 152.26 ps/in (5994.6 ps/m) |
+| L | 8.273 nH/in (325.7 nH/m) |
+| C | 2.803 pF/in (110.3 pF/m) |
+
+**The switch is smaller than the review suggested.** Zo moves 53.52 → 54.33 Ω, **1.5 %, not 8 %** — the reviewer's figure came from zero-thickness H-J (58.15 Ω), and copper thickness closes most of the gap. The real problem the review identified still stands and is what the switch fixes: IPC's Zo implies ε_eff ≈ 2.72 while the card displays 3.20, so per-unit-length L and C derived from the two would not have agreed. Under one model they now agree by construction — √(L/C) recovers Zo and √(LC) recovers Tpd to floating-point precision.
+
+**Guard, found while verifying.** H-J is stated valid for 0.01 ≤ w/h ≤ 100. Below about w/h = 1e-6 the log term in a(u) breaks down numerically and ε_eff explodes (1e-12 returns 138, far above εr). The implementation must clamp to the validity window and flag, never compute outside it — which is exactly what the "validity window on the card" item is for.
+
+**Tests** (the three-check policy): interior value as tabulated; bound (εr+1)/2 ≤ ε_eff < εr across the whole window plus monotonic rise with width; dispersion reproducing the static value at DC, rising monotonically, and staying below εr. At 500 MHz on this geometry dispersion shifts ε_eff by 0.006 %, which is why a static model is defensible below roughly 1 GHz on FR-4.
 
 ## Grouping
 
