@@ -464,6 +464,7 @@ HTML = r"""<!doctype html>
       </div>
       <div class="field"><label for="tw-len">Length (mm, optional)</label><input id="tw-len" inputmode="decimal" placeholder="e.g. 50"></div>
       <div class="field"><label for="tw-ta">Ambient (&deg;C)</label><input id="tw-ta" inputmode="decimal" placeholder="25"></div>
+      <div class="field"><label for="tw-f">Frequency (Hz, optional)</label><input id="tw-f" inputmode="decimal" placeholder="e.g. 1M"></div>
     </div>
     <svg class="schem" width="230" height="110" viewBox="0 0 230 110" role="img" aria-label="Trace cross-section on a board">
       <rect class="wire" x="20" y="55" width="190" height="28"/>
@@ -1419,7 +1420,7 @@ function traceR(wMM, tMM, lenMM, tempC) {
 
 function calcTrace() {
   clearComputed(["tw-i","tw-w"]);
-  const i = val("tw-i"), w = valDim("tw-w"), lenMM = valDim("tw-len");
+  const i = val("tw-i"), w = valDim("tw-w"), lenMM = valDim("tw-len"), f = val("tw-f");
   const dT = numOr("tw-dt", 10, 0.01);
   const ta = numOr("tw-ta", 25, -273.15);
   if (!isFinite(dT) || !isFinite(ta)) { render("tw-out", []); return; }
@@ -1427,7 +1428,8 @@ function calcTrace() {
   const k = document.getElementById("tw-layer").value === "ext" ? 0.048 : 0.024;
   if (!isFinite(i) && !isFinite(w)) { render("tw-out", []); return; }
   const rows = [];
-  let wMM = w, iVal = i;
+  let wMM = w, iVal = i, required = NaN;
+
   if (isFinite(i) && !isFinite(w)) {
     if (!(i > 0)) { render("tw-out", [["", "Current must be positive.", "err"]]); return; }
     const aMil2 = ipcArea(i, dT, k);
@@ -1440,15 +1442,54 @@ function calcTrace() {
     setComputed("tw-i", iVal);
     rows.push(["Width", (w / MIL).toFixed(1) + " mil"]);
   } else {
-    const imax = ipcCurrent((w / MIL) * (tMM / MIL), dT, k);
-    rows.push(["Max current at &Delta;T " + dT + " &deg;C", fmt(imax, "A")]);
-    rows.push(["Margin at " + fmt(i, "A"), ((imax / i - 1) * 100).toFixed(1) + " %" + (imax < i ? " — undersized" : ""), imax < i ? "err" : ""]);
+    required = i;
   }
+
+  const aMil2 = (wMM / MIL) * (tMM / MIL);
+  const aMM2 = wMM * tMM;
+  const achievable = ipcCurrent(aMil2, dT, k);
+
+  /* Showing what the design draws next to what the geometry can carry is the
+     one presentation idea worth taking wholesale from Saturn: an undersized
+     trace becomes obvious without doing the comparison in your head. */
+  if (isFinite(required)) {
+    const margin = (achievable / required - 1) * 100;
+    rows.push(["Current required", fmt(required, "A")]);
+    rows.push(["Current the copper can carry", fmt(achievable, "A") + " at \u0394T " + dT + " \u00b0C"]);
+    rows.push(["Verdict", margin >= 0
+                 ? margin.toFixed(0) + " % headroom"
+                 : Math.abs(margin).toFixed(0) + " % short \u2014 undersized, widen the trace or accept a bigger rise",
+               margin < 0 ? "err" : (margin < 20 ? "warn" : "good")]);
+    if (margin < 0) {
+      const need = (ipcArea(required, dT, k) / (tMM / MIL)) * MIL;
+      rows.push(["Width needed for " + fmt(required, "A"), (need / MIL).toFixed(1) + " mil (" + need.toPrecision(3) + " mm)"]);
+    }
+    iVal = required;
+  }
+
+  rows.push(["Cross-section", aMil2.toFixed(1) + " mil&sup2; (" + aMM2.toPrecision(3) + " mm&sup2;)"]);
+  if (isFinite(iVal) && iVal > 0) {
+    rows.push(["Current density", (iVal / aMM2).toPrecision(4) + " A/mm&sup2; (" +
+               (iVal / aMil2).toPrecision(3) + " A/mil&sup2;)"]);
+  }
+
+  if (isFinite(f) && f > 0) {
+    /* Skin depth as a fraction of the copper is the useful form: it answers
+       whether the thickness is being wasted at this frequency. */
+    const delta = Math.sqrt(RHO20 / (Math.PI * f * 4e-7 * Math.PI));
+    const pc = delta / (tMM * 1e-3) * 100;
+    rows.push(["Skin depth at " + fmt(f, "Hz"), fmt(delta, "m")]);
+    rows.push(["As a fraction of the copper", pc.toFixed(1) + " %" +
+               (pc >= 100 ? " \u2014 the whole thickness conducts" : " \u2014 the centre of the copper carries little current, so extra thickness buys less than it appears")]);
+  }
+
   if (isFinite(lenMM) && lenMM > 0 && isFinite(iVal) && iVal > 0 && isFinite(wMM)) {
     const r = traceR(wMM, tMM, lenMM, ta + dT);
-    rows.push(["Resistance at " + (ta + dT).toFixed(0) + " &deg;C", fmt(r, "Ω")]);
+    rows.push(["Resistance at " + (ta + dT).toFixed(0) + " \u00b0C", fmt(r, "\u03a9")]);
     rows.push(["Voltage drop / power", fmt(iVal * r, "V") + " / " + fmt(iVal * iVal * r, "W")]);
   }
+  rows.push(["Model", "IPC-2221: I = k\u00b7\u0394T^0.44\u00b7A^0.725, k = " + k + " for an " +
+             (k === 0.048 ? "external" : "internal") + " layer. IPC-2152 allows somewhat more; this is the conservative classic."]);
   render("tw-out", rows);
 }
 
@@ -2231,7 +2272,7 @@ const CALCS = {
   ac:  { calc: calcAccuracy, inputs: ["ac-r1","ac-r2","ac-vin","ac-tol1","ac-tol2","ac-tcr1","ac-tcr2","ac-tmin","ac-tmax","ac-tnom","ac-age"] },
   rc:  { calc: calcRC, inputs: ["rc-r","rc-c","rc-f"] },
   re:  { calc: calcReact, inputs: ["re-f","re-c","re-l"] },
-  tw:  { calc: calcTrace, inputs: ["tw-i","tw-w","tw-dt","tw-oz","tw-layer","tw-len","tw-ta"] },
+  tw:  { calc: calcTrace, inputs: ["tw-i","tw-w","tw-dt","tw-oz","tw-layer","tw-len","tw-ta","tw-f"] },
   via: { calc: calcVia, inputs: ["via-d","via-tp","via-h","via-dt","via-pad","via-anti","via-er","via-i","via-n","via-arlimit","via-stub"] },
   fu:  { calc: calcFuse, inputs: ["fu-w","fu-oz","fu-t","fu-ta","fu-k"] },
   spc: { calc: calcSpacing, inputs: ["spc-v"] },
