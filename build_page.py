@@ -177,37 +177,37 @@ HTML = r"""<!doctype html>
       <text x="86" y="14">I</text>
       <text x="60" y="122">P = V&#183;I</text>
     </svg>
-    <svg class="schem" width="208" height="208" viewBox="0 0 208 208" role="img" aria-label="Ohm and power law wheel: the four quantities at the hub, each surrounded by the three ways of computing it from the other two">
-      <path class="wire" d="M104.0 64.0 L104.0 8.0 A96 96 0 0 1 152.0 20.9 L124.0 69.4 A40 40 0 0 0 104.0 64.0 Z"/>
-      <text x="115.9" y="62.6" font-size="9" transform="rotate(-75.0 115.9 62.6)">V = I&middot;R</text>
-      <path class="wire" d="M124.0 69.4 L152.0 20.9 A96 96 0 0 1 187.1 56.0 L138.6 84.0 A40 40 0 0 0 124.0 69.4 Z"/>
-      <text x="136.5" y="74.5" font-size="9" transform="rotate(-45.0 136.5 74.5)">V = P/I</text>
-      <path class="wire" d="M138.6 84.0 L187.1 56.0 A96 96 0 0 1 200.0 104.0 L144.0 104.0 A40 40 0 0 0 138.6 84.0 Z"/>
-      <text x="148.4" y="95.1" font-size="9" transform="rotate(-15.0 148.4 95.1)">V = &radic;(P&middot;R)</text>
-      <path class="wire" d="M144.0 104.0 L200.0 104.0 A96 96 0 0 1 187.1 152.0 L138.6 124.0 A40 40 0 0 0 144.0 104.0 Z"/>
-      <text x="190.9" y="130.3" font-size="9" transform="rotate(195.0 190.9 130.3)">R = V/I</text>
-      <path class="wire" d="M138.6 124.0 L187.1 152.0 A96 96 0 0 1 152.0 187.1 L124.0 138.6 A40 40 0 0 0 138.6 124.0 Z"/>
-      <text x="167.6" y="170.6" font-size="9" transform="rotate(225.0 167.6 170.6)">R = V&sup2;/P</text>
-      <path class="wire" d="M124.0 138.6 L152.0 187.1 A96 96 0 0 1 104.0 200.0 L104.0 144.0 A40 40 0 0 0 124.0 138.6 Z"/>
-      <text x="127.3" y="193.9" font-size="9" transform="rotate(255.0 127.3 193.9)">R = P/I&sup2;</text>
-      <path class="wire" d="M104.0 144.0 L104.0 200.0 A96 96 0 0 1 56.0 187.1 L84.0 138.6 A40 40 0 0 0 104.0 144.0 Z"/>
-      <text x="80.7" y="193.9" font-size="9" transform="rotate(285.0 80.7 193.9)">P = V&middot;I</text>
-      <path class="wire" d="M84.0 138.6 L56.0 187.1 A96 96 0 0 1 20.9 152.0 L69.4 124.0 A40 40 0 0 0 84.0 138.6 Z"/>
-      <text x="40.4" y="170.6" font-size="9" transform="rotate(315.0 40.4 170.6)">P = I&sup2;&middot;R</text>
-      <path class="wire" d="M69.4 124.0 L20.9 152.0 A96 96 0 0 1 8.0 104.0 L64.0 104.0 A40 40 0 0 0 69.4 124.0 Z"/>
-      <text x="17.1" y="130.3" font-size="9" transform="rotate(345.0 17.1 130.3)">P = V&sup2;/R</text>
-      <path class="wire" d="M64.0 104.0 L8.0 104.0 A96 96 0 0 1 20.9 56.0 L69.4 84.0 A40 40 0 0 0 64.0 104.0 Z"/>
-      <text x="59.6" y="95.1" font-size="9" transform="rotate(195.0 59.6 95.1)">I = V/R</text>
-      <path class="wire" d="M69.4 84.0 L20.9 56.0 A96 96 0 0 1 56.0 20.9 L84.0 69.4 A40 40 0 0 0 69.4 84.0 Z"/>
-      <text x="71.5" y="74.5" font-size="9" transform="rotate(225.0 71.5 74.5)">I = P/V</text>
-      <path class="wire" d="M84.0 69.4 L56.0 20.9 A96 96 0 0 1 104.0 8.0 L104.0 64.0 A40 40 0 0 0 84.0 69.4 Z"/>
-      <text x="92.1" y="62.6" font-size="9" transform="rotate(255.0 92.1 62.6)">I = &radic;(P/R)</text>
-      <circle class="wire" cx="104" cy="104" r="38"/>
-      <path class="wire" d="M104.0 66.0 L104.0 142.0 M142.0 104.0 L66.0 104.0"/>
-      <text x="118.8" y="93.2" text-anchor="middle" font-size="13">V</text>
-      <text x="118.8" y="122.8" text-anchor="middle" font-size="13">R</text>
-      <text x="89.2" y="122.8" text-anchor="middle" font-size="13">P</text>
-      <text x="89.2" y="93.2" text-anchor="middle" font-size="13">I</text>
+    <svg class="schem" width="240" height="240" viewBox="0 0 240 240" role="img" aria-label="Ohm and power law wheel: the four quantities at the hub, each surrounded by the three ways of computing it from the other two">
+      <path class="wire" d="M120.0 68.0 L120.0 8.0 A112 112 0 0 1 176.0 23.0 L146.0 75.0 A52 52 0 0 0 120.0 68.0 Z"/>
+      <text x="135.3" y="63.0" font-size="9" dominant-baseline="middle" transform="rotate(-75.0 135.3 63.0)">V=I&middot;R</text>
+      <path class="wire" d="M146.0 75.0 L176.0 23.0 A112 112 0 0 1 217.0 64.0 L165.0 94.0 A52 52 0 0 0 146.0 75.0 Z"/>
+      <text x="161.7" y="78.3" font-size="9" dominant-baseline="middle" transform="rotate(-45.0 161.7 78.3)">V=P/I</text>
+      <path class="wire" d="M165.0 94.0 L217.0 64.0 A112 112 0 0 1 232.0 120.0 L172.0 120.0 A52 52 0 0 0 165.0 94.0 Z"/>
+      <text x="177.0" y="104.7" font-size="9" dominant-baseline="middle" transform="rotate(-15.0 177.0 104.7)">V&sup2;=P&middot;R</text>
+      <path class="wire" d="M172.0 120.0 L232.0 120.0 A112 112 0 0 1 217.0 176.0 L165.0 146.0 A52 52 0 0 0 172.0 120.0 Z"/>
+      <text x="177.0" y="135.3" font-size="9" dominant-baseline="middle" transform="rotate(15.0 177.0 135.3)">R=V/I</text>
+      <path class="wire" d="M165.0 146.0 L217.0 176.0 A112 112 0 0 1 176.0 217.0 L146.0 165.0 A52 52 0 0 0 165.0 146.0 Z"/>
+      <text x="161.7" y="161.7" font-size="9" dominant-baseline="middle" transform="rotate(45.0 161.7 161.7)">R=V&sup2;/P</text>
+      <path class="wire" d="M146.0 165.0 L176.0 217.0 A112 112 0 0 1 120.0 232.0 L120.0 172.0 A52 52 0 0 0 146.0 165.0 Z"/>
+      <text x="135.3" y="177.0" font-size="9" dominant-baseline="middle" transform="rotate(75.0 135.3 177.0)">R=P/I&sup2;</text>
+      <path class="wire" d="M120.0 172.0 L120.0 232.0 A112 112 0 0 1 64.0 217.0 L94.0 165.0 A52 52 0 0 0 120.0 172.0 Z"/>
+      <text x="92.8" y="221.4" font-size="9" dominant-baseline="middle" transform="rotate(285.0 92.8 221.4)">P=V&middot;I</text>
+      <path class="wire" d="M94.0 165.0 L64.0 217.0 A112 112 0 0 1 23.0 176.0 L75.0 146.0 A52 52 0 0 0 94.0 165.0 Z"/>
+      <text x="45.8" y="194.2" font-size="9" dominant-baseline="middle" transform="rotate(315.0 45.8 194.2)">P=I&sup2;&middot;R</text>
+      <path class="wire" d="M75.0 146.0 L23.0 176.0 A112 112 0 0 1 8.0 120.0 L68.0 120.0 A52 52 0 0 0 75.0 146.0 Z"/>
+      <text x="18.6" y="147.2" font-size="9" dominant-baseline="middle" transform="rotate(345.0 18.6 147.2)">P=V&sup2;/R</text>
+      <path class="wire" d="M68.0 120.0 L8.0 120.0 A112 112 0 0 1 23.0 64.0 L75.0 94.0 A52 52 0 0 0 68.0 120.0 Z"/>
+      <text x="18.6" y="92.8" font-size="9" dominant-baseline="middle" transform="rotate(375.0 18.6 92.8)">I=V/R</text>
+      <path class="wire" d="M75.0 94.0 L23.0 64.0 A112 112 0 0 1 64.0 23.0 L94.0 75.0 A52 52 0 0 0 75.0 94.0 Z"/>
+      <text x="45.8" y="45.8" font-size="9" dominant-baseline="middle" transform="rotate(405.0 45.8 45.8)">I=P/V</text>
+      <path class="wire" d="M94.0 75.0 L64.0 23.0 A112 112 0 0 1 120.0 8.0 L120.0 68.0 A52 52 0 0 0 94.0 75.0 Z"/>
+      <text x="92.8" y="18.6" font-size="9" dominant-baseline="middle" transform="rotate(435.0 92.8 18.6)">I&sup2;=P/R</text>
+      <circle class="wire" cx="120" cy="120" r="50"/>
+      <path class="wire" d="M120.0 70.0 L120.0 170.0 M170.0 120.0 L70.0 120.0"/>
+      <text x="139.4" y="100.6" text-anchor="middle" dominant-baseline="middle" font-size="13">V</text>
+      <text x="139.4" y="139.4" text-anchor="middle" dominant-baseline="middle" font-size="13">R</text>
+      <text x="100.6" y="139.4" text-anchor="middle" dominant-baseline="middle" font-size="13">P</text>
+      <text x="100.6" y="100.6" text-anchor="middle" dominant-baseline="middle" font-size="13">I</text>
       </svg>
     </div>
     <dl class="results" id="ohm-out"></dl>
@@ -357,17 +357,14 @@ HTML = r"""<!doctype html>
       <div class="field" id="ec-f-hyst" hidden><label for="ec-hyst">Thermal hysteresis (ppm)</label><input id="ec-hyst" inputmode="decimal" placeholder="e.g. 75"></div>
     </div>
     <div class="diagram">
-      <svg class="schem" width="235" height="150" viewBox="0 0 235 150" role="img" aria-label="A nominal value with a tolerance band around it, widening with temperature and with time">
-      <path class="wire" d="M18 75 H218"/>
-      <text x="18" y="70">nominal</text>
-      <path class="wire opt" d="M18 45 H218 M18 105 H218"/>
-      <path class="dot" d="M18 55 H80 V95 H18 Z" opacity="0.18"/>
-      <path class="dot" d="M80 45 H150 V105 H80 Z" opacity="0.18"/>
-      <path class="dot" d="M150 36 H218 V114 H150 Z" opacity="0.18"/>
-      <path class="wire" d="M80 30 V120 M150 30 V120"/>
-      <text x="26" y="26">tolerance</text>
-      <text x="92" y="26">+ temp</text>
-      <text x="160" y="26">+ time</text>
+      <svg class="schem" width="250" height="140" viewBox="0 0 250 140" role="img" aria-label="A tolerance band about a nominal value, stepping wider as temperature and then time are added">
+      <text x="6" y="84">nominal</text>
+      <path class="wire" d="M56 80 H235"/>
+      <path class="dot" d="M64 64 H121 V54 H178 V44 H235 V116 H178 V106 H121 V96 H64 Z" opacity="0.16"/>
+      <path class="wire opt" d="M121 40 V120 M178 40 V120"/>
+      <text x="70" y="34">initial</text>
+      <text x="130" y="34">+ temp</text>
+      <text x="187" y="34">+ time</text>
     </svg>
       <p class="plate">worst case = &Sigma;|e<sub>i</sub>| &middot; RSS = &radic;(&Sigma;e<sub>i</sub>&sup2;)</p>
       <p class="key">Each contribution widens the band; none of them cancel.</p>
@@ -915,11 +912,11 @@ HTML = r"""<!doctype html>
       <rect class="wire" x="63" y="48" width="24" height="26"/>
       <text x="94" y="65">&#952;jc</text>
       <path class="wire" d="M75 74 V86"/>
-      <text x="52" y="84">case</text>
+      <text x="58" y="84" text-anchor="end">case</text>
       <rect class="wire" x="63" y="86" width="24" height="26"/>
       <text x="94" y="103">&#952;cs</text>
       <path class="wire" d="M75 112 V124"/>
-      <text x="50" y="122">sink</text>
+      <text x="58" y="122" text-anchor="end">sink</text>
       <rect class="wire" x="63" y="124" width="24" height="26"/>
       <text x="94" y="141">&#952;sa</text>
       <path class="wire" d="M75 150 V164 M55 164 H95 M60 171 H90 M65 178 H85"/>
@@ -1687,7 +1684,7 @@ function drawTopology(type, resp, order) {
 const fltGraph = { pts: [], st: null, box: null };
 
 function drawGraph(st) {
-  const W = 560, H = 210, ML = 46, MR = 14, MT = 12, MB = 34;
+  const W = 560, H = 216, ML = 46, MR = 20, MT = 20, MB = 34;
   const pw = W - ML - MR, ph = H - MT - MB;
   /* Ticks land on round decades - 10 Hz, 1 kHz - rather than on multiples of
      f0, so the range is snapped outward to whole powers of ten. x is stored as
@@ -1715,14 +1712,15 @@ function drawGraph(st) {
       }
     }
     out.push('<path class="grid" d="M' + X(d).toFixed(1) + " " + MT + " V" + (MT + ph) + '"/>');
-    out.push('<text x="' + X(d).toFixed(1) + '" y="' + (H - 18) + '" text-anchor="middle">' +
+    const anchor = d === d0 ? "start" : d === d1 ? "end" : "middle";
+    out.push('<text x="' + X(d).toFixed(1) + '" y="' + (H - 18) + '" text-anchor="' + anchor + '">' +
              fmt(Math.pow(10, d), "Hz") + "</text>");
   }
   for (let db = yMin; db <= yMax; db += 20) {
     out.push('<path class="grid" d="M' + ML + " " + Y(db).toFixed(1) + " H" + (ML + pw) + '"/>');
     out.push('<text x="' + (ML - 6) + '" y="' + (Y(db) + 3.5).toFixed(1) + '" text-anchor="end">' + db + "</text>");
   }
-  out.push('<text x="' + (ML - 6) + '" y="' + (MT - 2) + '" text-anchor="end">dB</text>');
+  out.push('<text x="' + ML + '" y="' + (MT - 7) + '">dB</text>');
   out.push('<path class="axis" d="M' + ML + " " + MT + " V" + (MT + ph) + " H" + (ML + pw) + '"/>');
   let d2 = "M";
   pts.forEach(function (q, i) { d2 += (i ? " L" : "") + X(q[0]).toFixed(1) + " " + Y(q[1]).toFixed(1); });
@@ -1980,18 +1978,24 @@ function drawZ(struct) {
 
   if (struct === "ms" || struct === "mscov" || struct === "cpwg") {
     g.push('<text x="' + L + '" y="22">air, εr = 1</text>');
+    /* The plane sits 3 px clear of the dielectric outline. Drawn on top of it
+       the heavy stroke is indistinguishable from the rectangle edge and the
+       key's "heavy line = reference plane" means nothing; drawn inside it, the
+       rectangle edge moves onto the w dimension label. Outside is the only
+       place that is clear of both. */
     g.push('<rect class="wire" x="' + L + '" y="70" width="' + (R - L) + '" height="44"/>');
     g.push('<text x="' + (L + 6) + '" y="98">\u03b5r</text>');
-    g.push(plane(L, R, 114));
-    g.push('<text x="' + L + '" y="132">reference plane</text>');
+    g.push(plane(L, R, 117));
+    g.push('<text x="' + L + '" y="136">reference plane</text>');
     g.push(copper(x0, x1, 56, 68));
     g.push(dimH(x0, x1, 44, "w"));
-    g.push(dimV(222, 70, 114, "h"));
+    g.push(dimV(222, 70, 117, "h"));
     g.push('<path class="wire" d="M' + (x1 + 6) + ' 56 H' + (x1 + 14) + ' M' + (x1 + 6) + ' 68 H' + (x1 + 14) +
            ' M' + (x1 + 10) + ' 56 V68"/><text x="' + (x1 + 17) + '" y="66">t</text>');
     if (struct === "mscov") {
       g.push('<path class="wire opt" d="M' + (x0 - 40) + ' 70 V50 H' + (x1 + 40) + ' V70"/>');
-      g.push('<text x="' + (x0 - 40) + '" y="44">cover \u03b5r</text>');
+      /* clear of the w dimension line, which starts at x0 */
+      g.push('<text x="' + (x0 - 40) + '" y="38">cover \u03b5r</text>');
     }
     if (struct === "cpwg") {
       g.push(copper(L + 2, x0 - 30, 56, 68));
@@ -2001,11 +2005,11 @@ function drawZ(struct) {
     }
   } else {
     const top = 44, bot = 130;
-    const ty = struct === "sl" ? 81 : 66;        // trace top edge
+    const ty = struct === "sl" ? 81 : 74;        // trace top edge
     g.push('<rect class="wire" x="' + L + '" y="' + top + '" width="' + (R - L) + '" height="' + (bot - top) + '"/>');
-    g.push(plane(L, R, top));
-    g.push(plane(L, R, bot));
-    g.push('<text x="' + (L + 6) + '" y="' + (bot - 8) + '">\u03b5r</text>');
+    g.push(plane(L, R, top - 3));
+    g.push(plane(L, R, bot + 3));
+    g.push('<text x="' + (L + 6) + '" y="' + (bot - 10) + '">\u03b5r</text>');
     g.push(copper(x0, x1, ty, ty + 12));
     g.push(dimH(x0, x1, ty - 10, "w"));
     if (struct === "sl") {
@@ -2038,20 +2042,20 @@ function drawDiff(struct) {
   if (ms) {
     g.push('<rect class="wire" x="' + L + '" y="72" width="' + (R - L) + '" height="42"/>');
     g.push('<text x="' + (L + 6) + '" y="98">\u03b5r</text>');
-    g.push(plane(L, R, 114));
-    g.push('<text x="' + L + '" y="132">reference plane</text>');
+    g.push(plane(L, R, 117));
+    g.push('<text x="' + L + '" y="136">reference plane</text>');
     g.push(copper(a0, a1, 58, 70));
     g.push(copper(b0, b1, 58, 70));
     g.push(dimH(a0, a1, 46, "w"));
     g.push(dimH(b0, b1, 46, "w"));
     g.push(dimH(a1, b0, 30, "s"));
-    g.push(dimV(222, 72, 114, "h"));
+    g.push(dimV(222, 72, 117, "h"));
   } else {
     const top = 40, bot = 124, ty = 76;
     g.push('<rect class="wire" x="' + L + '" y="' + top + '" width="' + (R - L) + '" height="' + (bot - top) + '"/>');
-    g.push(plane(L, R, top));
-    g.push(plane(L, R, bot));
-    g.push('<text x="' + (L + 6) + '" y="' + (bot - 8) + '">\u03b5r</text>');
+    g.push(plane(L, R, top - 3));
+    g.push(plane(L, R, bot + 3));
+    g.push('<text x="' + (L + 6) + '" y="' + (bot - 10) + '">\u03b5r</text>');
     g.push(copper(a0, a1, ty, ty + 12));
     g.push(copper(b0, b1, ty, ty + 12));
     g.push(dimH(a1, b0, ty - 10, "s"));
@@ -2112,9 +2116,9 @@ function drawTrace(layer) {
    a section and a plan view, and so does this. */
 
 function drawVia(hasStub) {
-  const W = 262, H = 206;
-  const bx0 = 14, bx1 = 132, by0 = 34, by1 = 152;
-  const h0 = 60, h1 = 86;                          // the drilled hole
+  const W = 272, H = 208;
+  const bx0 = 14, bx1 = 150, by0 = 34, by1 = 152;
+  const h0 = 70, h1 = 94;                          // the drilled hole
   const g = [svgOpen(W, H, "Via section showing drill, plating, board thickness and the unused stub, "
                          + "beside a plan view of the concentric drill, plating, pad and antipad")];
   g.push('<rect class="wire" x="' + bx0 + '" y="' + by0 + '" width="' + (bx1 - bx0) + '" height="' + (by1 - by0) + '"/>');
@@ -2122,31 +2126,33 @@ function drawVia(hasStub) {
   g.push(copper(h1, h1 + 5, by0, by1));
   g.push(copper(h0 - 22, h1 + 22, by0 - 5, by0));  // pads, top and bottom
   g.push(copper(h0 - 22, h1 + 22, by1, by1 + 5));
-  g.push(dimH(h0, h1, by0 + 34, "d"));
-  g.push(dimV(146, by0, by1, "H"));
+  g.push(dimH(h0, h1, by0 + 30, "d"));
+  /* H runs inside the board on the left, where nothing else does - put it
+     outside on the right and it lands on the plating label */
+  g.push(dimV(30, by0, by1, "H"));
   g.push('<text x="' + bx0 + '" y="24">pad</text>');
-  g.push('<text x="' + (h1 + 14) + '" y="' + (by0 + 62) + '">plating</text>');
-  g.push('<text x="' + bx0 + '" y="' + (H - 24) + '">aspect ratio = H / d</text>');
+  g.push('<text x="' + (h1 + 12) + '" y="' + (by0 + 64) + '">plating</text>');
+  g.push('<text x="' + bx0 + '" y="' + (H - 8) + '">aspect ratio = H / d</text>');
   if (hasStub) {
     g.push('<path class="wire opt" d="M' + (h1 + 9) + ' ' + (by1 - 44) + ' V' + by1 + '"/>');
     g.push('<path class="wire" d="M' + (h0 - 26) + ' ' + (by1 - 44) + ' H' + (h1 + 26) + '"/>');
-    g.push('<text x="' + bx0 + '" y="' + (by1 - 48) + '">exit layer</text>');
-    g.push('<text x="' + (h1 + 14) + '" y="' + (by1 - 14) + '">stub</text>');
+    g.push('<text x="' + (h1 + 12) + '" y="' + (by1 - 18) + '">stub</text>');
   } else {
-    g.push('<text x="' + bx0 + '" y="' + (H - 10) + '">give a stub length to mark it</text>');
+    g.push('<text x="' + bx0 + '" y="' + (H - 24) + '">stub: none given</text>');
   }
-  const cx = 198, cy = 84;
+  const cx = 212, cy = 88;
   g.push('<circle class="wire opt" cx="' + cx + '" cy="' + cy + '" r="46"/>');
   g.push('<circle class="wire" cx="' + cx + '" cy="' + cy + '" r="32"/>');
   g.push('<circle class="wire" cx="' + cx + '" cy="' + cy + '" r="19"/>');
   g.push('<circle class="wire" cx="' + cx + '" cy="' + cy + '" r="13"/>');
-  g.push('<text x="' + (cx - 42) + '" y="' + (cy + 62) + '">plan view</text>');
-  g.push('<text x="' + (cx - 46) + '" y="' + (cy + 78) + '">drill, plating,</text>');
-  g.push('<text x="' + (cx - 46) + '" y="' + (cy + 92) + '">pad, antipad</text>');
+  g.push('<text x="' + (cx - 44) + '" y="' + (cy + 60) + '">plan view</text>');
+  g.push('<text x="' + (cx - 44) + '" y="' + (cy + 76) + '">drill, plating,</text>');
+  g.push('<text x="' + (cx - 44) + '" y="' + (cy + 92) + '">pad, antipad</text>');
   g.push("</svg>");
   document.getElementById("via-diagram").innerHTML = g.join("") +
     '<p class="plate">C &asymp; 1.41&middot;&epsilon;<sub>r</sub>&middot;H&middot;d<sub>pad</sub> / (d<sub>anti</sub> &minus; d<sub>pad</sub>)</p>' +
-    '<p class="key">The antipad is the clearance in the plane, so it is drawn dashed &mdash; it is absence of copper, not copper.</p>';
+    '<p class="key">The antipad is the clearance in the plane, so it is drawn dashed &mdash; it is absence of copper, not copper.' +
+    (hasStub ? ' The bar across the barrel is the layer the signal leaves on; everything below it is the stub.' : "") + "</p>";
 }
 
 /* ---- series and parallel ----
@@ -2181,32 +2187,49 @@ function drawSP(kind) {
    against the L pad and that was the one the drawing left out. */
 
 function drawPad(hasZ2) {
-  const g = [svgOpen(232, 224, "PI pad, T pad and L pad topologies")];
-  /* PI */
-  g.push('<path class="wire" d="M10 26 H98"/>');
-  g.push('<rect class="wire" x="40" y="18" width="30" height="16"/>');
-  g.push('<circle class="dot" cx="40" cy="26" r="2.5"/><circle class="dot" cx="70" cy="26" r="2.5"/>');
-  g.push('<rect class="wire" x="32" y="44" width="16" height="24"/>');
-  g.push('<rect class="wire" x="62" y="44" width="16" height="24"/>');
-  g.push('<path class="wire" d="M40 34 V44 M70 34 V44 M40 68 V78 M70 68 V78 M20 78 H90 M30 84 H80 M40 90 H70"/>');
-  g.push('<text x="120" y="30">PI pad</text>');
-  /* T */
-  g.push('<path class="wire" d="M10 122 H34 M64 122 H98"/>');
-  g.push('<rect class="wire" x="34" y="114" width="24" height="16"/>');
-  g.push('<rect class="wire" x="64" y="114" width="24" height="16"/>');
-  g.push('<circle class="dot" cx="61" cy="122" r="2.5"/>');
-  g.push('<path class="wire" d="M58 122 H64"/>');
-  g.push('<rect class="wire" x="53" y="134" width="16" height="24"/>');
-  g.push('<path class="wire" d="M61 122 V134 M61 158 V166 M47 166 H75 M52 172 H70 M57 178 H65"/>');
-  g.push('<text x="120" y="126">T pad</text>');
-  /* L */
-  g.push('<path class="wire" d="M10 202 H34 M58 202 H98"/>');
-  g.push('<rect class="wire" x="34" y="194" width="24" height="16"/>');
-  g.push('<circle class="dot" cx="58" cy="202" r="2.5"/>');
-  g.push('<rect class="wire" x="50" y="212" width="16" height="12"/>');
-  g.push('<path class="wire" d="M58 202 V212"/>');
-  g.push('<text x="120" y="206">L pad</text>');
+  /* symSeries and symShunt stop the wire at the component body, which the
+     hand-drawn version did not. The taps sit well outside the series body:
+     branch at its edge and the junction dot lands inside the resistor. */
+  const W = 240, H = 306;
+  const gnd = function (x, y) {
+    return '<path class="wire" d="M' + (x - 14) + ' ' + y + ' H' + (x + 14) +
+           ' M' + (x - 9) + ' ' + (y + 5) + ' H' + (x + 9) +
+           ' M' + (x - 4) + ' ' + (y + 10) + ' H' + (x + 4) + '"/>';
+  };
+  const g = [svgOpen(W, H, "PI pad, T pad and L pad topologies")];
+
+  /* PI: one series resistor, a shunt resistor at each end */
+  g.push('<path class="wire" d="M10 24 H20 M100 24 H112"/>');
+  g.push(symSeries("R", 20, 100, 24));
+  g.push('<circle class="dot" cx="20" cy="24" r="2.5"/><circle class="dot" cx="100" cy="24" r="2.5"/>');
+  g.push(symShunt("R", 20, 24, 72));
+  g.push(symShunt("R", 100, 24, 72));
+  g.push('<path class="wire" d="M20 72 H100 M60 72 V78"/>');
+  g.push(gnd(60, 78));
+  g.push('<text x="128" y="28">PI pad</text>');
+
+  /* T: two series resistors with a shunt from their junction */
+  g.push('<path class="wire" d="M10 130 H12 M114 130 H116"/>');
+  g.push(symSeries("R", 12, 58, 130));
+  g.push(symSeries("R", 66, 114, 130));
+  g.push('<path class="wire" d="M58 130 H66"/>');
+  g.push('<circle class="dot" cx="62" cy="130" r="2.5"/>');
+  g.push(symShunt("R", 62, 130, 178));
+  g.push('<path class="wire" d="M62 178 V184"/>');
+  g.push(gnd(62, 184));
+  g.push('<text x="128" y="134">T pad</text>');
+
+  /* L: one series, one shunt - asymmetric, so it matches two impedances */
+  g.push('<path class="wire" d="M10 236 H12 M74 236 H116"/>');
+  g.push(symSeries("R", 12, 66, 236));
+  g.push('<path class="wire" d="M66 236 H74"/>');
+  g.push('<circle class="dot" cx="74" cy="236" r="2.5"/>');
+  g.push(symShunt("R", 74, 236, 284));
+  g.push('<path class="wire" d="M74 284 V290"/>');
+  g.push(gnd(74, 290));
+  g.push('<text x="128" y="240">L pad</text>');
   g.push("</svg>");
+
   document.getElementById("pad-diagram").innerHTML = g.join("") +
     '<p class="plate">loss ratio N = 10<sup>A/20</sup>, A in dB</p>' +
     '<p class="key">PI and T keep both ports at Z0. An L pad matches Z0 on one side to a different Z2 on the other' +
@@ -2225,7 +2248,9 @@ function drawPad(hasZ2) {
 const MINI = {};
 
 function miniPlot(hostId, spec) {
-  const W = 520, H = 190, ML = 54, MR = 62, MT = 14, MB = 32;
+  /* MT leaves a line above the plot for the unit, which otherwise lands on
+     top of the highest y tick label */
+  const W = 520, H = 198, ML = 54, MR = 62, MT = 26, MB = 32;
   const pw = W - ML - MR, ph = H - MT - MB;
   const all = [];
   spec.series.forEach(function (se) { se.pts.forEach(function (q) { all.push(q); }); });
@@ -2241,15 +2266,17 @@ function miniPlot(hostId, spec) {
     if (at < x0 || at > x1) return;
     out.push('<path class="gridmin" d="M' + X(at).toFixed(1) + " " + MT + " V" + (MT + ph) + '"/>');
   });
-  spec.xTicks.forEach(function (t) {
+  spec.xTicks.forEach(function (t, i) {
+    /* the end labels are anchored inwards so they cannot hang off the SVG */
+    const anchor = i === 0 ? "start" : i === spec.xTicks.length - 1 ? "end" : "middle";
     out.push('<path class="grid" d="M' + X(t.at).toFixed(1) + " " + MT + " V" + (MT + ph) + '"/>');
-    out.push('<text x="' + X(t.at).toFixed(1) + '" y="' + (H - 14) + '" text-anchor="middle">' + t.label + "</text>");
+    out.push('<text x="' + X(t.at).toFixed(1) + '" y="' + (H - 14) + '" text-anchor="' + anchor + '">' + t.label + "</text>");
   });
   spec.yTicks.forEach(function (t) {
     out.push('<path class="grid" d="M' + ML + " " + Y(t.at).toFixed(1) + " H" + (ML + pw) + '"/>');
     out.push('<text x="' + (ML - 6) + '" y="' + (Y(t.at) + 3.5).toFixed(1) + '" text-anchor="end">' + t.label + "</text>");
   });
-  out.push('<text x="' + (ML - 6) + '" y="' + (MT - 3) + '" text-anchor="end">' + spec.yUnit + "</text>");
+  out.push('<text x="' + ML + '" y="' + (MT - 9) + '">' + spec.yUnit + "</text>");
   out.push('<path class="axis" d="M' + ML + " " + MT + " V" + (MT + ph) + " H" + (ML + pw) + '"/>');
 
   if (spec.band) {
@@ -4440,8 +4467,35 @@ for (const key in CALCS) CALCS[key].calc();
 """
 
 
+# The mono face this page uses draws U+221A without its overbar, so in a
+# formula plate, an equation block or an SVG label "sqrt(L/C)" renders as
+# something an engineer reads as an integral. Those are exactly the places a
+# radical appears, so the page writes sqrt() throughout and never the glyph.
+# Longest patterns first: the general "radical followed by ( " rule would
+# otherwise leave the bare-symbol forms untouched.
+RADICALS = [
+    ("&radic;&epsilon;<sub>eff</sub>(&epsilon;<sub>r</sub>, cover)",
+     "sqrt(&epsilon;<sub>eff</sub>(&epsilon;<sub>r</sub>, cover))"),
+    ("&radic;&epsilon;<sub>eff</sub>", "sqrt(&epsilon;<sub>eff</sub>)"),
+    ("&radic;&epsilon;<sub>r</sub>", "sqrt(&epsilon;<sub>r</sub>)"),
+    ("\u221a\u03b5<sub>eff</sub>", "sqrt(\u03b5<sub>eff</sub>)"),
+    ("\u221a\u03b5<sub>r</sub>", "sqrt(\u03b5<sub>r</sub>)"),
+    ("√1000 h", "sqrt(1000 h)"),
+    ("1/√t", "1/sqrt(t)"),
+    ("&radic;(", "sqrt("),
+    ("\u221a(", "sqrt("),
+]
+
+
+def write_sqrt(html: str) -> str:
+    for old_, new_ in RADICALS:
+        html = html.replace(old_, new_)
+    assert "&radic;" not in html and "\u221a" not in html, "a radical glyph escaped the rewrite"
+    return html
+
+
 def main() -> None:
-    html = HTML
+    html = write_sqrt(HTML)
     try:
         from theme_inline import inline_into
         html = inline_into(html)

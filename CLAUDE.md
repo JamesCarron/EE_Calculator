@@ -36,6 +36,19 @@ Cards carry an inline SVG labelling the very parameters their fields ask for. Wh
 - **Prose never goes inside an SVG.** `<text>` cannot wrap, so anything longer than a symbol goes in a `.key` paragraph underneath. `eecalc_diagram_check.py` enforces this by catching labels that run past the viewBox.
 - Copper is drawn rectangular because the formulas assume a rectangle. Etch factor is not modelled, and drawing the etched trapezoid would claim an accuracy the maths does not have; the trace cards say so instead.
 - No photographs or 3D renders. Saturn has four and they label nothing.
+- **Never write a radical.** The mono face draws U+221A without its overbar, so `√(L/C)` in a plate, an equation block or an SVG label reads as an integral sign. `build_page.py` rewrites every radical to `sqrt(...)` as a build step and asserts none survive; keep it that way rather than reintroducing the glyph.
+- A reference plane is drawn 3 px **outside** the dielectric rectangle, never on its edge or inside it. On the edge the heavy stroke is indistinguishable from the outline; inside, the rectangle edge lands on the w dimension label.
+- Build symbols from `symSeries` and `symShunt` rather than by hand — they stop the wire at the component body. Branch a shunt well clear of a series body, or the junction dot is drawn inside the resistor.
+
+## What the lint cannot see
+
+`eecalc_diagram_check.py` checks coordinates against the viewBox, label against label, and now label against line. It still cannot see three things, and only the browser can:
+
+- **A glyph that renders wrongly.** The radical above is the example; the lint counted it as one character in the right place.
+- **Two things that are merely too close.** Adjacent labels that read as one sentence, or a label a pixel from a dimension line, pass every numeric check.
+- **A symbol that is drawn correctly but means the wrong thing** — a wire through a resistor body is valid SVG in a sane bounding box.
+
+So run the browser pass on every change that touches a drawing. Serve the folder on an ephemeral port (the extension refuses `file://`), open each tab, and **zoom into every diagram and chart** — at full-page scale these defects are invisible.
 
 ## Fields and defaults
 
