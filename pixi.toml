@@ -6,7 +6,10 @@ platforms = ["win-64"]
 version = "0.1.0"
 
 [tasks]
-build = "python build_page.py"
+build = "python src/build_page.py"
+test = "python test/run_all.py"
+setup-em = "python tools/setup_openems.py"
 
 [dependencies]
-python = "3.12.*"
+# 3.11 because that is what the openEMS v0.0.36 Windows wheels are built for
+python = "3.11.*"

@@ -4,9 +4,9 @@ Conventions for this tool specifically. The user-level and `C:\Auterion` instruc
 
 ## What this is
 
-`build_page.py` generates one self-contained `EE_Calculator.html`. The whole HTML/CSS/JS template lives in a raw string in that file, so **every change is an edit to `build_page.py` followed by `python build_page.py`** — never edit the generated HTML except to test something throwaway. Logic lives in JS because the page is interactive at runtime; Python only assembles it, so there is no second implementation and no parity test owed.
+`src/build_page.py` generates one self-contained `EE_Calculator.html` at the repo root. The whole HTML/CSS/JS template lives in a raw string in that file, so **every change is an edit to `src/build_page.py` followed by `pixi run build`** — never edit the generated HTML except to test something throwaway. Logic lives in JS because the page is interactive at runtime; Python only assembles it, so there is no second implementation and no parity test owed.
 
-Patch `build_page.py` with a script written to the scratchpad, not with a shell heredoc. Backslash escapes in a non-raw Python string have silently corrupted anchors several times — `\b` became a backspace inside a regex, `\n` became a real newline inside a JS string literal. The file also contains literal Unicode (Ω, ±, —, ε), not `\u` escapes, so match those characters literally.
+Patch `src/build_page.py` with a script written to the scratchpad, not with a shell heredoc. Backslash escapes in a non-raw Python string have silently corrupted anchors several times — `\b` became a backspace inside a regex, `\n` became a real newline inside a JS string literal. The file also contains literal Unicode (Ω, ±, —, ε), not `\u` escapes, so match those characters literally.
 
 ## Graphs
 
@@ -74,7 +74,15 @@ IEC 60664-1 is paywalled and its tables came from KiCad, which is GPL-3.0. That 
 
 Each card names its model and its validity window, and refuses geometry outside that window rather than returning a number that looks fine. Where a real answer lies between two computable limits — covered microstrip, say — give the bracket rather than inventing an interpolation curve. Indicative curves that are not from the user's own part must say so on the card.
 
+## Layout
+
+`src/` builds the page, `test/` checks it, `ext/` holds the openEMS submodule, `tools/` has the setup scripts, `docs/` the design documents, `examples/` the worked examples, and `user_data/` the things that are never committed. The generated `EE_Calculator.html` and its launcher stay at the repo root because they are the product; everything else is how it is made.
+
+The tests live in `test/`, not in `Tools\claude\scratch\` where they started. They are this project's tests rather than general-purpose analysis scripts, so they belong with the project; the scratch folder keeps only what is genuinely reusable elsewhere.
+
 ## Testing
+
+`pixi run test` runs everything: the build, the harness, the three structural checkers, the EM model tests and every node suite, in one command. Use it rather than a hand-typed loop — the loop is how four stale duplicate suites went unnoticed, one of them calling a function deleted in the filter rework.
 
 Before committing any change to the page:
 

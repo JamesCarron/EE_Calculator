@@ -6,6 +6,26 @@ Every card has an **Explain** button in its footer, opening the equations behind
 
 Copper weight, temperature rise, ambient and the E-series sit **on the cards that use them**, so the control is where you are working — but there is only one value behind each. Set copper on the trace card and the impedance card sees it too; edit it from either side and the rest follow. Controls shared this way are drawn with a dashed border. A tab with more than three sections gets sub-tabs, and the page reopens on whichever tab you last used.
 
+## Layout
+
+```
+EE_Calculator.html     the product - one self-contained file, open it directly
+EE_Calculator.bat      rebuild if pixi is present, then open
+src/                   everything that builds the page
+  build_page.py          the generator; the whole HTML/CSS/JS template lives here
+  theme_inline.py        inlines the stylesheet and fonts as base64
+  theme/                 stylesheet and woff2 fonts
+  em/model.py            openEMS model generation for pad capacitance
+ext/openEMS-Project/   the solver, pinned as a git submodule
+test/                  every suite and structural checker; `pixi run test`
+tools/setup_openems.py fetches the solver runtime into user_data/
+docs/                  design documents and the reference screenshots
+examples/              worked examples that generate solver models
+user_data/             never committed; solver runtime and generated models
+```
+
+Run `pixi run build` to regenerate the page and `pixi run test` for the lot: twenty-three node suites plus the structural checks, in one command.
+
 ## Tabs
 
 **Fundamentals** — Ohm's law and power (any two of V, I, R, P) · series/parallel for resistors, capacitors and inductors, with per-element voltage and power.

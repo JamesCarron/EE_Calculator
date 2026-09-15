@@ -7,3 +7,7 @@
 # Python bytecode
 __pycache__/
 *.pyc
+
+# harness and solver scratch
+/test/.work/
+__pycache__/
