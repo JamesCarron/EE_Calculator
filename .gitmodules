@@ -1,0 +1,3 @@
+[submodule "vendor/openEMS-Project"]
+	path = vendor/openEMS-Project
+	url = https://github.com/thliebig/openEMS-Project.git
