@@ -35,6 +35,10 @@ from __future__ import annotations
 import json
 import math
 from dataclasses import dataclass, field, asdict
+from pathlib import Path
+
+# where `pixi run setup-em` puts the Windows runtime
+DEFAULT_RUNTIME = str(Path(__file__).resolve().parents[2] / "user_data" / "openems" / "openEMS")
 
 C0 = 299792458.0
 EPS0 = 8.8541878128e-12
@@ -147,18 +151,23 @@ class PadModel:
         coarse = max(res, self.wavelength_resolution_um() / 4)
         deepest = max(p.depth_um for p in self.planes)
         pad_span = max(self.pad_w_um, self.pad_l_um)
-        lateral = max(6 * deepest, 3 * pad_span)
-        air = max(10 * deepest, 2 * pad_span)
+        lateral = max(4 * deepest, 2 * pad_span)
+        air = max(4 * deepest, 2 * pad_span)
 
-        # the fine region covers the pad and any void, plus a margin of a few
-        # dielectric heights where the fringing field actually lives
+        # Mirror what build_script actually lays down, or the estimate is
+        # fiction. Fine band over the pad plus two dielectric heights either
+        # side; beyond it SmoothMeshLines grades by at most 1.4x per step until
+        # it reaches the coarse cell, then runs coarse to the wall.
         fine_span = max(pad_span, max((p.void_d_um for p in self.planes), default=0)) + 4 * deepest
         fine_span = min(fine_span, 2 * lateral)
         n_fine = fine_span / res
-        n_coarse = max(0.0, (2 * lateral - fine_span)) / coarse
-        nx = ny = int(n_fine + n_coarse) + 1
-        # z is fine through the stack and coarse through the air above
-        nz = int(deepest / res + air / coarse) + 1
+        n_grade = 2 * math.ceil(math.log(max(coarse / res, 1.0001), 1.4))
+        n_coarse = max(0.0, 2 * lateral - fine_span) / coarse
+        nx = ny = int(n_fine + n_grade + n_coarse) + 1
+        # z: at least nine lines across every gap, then graded through the air
+        nz = int(sum(max(9, g / res) for g in self._gaps())
+                 + math.ceil(math.log(max(coarse / res, 1.0001), 1.4))
+                 + air / coarse) + 1
         cells = nx * ny * nz
 
         raw = cells / res                   # cells x timesteps, to a constant
@@ -191,7 +200,7 @@ def _fmt(x) -> str:
     return repr(round(float(x), 6))
 
 
-def build_script(m: PadModel, sim_dir: str = None) -> str:
+def build_script(m: PadModel, sim_dir: str = None, runtime_dir: str = None) -> str:
     """Emit a standalone openEMS Python script for this model."""
     bad = m.validate()
     if bad:
@@ -201,8 +210,8 @@ def build_script(m: PadModel, sim_dir: str = None) -> str:
     # lateral padding: enough substrate around the pad that the sidewalls do not
     # load it, and enough air above that the boundary does not either
     pad_span = max(m.pad_w_um, m.pad_l_um)
-    lateral = max(6 * deepest, 3 * pad_span)
-    air = max(10 * deepest, 2 * pad_span)
+    lateral = max(4 * deepest, 2 * pad_span)
+    air = max(4 * deepest, 2 * pad_span)
     res = m.mesh_resolution_um()
     port_depth = m.planes[m.port_plane].depth_um
 
@@ -213,7 +222,19 @@ def build_script(m: PadModel, sim_dir: str = None) -> str:
     A("Do not edit by hand; regenerate from the pad card. The geometry is in")
     A("micrometres and the capacitance is read from Im(Z11) well below resonance.")
     A('"""')
-    A("import os, sys, json, tempfile")
+    A("import os, sys, json")
+    A("")
+    A("# The Windows build ships its own Boost/HDF5/VTK DLLs beside openEMS.exe,")
+    A("# and the Python extension cannot find them unless the directory is added")
+    A("# explicitly - a plain import fails with an unhelpful 'DLL load failed'.")
+    A("_home = os.environ.get('OPENEMS_HOME', %s)" % repr(runtime_dir or DEFAULT_RUNTIME))
+    A("if os.path.isdir(_home):")
+    A("    os.add_dll_directory(_home)")
+    A("    os.environ['PATH'] = _home + os.pathsep + os.environ.get('PATH', '')")
+    A("else:")
+    A("    sys.exit('openEMS runtime not found at %s - set OPENEMS_HOME or run '")
+    A("             '\"pixi run setup-em\"' % _home)")
+    A("")
     A("import numpy as np")
     A("from CSXCAD import ContinuousStructure")
     A("from openEMS import openEMS")
@@ -231,8 +252,12 @@ def build_script(m: PadModel, sim_dir: str = None) -> str:
     A("planes  = %s" % json.dumps([asdict(p) for p in m.planes]))
     A("port_plane = %d" % m.port_plane)
     A("deepest = %s" % _fmt(deepest))
-    A("sim_path = %s" % (repr(sim_dir) if sim_dir else
-                         "os.path.join(tempfile.gettempdir(), 'eecalc_pad')"))
+    # openEMS v0.0.36 asserts os.getcwd() == os.path.realpath(sim_path), and on
+    # Windows getcwd keeps the 8.3 short form ("JAMESC~1") that realpath expands.
+    # Resolving it here makes the two agree; without this Run() dies on an
+    # assertion with no message.
+    A("sim_path = os.path.realpath(%s)" % (repr(sim_dir) if sim_dir else
+                                           "os.path.join(os.path.dirname(__file__), 'run')"))
     A("")
     A("FDTD = openEMS(EndCriteria=%s)" % _fmt(m.end_criteria))
     A("FDTD.SetGaussExcite(f_max / 2, f_max / 2)")
@@ -245,36 +270,45 @@ def build_script(m: PadModel, sim_dir: str = None) -> str:
     A("mesh.SetDeltaUnit(unit)")
     A("")
     A("# --- mesh -------------------------------------------------------------")
-    A("# Thirds rule at the pad edges: a metal edge wants a line just inside and")
-    A("# two thirds of a cell outside, or the field at the edge is badly wrong.")
-    A("third = np.array([2.0 / 3.0, -1.0 / 3.0]) * (res / 4)")
-    A("for ax, half in (('x', pad_w / 2), ('y', pad_l / 2)):")
-    A("    mesh.AddLine(ax, 0)")
-    A("    mesh.AddLine(ax, [half + third[0], half + third[1]])")
-    A("    mesh.AddLine(ax, [-half - third[0], -half - third[1]])")
-    A("    mesh.SmoothMeshLines(ax, res / 4)")
-    A("    mesh.AddLine(ax, [-lateral, lateral])")
-    A("    mesh.SmoothMeshLines(ax, res)")
+    A("# Graded on purpose: the fine cell only spans the pad and the couple of")
+    A("# dielectric heights around it where the fringing field lives, then")
+    A("# SmoothMeshLines grades out to the coarse cell at the walls. Applying the")
+    A("# fine cell across the whole domain is how this model first came to want")
+    A("# 859 million cells instead of one.")
+    A("coarse = max(res, %s)" % _fmt(m.wavelength_resolution_um() / 4))
+    A("third = np.array([2.0 / 3.0, -1.0 / 3.0]) * (res / 2)")
     A("")
-    A("# a void rim is a metal edge too, so it gets lines of its own")
+    A("for ax, half in (('x', pad_w / 2), ('y', pad_l / 2)):")
+    A("    # thirds rule at the pad edge: a line just inside, two thirds outside")
+    A("    mesh.AddLine(ax, [half + third[0], half + third[1],")
+    A("                      -half - third[0], -half - third[1]])")
+    A("    # a uniform fine band over the pad and its near field")
+    A("    fine = half + 2 * deepest")
+    A("    n = int(np.ceil(2 * fine / res)) + 1")
+    A("    mesh.AddLine(ax, np.linspace(-fine, fine, n))")
+    A("    mesh.AddLine(ax, [-lateral, lateral])")
+    A("")
+    A("# a void rim is a metal edge too, so it gets the thirds treatment")
     A("for p in planes:")
     A("    if p['void_d_um'] > 0:")
     A("        r = p['void_d_um'] / 2.0")
     A("        for ax in ('x', 'y'):")
-    A("            mesh.AddLine(ax, [r + third[0], r + third[1], -r - third[0], -r - third[1]])")
-    A("for ax in ('x', 'y'):")
-    A("    mesh.SmoothMeshLines(ax, res / 4)")
+    A("            mesh.AddLine(ax, [r + third[0], r + third[1],")
+    A("                              -r - third[0], -r - third[1]])")
     A("")
-    A("# z: a line on every metal layer, several through each dielectric gap")
-    A("z_lines = [0.0, air]")
+    A("# z: enough lines across every dielectric gap to resolve the near field,")
+    A("# then graded up through the air above")
+    A("z_lines = [0.0]")
     A("prev = 0.0")
-    A("for p in planes:")
+    A("for p in sorted(planes, key=lambda q: q['depth_um']):")
     A("    z = -p['depth_um']")
-    A("    z_lines += list(np.linspace(prev, z, 6))")
+    A("    z_lines += list(np.linspace(prev, z, max(9, int(abs(z - prev) / res) + 1)))")
     A("    prev = z")
-    A("z_lines.append(-deepest - 4 * res)")
+    A("z_lines += [-deepest - 2 * res, air]")
     A("mesh.AddLine('z', z_lines)")
-    A("mesh.SmoothMeshLines('z', res)")
+    A("")
+    A("for ax in ('x', 'y', 'z'):")
+    A("    mesh.SmoothMeshLines(ax, coarse, 1.4)")
     A("")
     A("# --- materials --------------------------------------------------------")
     A("# loss tangent as a conductivity at the read frequency")
