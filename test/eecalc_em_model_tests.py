@@ -131,8 +131,12 @@ print("\n== the domain is big enough not to load the structure ==")
 src = build_script(PadModel(planes=[Plane(100.0)]))
 lateral = float([l for l in src.splitlines() if l.startswith("lateral")][0].split("=")[1])
 air = float([l for l in src.splitlines() if l.startswith("air ")][0].split("=")[1])
-ok("laterally at least three pad widths clear", lateral >= 3 * 600)
-ok("and the air above clears the structure", air >= 10 * 100)
+# the domain was trimmed once the mesh was graded: a wall four dielectric
+# heights or two pad spans away is far enough for an absorbing boundary, and
+# every cell beyond that is paid for in timesteps
+ok("laterally at least two pad spans clear", lateral >= 2 * 600)
+ok("and the air above clears the structure", air >= 4 * 100)
+ok("the domain is not gratuitously large", lateral <= 4 * 600)
 
 print("\n== a broken model refuses to generate rather than emitting nonsense ==")
 try:
