@@ -875,14 +875,23 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
 </div>
 <div class="subpanel" id="sub-pad">
   <h2>Attenuator Pads</h2>
-  <p class="hint">Resistive attenuators that keep source and load matched. The E-series suggestion shows the attenuation stock parts would actually give.</p>
+  <p class="hint">Five resistive topologies, between equal or unequal impedances. The E-series suggestion shows what stock parts would actually deliver.</p>
   <div class="card">
-    <h3>PI, T and L pads</h3>
+    <h3>Attenuator pad</h3>
     <div class="cardrow">
     <div class="fields">
+      <div class="field"><label for="pad-topo">Topology</label>
+        <select id="pad-topo">
+          <option value="pi" selected>PI</option>
+          <option value="t">T</option>
+          <option value="bridge">Bridged T</option>
+          <option value="l">L</option>
+          <option value="split">Resistive splitter</option>
+        </select>
+      </div>
       <div class="field"><label for="pad-a">Attenuation (dB)</label><input id="pad-a" inputmode="decimal" placeholder="e.g. 6"></div>
-      <div class="field"><label for="pad-z0">System impedance Z<sub>0</sub> (&Omega;)</label><input id="pad-z0" inputmode="decimal" placeholder="50"></div>
-      <div class="field"><label for="pad-z2">Second impedance (&Omega;, for an L pad)</label><input id="pad-z2" inputmode="decimal" placeholder="e.g. 75"></div>
+      <div class="field"><label for="pad-zin">Source Z<sub>in</sub> (&Omega;)</label><input id="pad-zin" inputmode="decimal" placeholder="50"></div>
+      <div class="field"><label for="pad-zout">Load Z<sub>out</sub> (&Omega;)</label><input id="pad-zout" inputmode="decimal" placeholder="50"></div>
           <div class="field"><label for="pad-series">E-series</label>
         <select id="pad-series" data-mirror="series"><option value="E12">E12 (10 %)</option><option value="E24">E24 (5 %)</option><option value="E96" selected>E96 (1 %)</option></select>
       </div>
@@ -890,7 +899,7 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
     <div class="diagram" id="pad-diagram"></div>
     </div>
     <dl class="results" id="pad-out"></dl>
-    <p class="note">Valid for any attenuation above 0 dB. An L pad matches two <em>different</em> impedances and has a minimum loss set by their ratio &mdash; enter a second impedance to size one.</p>
+    <p class="note">PI and T match <em>any</em> two impedances, not just equal ones, and reduce to the familiar symmetric formulas when Z<sub>in</sub> = Z<sub>out</sub>. Between unequal impedances every topology has a minimum attenuation set by their ratio, 10&middot;log<sub>10</sub>(2r &minus; 1 + 2sqrt(r(r&minus;1))) with r the larger over the smaller; ask for less and no resistive network can match both ends, so use a transformer. A bridged T and a splitter are symmetric only. The delivered attenuation for stock parts is a full transducer-loss calculation against the actual source and load, so it stays right when the impedances differ.</p>
     <button class="reset" data-reset="pad">Reset</button>
   </div>
 </div>
@@ -947,6 +956,8 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
       <div class="field"><label for="via-n">Vias in parallel</label><input id="via-n" inputmode="numeric" placeholder="1"></div>
       <div class="field"><label for="via-arlimit">Aspect ratio limit</label><input id="via-arlimit" inputmode="decimal" placeholder="10"></div>
       <div class="field"><label for="via-stub">Stub length (mm, optional)</label><input id="via-stub" inputmode="decimal" placeholder="e.g. 1.2"></div>
+      <div class="field"><label for="via-tr">Signal rise time (s, optional)</label><input id="via-tr" inputmode="decimal" placeholder="e.g. 200p"></div>
+      <div class="field"><label for="via-z0">Trace Z<sub>0</sub> (&Omega;, optional)</label><input id="via-z0" inputmode="decimal" placeholder="50"></div>
           <div class="field"><label for="via-dt">Temp rise (&deg;C)</label><input id="via-dt" data-mirror="dt" inputmode="decimal" placeholder="10"></div>
     </div>
     <div class="diagram" id="via-diagram"></div>
@@ -994,7 +1005,7 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
 </div>
 <div class="subpanel" id="sub-spc">
   <h2>Conductor Spacing</h2>
-  <p class="hint">IPC-2221 Table 6-1 minimum clearance, all seven environments at once.</p>
+  <p class="hint">Two standards, because they answer different questions. IPC-2221 gives a bare minimum clearance by environment; IEC 60664-1 gives the clearance <em>and</em> the creepage that a mains- or high-voltage-connected product is actually assessed against.</p>
   <div class="card">
     <h3>Conductor spacing (IPC-2221 Table 6-1)</h3>
     <div class="cardrow">
@@ -1019,6 +1030,79 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
     <dl class="results" id="spc-out"></dl>
     <p class="note">Minimum spacing per environment. B1 internal layers; B2 external uncoated &le;3050 m; B3 external uncoated &gt;3050 m; B4 external with permanent polymer coating; A5 external conformal coated; A6 external component leads uncoated; A7 component leads conformal coated.</p>
     <button class="reset" data-reset="spc">Reset</button>
+  </div>
+  <div class="card">
+    <h3>Clearance and creepage (IEC 60664-1)</h3>
+    <div class="cardrow">
+    <div class="fields">
+      <div class="field"><label for="iec-ins">Insulation</label>
+        <select id="iec-ins">
+          <option value="functional">Functional</option>
+          <option value="basic" selected>Basic</option>
+          <option value="reinforced">Reinforced</option>
+        </select>
+      </div>
+      <div class="field"><label for="iec-vrms">Working voltage (V rms or DC)</label><input id="iec-vrms" inputmode="decimal" placeholder="230"></div>
+      <div class="field"><label for="iec-vpeak">Peak working voltage (V)</label><input id="iec-vpeak" inputmode="decimal" placeholder="1.41 &times; rms"></div>
+      <div class="field"><label for="iec-ovc">Overvoltage category</label>
+        <select id="iec-ovc">
+          <option value="1">I &mdash; protected, inside equipment</option>
+          <option value="2" selected>II &mdash; appliance on a fixed installation</option>
+          <option value="3">III &mdash; fixed installation, distribution</option>
+          <option value="4">IV &mdash; origin of the installation</option>
+        </select>
+      </div>
+      <div class="field"><label for="iec-vmains">Supply voltage to earth (V)</label><input id="iec-vmains" inputmode="decimal" placeholder="230"></div>
+      <div class="field"><label for="iec-pd">Pollution degree</label>
+        <select id="iec-pd">
+          <option value="1">1 &mdash; sealed, no pollution</option>
+          <option value="2" selected>2 &mdash; normal, occasional condensation</option>
+          <option value="3">3 &mdash; conductive pollution</option>
+        </select>
+      </div>
+      <div class="field"><label for="iec-mg">Material group</label>
+        <select id="iec-mg">
+          <option value="1">I &mdash; CTI &ge; 600</option>
+          <option value="2" selected>II &mdash; CTI 400 to 599</option>
+          <option value="3">IIIa &mdash; CTI 175 to 399</option>
+          <option value="4">IIIb &mdash; CTI 100 to 174</option>
+        </select>
+      </div>
+      <div class="field"><label for="iec-pcb">Construction</label>
+        <select id="iec-pcb">
+          <option value="1" selected>Printed board</option>
+          <option value="0">Other insulation</option>
+        </select>
+      </div>
+      <div class="field"><label for="iec-field">Field</label>
+        <select id="iec-field">
+          <option value="inhomogeneous" selected>Inhomogeneous &mdash; any real layout</option>
+          <option value="homogeneous">Homogeneous &mdash; deliberately rounded electrodes</option>
+        </select>
+      </div>
+      <div class="field"><label for="iec-alt">Altitude (m)</label><input id="iec-alt" inputmode="decimal" placeholder="2000"></div>
+    </div>
+    <div class="diagram">
+      <svg class="schem" width="250" height="150" viewBox="0 0 250 150" role="img" aria-label="Two conductors on a board, with clearance measured through the air between them and creepage measured along the surface, around a groove">
+      <rect class="wire" x="14" y="76" width="222" height="40"/>
+      <text x="20" y="102">insulator</text>
+      <path class="dot" d="M24 56 H86 V74 H24 Z"/>
+      <path class="dot" d="M164 56 H226 V74 H164 Z"/>
+      <path class="wire" d="M110 76 V96 H140 V76"/>
+      <path class="wire opt" d="M86 40 H164"/>
+      <path class="wire" d="M86 36 V44 M164 36 V44"/>
+      <text x="110" y="32">clearance</text>
+      <path class="wire" d="M86 74 H110 V94 H140 V74 H164" stroke-dasharray="3 2"/>
+      <text x="112" y="136">creepage</text>
+      <text x="112" y="70">groove</text>
+    </svg>
+      <p class="plate">clearance &times; altitude factor &middot; creepage &times; 2 if reinforced</p>
+      <p class="key">Clearance is the shortest path <b>through air</b>; creepage follows the <b>surface</b>, so a groove wider than the minimum adds to it. The card reports that minimum groove width.</p>
+    </div>
+    </div>
+    <dl class="results" id="iec-out"></dl>
+    <p class="note">IEC 60664-1:2020-05, the standard IPC-2221 does not cover. Clearance is set by the transient the insulation must survive &mdash; derived from the overvoltage category and the supply voltage &mdash; and by the working peak; creepage is set by the working rms voltage, the pollution degree and the material group, and doubles for reinforced insulation. Creepage is never reported below the clearance, since the surface path cannot be shorter than the air path. <b>Outside its scope:</b> above 30 kHz (that is IEC 60664-3), conformal coating or potting (60664-4), pollution degree 4, and insulation through anything other than air. Material group comes from the laminate&rsquo;s CTI, which the fabricator states &mdash; most FR-4 is IIIa, which is worse than people assume.</p>
+    <button class="reset" data-reset="iec">Reset</button>
   </div>
 </div>
 </section>
@@ -1054,6 +1138,8 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
       <div class="field"><label for="z-c">Far plane distance (mm)</label><input id="z-c" inputmode="decimal" placeholder="offset stripline"></div>
       <div class="field"><label for="z-s">Gap to ground (mm)</label><input id="z-s" inputmode="decimal" placeholder="coplanar"></div>
       <div class="field"><label for="z-f">Frequency (Hz, optional)</label><input id="z-f" inputmode="decimal" placeholder="e.g. 1G"></div>
+      <div class="field"><label for="z-tand">Loss tangent tan&nbsp;&delta;</label><input id="z-tand" inputmode="decimal" placeholder="0.02 (FR-4)"></div>
+      <div class="field"><label for="z-rough">Copper roughness (&micro;m rms)</label><input id="z-rough" inputmode="decimal" placeholder="0.4 (VLP) to 2 (standard)"></div>
           <div class="field"><label for="z-oz">Copper weight</label>
         <select id="z-oz" data-mirror="copper"><option value="17.5">0.5 oz (17.5 &micro;m)</option><option value="35" selected>1 oz (35 &micro;m)</option><option value="70">2 oz (70 &micro;m)</option><option value="105">3 oz (105 &micro;m)</option></select>
       </div>
@@ -2521,54 +2607,101 @@ function drawSP(kind) {
    Three topologies, because the second-impedance field only makes sense
    against the L pad and that was the one the drawing left out. */
 
-function drawPad(hasZ2) {
-  /* symSeries and symShunt stop the wire at the component body, which the
-     hand-drawn version did not. The taps sit well outside the series body:
-     branch at its edge and the junction dot lands inside the resistor. */
-  const W = 240, H = 306;
+function drawPad(topo) {
+  /* One topology at a time, chosen by the selector, so the picture can never
+     describe a network you are not designing. symSeries and symShunt stop the
+     wire at the component body; branch a shunt clear of a series body or the
+     junction dot lands inside the resistor. */
+  const W = 250, H = 150;
   const gnd = function (x, y) {
     return '<path class="wire" d="M' + (x - 14) + ' ' + y + ' H' + (x + 14) +
            ' M' + (x - 9) + ' ' + (y + 5) + ' H' + (x + 9) +
            ' M' + (x - 4) + ' ' + (y + 10) + ' H' + (x + 4) + '"/>';
   };
-  const g = [svgOpen(W, H, "PI pad, T pad and L pad topologies")];
+  /* dy lets a label drop below the port, for the bridged T where the bridging
+     arm rises out of the rail exactly where the label would otherwise sit */
+  const port = function (x, y, label, anchor, dy) {
+    return '<circle class="wire" cx="' + x + '" cy="' + y + '" r="3.5"/>' +
+           '<text x="' + (anchor === "end" ? x - 6 : x + 6) + '" y="' + (y + (dy || -8)) +
+           '" text-anchor="' + (anchor || "start") + '">' + label + "</text>";
+  };
+  const LABEL = { pi: "PI pad", t: "T pad", bridge: "Bridged T", l: "L pad", split: "Resistive splitter" };
+  const g = [svgOpen(W, H, LABEL[topo] + " topology")];
+  const rail = 44;
 
-  /* PI: one series resistor, a shunt resistor at each end */
-  g.push('<path class="wire" d="M10 24 H20 M100 24 H112"/>');
-  g.push(symSeries("R", 20, 100, 24));
-  g.push('<circle class="dot" cx="20" cy="24" r="2.5"/><circle class="dot" cx="100" cy="24" r="2.5"/>');
-  g.push(symShunt("R", 20, 24, 72));
-  g.push(symShunt("R", 100, 24, 72));
-  g.push('<path class="wire" d="M20 72 H100 M60 72 V78"/>');
-  g.push(gnd(60, 78));
-  g.push('<text x="128" y="28">PI pad</text>');
-
-  /* T: two series resistors with a shunt from their junction */
-  g.push('<path class="wire" d="M10 130 H12 M114 130 H116"/>');
-  g.push(symSeries("R", 12, 58, 130));
-  g.push(symSeries("R", 66, 114, 130));
-  g.push('<path class="wire" d="M58 130 H66"/>');
-  g.push('<circle class="dot" cx="62" cy="130" r="2.5"/>');
-  g.push(symShunt("R", 62, 130, 178));
-  g.push('<path class="wire" d="M62 178 V184"/>');
-  g.push(gnd(62, 184));
-  g.push('<text x="128" y="134">T pad</text>');
-
-  /* L: one series, one shunt - asymmetric, so it matches two impedances */
-  g.push('<path class="wire" d="M10 236 H12 M74 236 H116"/>');
-  g.push(symSeries("R", 12, 66, 236));
-  g.push('<path class="wire" d="M66 236 H74"/>');
-  g.push('<circle class="dot" cx="74" cy="236" r="2.5"/>');
-  g.push(symShunt("R", 74, 236, 284));
-  g.push('<path class="wire" d="M74 284 V290"/>');
-  g.push(gnd(74, 290));
-  g.push('<text x="128" y="240">L pad</text>');
+  if (topo === "pi") {
+    g.push(port(14, rail, "in"));
+    g.push('<path class="wire" d="M17.5 ' + rail + ' H44 M116 ' + rail + ' H206"/>');
+    g.push(symSeries("R", 44, 116, rail));
+    g.push('<circle class="dot" cx="44" cy="' + rail + '" r="2.5"/><circle class="dot" cx="116" cy="' + rail + '" r="2.5"/>');
+    g.push(symShunt("R", 44, rail, 100));
+    g.push(symShunt("R", 116, rail, 100));
+    g.push('<path class="wire" d="M44 100 H116 M80 100 V108"/>');
+    g.push(gnd(80, 108));
+    g.push(port(209.5, rail, "out", "end"));
+  } else if (topo === "t") {
+    g.push(port(14, rail, "in"));
+    g.push('<path class="wire" d="M17.5 ' + rail + ' H22 M188 ' + rail + ' H206"/>');
+    g.push(symSeries("R", 22, 80, rail));
+    g.push(symSeries("R", 100, 188, rail));
+    g.push('<path class="wire" d="M80 ' + rail + ' H100"/>');
+    g.push('<circle class="dot" cx="90" cy="' + rail + '" r="2.5"/>');
+    g.push(symShunt("R", 90, rail, 100));
+    g.push('<path class="wire" d="M90 100 V108"/>');
+    g.push(gnd(90, 108));
+    g.push(port(209.5, rail, "out", "end"));
+  } else if (topo === "bridge") {
+    /* two Z0 arms in series, one resistor bridging them, one shunt at the
+       midpoint - the bridging element is what makes it a bridged T */
+    g.push(port(14, 64, "in", "start", 18));
+    g.push('<path class="wire" d="M17.5 64 H22 M188 64 H206"/>');
+    g.push(symSeries("R", 22, 80, 64));
+    g.push(symSeries("R", 100, 188, 64));
+    g.push('<path class="wire" d="M80 64 H100"/>');
+    g.push('<circle class="dot" cx="24" cy="64" r="2.5"/><circle class="dot" cx="186" cy="64" r="2.5"/>');
+    g.push('<circle class="dot" cx="90" cy="64" r="2.5"/>');
+    g.push('<path class="wire" d="M24 64 V26 M186 64 V26"/>');
+    g.push(symSeries("R", 24, 186, 26));
+    g.push('<text x="96" y="13">bridging</text>');
+    g.push(symShunt("R", 90, 64, 118));
+    g.push('<path class="wire" d="M90 118 V124"/>');
+    g.push(gnd(90, 124));
+    g.push(port(209.5, 64, "out", "end", 18));
+  } else if (topo === "split") {
+    /* a Y of three equal resistors: one per port */
+    g.push(port(14, 74, "in"));
+    g.push('<path class="wire" d="M17.5 74 H22"/>');
+    g.push(symSeries("R", 22, 96, 74));
+    g.push('<circle class="dot" cx="106" cy="74" r="2.5"/>');
+    g.push('<path class="wire" d="M96 74 H106 M106 74 V34 M106 74 V114"/>');
+    g.push(symSeries("R", 120, 194, 34));
+    g.push(symSeries("R", 120, 194, 114));
+    g.push('<path class="wire" d="M106 34 H120 M106 114 H120 M194 34 H206 M194 114 H206"/>');
+    g.push(port(209.5, 34, "out 1", "end"));
+    g.push(port(209.5, 114, "out 2", "end"));
+  } else {
+    g.push(port(14, rail, "in"));
+    g.push('<path class="wire" d="M17.5 ' + rail + ' H22 M110 ' + rail + ' H206"/>');
+    g.push(symSeries("R", 22, 100, rail));
+    g.push('<path class="wire" d="M100 ' + rail + ' H110"/>');
+    g.push('<circle class="dot" cx="110" cy="' + rail + '" r="2.5"/>');
+    g.push(symShunt("R", 110, rail, 100));
+    g.push('<path class="wire" d="M110 100 V108"/>');
+    g.push(gnd(110, 108));
+    g.push(port(209.5, rail, "out", "end"));
+  }
   g.push("</svg>");
 
+  const KEY = {
+    pi: "Both shunt legs differ when the impedances differ; they are equal only in a matched pad.",
+    t: "Both series arms differ when the impedances differ; they are equal only in a matched pad.",
+    bridge: "Symmetric only. The two series arms are exactly Z0, so only the bridging and shunt resistors set the attenuation.",
+    l: "The only asymmetric topology here, and the only one that cannot be matched at both ends at an arbitrary attenuation.",
+    split: "Fixed at 6 dB per output. Its ports are only 6 dB isolated from each other, which is its real limitation."
+  };
   document.getElementById("pad-diagram").innerHTML = g.join("") +
-    '<p class="plate">loss ratio N = 10<sup>A/20</sup>, A in dB</p>' +
-    '<p class="key">PI and T keep both ports at Z0. An L pad matches Z0 on one side to a different Z2 on the other' +
-    (hasZ2 ? ", which is the case you are solving." : "; give a second impedance to size one.") + "</p>";
+    '<p class="plate">L = 10<sup>A/10</sup> (power) &middot; A&prime; = (L+1)/(L&minus;1)</p>' +
+    '<p class="key">' + KEY[topo] + "</p>";
 }
 
 /* ---------- explanatory plots ----------
@@ -3309,6 +3442,18 @@ function calcTrace() {
   const aMM2 = wMM * tMM;
   const achievable = ipcCurrent(aMil2, dT, k);
 
+  /* The routing question is usually "can this go on an inner layer instead",
+     so give the width the other layer would need for the same current rather
+     than making the reader flip the selector and lose what they typed. */
+  const isExt = k === 0.048;
+  const iForOther = isFinite(iVal) && iVal > 0 ? iVal : achievable;
+  if (iForOther > 0) {
+    const wOther = (ipcArea(iForOther, dT, isExt ? 0.024 : 0.048) / (tMM / MIL)) * MIL;
+    rows.push(["Same current on an " + (isExt ? "internal" : "external") + " layer",
+               (wOther / MIL).toFixed(1) + " mil (" + wOther.toPrecision(3) + " mm), " +
+               (wOther / wMM).toFixed(2) + " times this width"]);
+  }
+
   /* Showing what the design draws next to what the geometry can carry is the
      one presentation idea worth taking wholesale from Saturn: an undersized
      trace becomes obvious without doing the comparison in your head. */
@@ -3404,9 +3549,10 @@ function calcVia() {
                " — keep the signal's usable bandwidth well below this"]);
   }
   const pad = valDim("via-pad"), anti = valDim("via-anti");
+  let cPF = NaN;                       // needed again for the edge-degradation row
   if (isFinite(pad) && isFinite(anti)) {
     if (anti > pad && pad > 0) {
-      const cPF = 1.41 * er * (h / 25.4) * (pad / 25.4) / ((anti - pad) / 25.4);
+      cPF = 1.41 * er * (h / 25.4) * (pad / 25.4) / ((anti - pad) / 25.4);
       rows.push(["Capacitance", cPF.toPrecision(3) + " pF"]);
       const cF = cPF * 1e-12, lH = lNH * 1e-9;
       rows.push(["Lumped sqrt(L/C)", Math.sqrt(lH / cF).toFixed(1) + " Ω — compare with your trace impedance; below it the via looks capacitive, above it inductive"]);
@@ -3416,7 +3562,46 @@ function calcVia() {
       rows.push(["", "Antipad must be larger than pad for the capacitance estimate.", "warn"]);
     }
   }
+
+  /* What the via does to a passing edge. Inductance is the term that usually
+     matters: a series inductance looks like pi*L/tr to an edge of that rise
+     time, so a 1 nH via is well under an ohm at 1 ns and several ohms at
+     100 ps. Capacitance slows the edge by roughly 2.2*C*Z0/2. */
+  const tr = val("via-tr");
+  const z0line = val("via-z0");
+  if (isFinite(tr) && tr > 0) {
+    const xl = Math.PI * lNH * 1e-9 / tr;
+    rows.push(["Reactance to a " + fmt(tr, "s") + " edge", fmt(xl, "Ω") +
+               (isFinite(z0line) && z0line > 0
+                  ? ", " + (xl / z0line * 100).toFixed(0) + " % of a " + fmt(z0line, "Ω") + " line"
+                  : " — give a trace impedance to see it as a fraction of the line")]);
+    if (isFinite(cPF) && cPF > 0 && isFinite(z0line) && z0line > 0) {
+      const tdeg = 2.2 * cPF * 1e-12 * z0line / 2;
+      rows.push(["Edge slowed by", fmt(tdeg, "s") + ", " + (tdeg / tr * 100).toFixed(0) +
+                 " % of the rise time"]);
+    }
+  }
   render("via-out", rows);
+}
+
+/* The other published fusing model, as used by KiCad: an adiabatic energy
+   balance that melts the copper outright. It carries the latent heat of fusion,
+   which Onderdonk's empirical fit does not, but averages the resistivity over
+   the temperature range where Onderdonk integrates it properly. Neither is
+   strictly better, so the card reports both and the spread between them. */
+const CU_DENSITY = 8940;        // kg/m3
+const CU_CP = 385;              // J/(kg K)
+const CU_LATENT = 205350;       // J/kg, heat of fusion
+const CU_RHO20 = 1.72e-8;       // ohm m at 20 C
+const CU_ALPHA = 0.00393;       // per K
+
+function fuseEnergyCurrent(areaM2, ta, tm, seconds) {
+  if (!(areaM2 > 0) || !(seconds > 0) || !(tm > ta)) return NaN;
+  const volumic = CU_DENSITY * (CU_CP * (tm - ta) + CU_LATENT);   // J/m3
+  const rhoA = (1 + CU_ALPHA * (ta - 20)) * CU_RHO20;
+  const rhoM = (1 + CU_ALPHA * (tm - 20)) * CU_RHO20;
+  const rho = (rhoA + rhoM) / 2;
+  return areaM2 * Math.sqrt(volumic / (rho * seconds));
 }
 
 /* Onderdonk: 33*(I/A_cmil)^2 * t = log10(1 + (Tm-Ta)/(234+Ta)), Tm = 1083 C */
@@ -3433,9 +3618,17 @@ function calcFuse() {
   if (!isFinite(kOn)) { render("fu-out", []); return; }
   const iFuse = kOn * aCmil * Math.sqrt(Math.log10(1 + (1083 - ta) / (234 + ta)) / (33 * t));
   drawFusePlot(aCmil, ta, kOn, t);
+  const iEnergy = kOn * fuseEnergyCurrent(w * tMM * 1e-6, ta, 1084, t);
   render("fu-out", [
     ["Cross-section", aMil2.toFixed(1) + " mil&sup2; (" + (aMil2 * MIL * MIL).toPrecision(3) + " mm&sup2;)"],
-    ["Fusing current for " + fmt(t, "s"), fmt(iFuse, "A")],
+    ["Fusing current for " + fmt(t, "s"), fmt(iFuse, "A") + " (Onderdonk)"],
+    ["The other published model", fmt(iEnergy, "A") + " (energy balance with the latent heat of fusion), " +
+     (isFinite(iEnergy) && iFuse > 0
+        ? ((iEnergy / iFuse - 1) * 100).toFixed(0) + " % from Onderdonk"
+        : "not computable here")],
+    ["", "Onderdonk integrates the resistivity across the temperature rise but ignores the energy of melting; " +
+     "the energy balance includes melting but uses a mean resistivity. The spread between them is the honest " +
+     "width of a fusing estimate - design well below the lower of the two.", ""],
     ["", "Design fault currents well below this — the trace is at its melting point.", "warn"],
     ["", t > 5 ? "Onderdonk is adiabatic and is not meant for faults beyond about 5 seconds; over longer events the trace sheds heat and survives more current than this figure suggests." : "",
      t > 5 ? "warn" : ""]
@@ -3599,6 +3792,25 @@ function calcZ() {
      could not do. */
   rows.push(["Inductance", (z0 * tpd * 1e9).toFixed(1) + " nH/m (" + (z0 * tpd * 1e9 * 0.0254).toFixed(3) + " nH/in)"]);
   rows.push(["Capacitance", (tpd / z0 * 1e12).toFixed(1) + " pF/m (" + (tpd / z0 * 1e12 * 0.0254).toFixed(3) + " pF/in)"]);
+
+  if (isFinite(f) && f > 0) {
+    const tand = numOr("z-tand", 0.02, 0);
+    const rough = numOr("z-rough", 0.4, 0);
+    if (isFinite(tand) && isFinite(rough)) {
+      const ls = tlineLoss(f, z0, w, er, eeff, tand, rough);
+      rows.push(["Skin depth at " + fmt(f, "Hz"), (ls.delta * 1e6).toPrecision(3) +
+                 " \u00b5m, surface resistivity " + fmt(ls.rs, "\u03a9") + "/square"]);
+      rows.push(["Conductor loss", ls.ac.toPrecision(3) + " dB/m (" + (ls.ac * 0.0254).toPrecision(3) + " dB/in)" +
+                 (ls.kr > 1.01 ? ", roughness costing " + ((ls.kr - 1) * 100).toFixed(0) + " %" : "")]);
+      rows.push(["Dielectric loss", ls.ad.toPrecision(3) + " dB/m (" + (ls.ad * 0.0254).toPrecision(3) + " dB/in)"]);
+      rows.push(["Total", ls.total.toPrecision(3) + " dB/m \u2014 " +
+                 (1 / ls.total).toPrecision(3) + " m for 1 dB, " + (3 / ls.total).toPrecision(3) + " m for 3 dB"]);
+      rows.push(["", "Conductor loss here is the wide-strip approximation, which ignores current crowding at the " +
+                 "trace edges and so reads low on a narrow line \u2014 treat the total as a floor. Roughness uses the " +
+                 "Hammerstad correction; ask the fabricator for the foil class, because standard foil and VLP differ " +
+                 "by several times at these frequencies.", ""]);
+    }
+  }
   if (validity) rows.push(["Model", validity]);
   render("z-out", rows);
 }
@@ -3883,59 +4095,220 @@ function calcPDN() {
 
 /* ---------- attenuator pads ---------- */
 
+/* ---------- attenuator pads ----------
+
+   The general forms take a source and a load impedance separately and reduce
+   to the familiar symmetric expressions when they are equal, which is one of
+   the tests. L here is the POWER ratio 10^(A/10), not the voltage ratio -
+   mixing the two up is the classic way to get these formulas wrong. */
+
+function padDesign(topo, a, zin, zout) {
+  const L = Math.pow(10, a / 10);            // power ratio
+  const A = (L + 1) / (L - 1);
+  if (topo === "pi") {
+    const ser = ((L - 1) / 2) * Math.sqrt(zin * zout / L);
+    return { ser: ser,
+             sh1: 1 / (A / zin - 1 / ser),
+             sh2: 1 / (A / zout - 1 / ser) };
+  }
+  if (topo === "t") {
+    const sh = 2 * Math.sqrt(L * zin * zout) / (L - 1);
+    return { sh: sh, se1: zin * A - sh, se2: zout * A - sh };
+  }
+  if (topo === "bridge") {
+    const K = Math.pow(10, a / 20);          // voltage ratio for this one
+    return { arm: zin, bridge: zin * (K - 1), sh: zin / (K - 1) };
+  }
+  if (topo === "split") {
+    return { arm: zin / 3, term: zin };
+  }
+  /* L pad: series on the high side, shunt across the low side */
+  const hi = Math.max(zin, zout), lo = Math.min(zin, zout);
+  return { hiSide: hi, loSide: lo,
+           ser: hi * Math.sqrt(1 - lo / hi),
+           sh: lo / Math.sqrt(1 - lo / hi) };
+}
+
+/* The minimum attenuation any resistive pad can give between two impedances.
+   Equivalent to 20*log10(sqrt(r) + sqrt(r-1)), which is how the L pad's limit
+   is usually written - the same number either way. */
+function padMinLoss(zin, zout) {
+  const r = Math.max(zin, zout) / Math.min(zin, zout);
+  if (!(r > 1)) return 0;
+  return 10 * Math.log10(2 * r - 1 + 2 * Math.sqrt(r * (r - 1)));
+}
+
+/* Branch list for a topology, as [nodeA, nodeB, ohms]. Node 0 is ground, 1 the
+   input, 2 the output, 3 an internal node. */
+function padBranches(topo, d) {
+  if (topo === "pi") return [[1, 0, d.sh1], [1, 2, d.ser], [2, 0, d.sh2]];
+  if (topo === "t") return [[1, 3, d.se1], [3, 0, d.sh], [3, 2, d.se2]];
+  if (topo === "bridge") return [[1, 3, d.arm], [3, 2, d.arm], [1, 2, d.bridge], [3, 0, d.sh]];
+  /* the third arm feeds the third port, which is terminated in z0; arm plus
+     termination in series to ground is the same thing seen from the junction */
+  if (topo === "split") return [[1, 3, d.arm], [3, 2, d.arm], [3, 0, d.arm + d.term]];
+  return [[1, 2, d.ser], [2, 0, d.sh]];
+}
+
+/* Transducer loss of a resistive network driven from zin and loaded by zout:
+   available power from the source over the power actually delivered. Solving
+   the node equations rather than using a per-topology formula means the same
+   routine covers the bridged T and the splitter, and stays correct when the
+   two impedances differ. */
+function padLoss(topo, d, zin, zout) {
+  const N = 3;                               // nodes 1..3
+  const G = [[0, 0, 0], [0, 0, 0], [0, 0, 0]];
+  const I = [0, 0, 0];
+  const add = function (x, y, r) {
+    if (!(r > 0) || !isFinite(r)) return;
+    const g = 1 / r;
+    if (x) G[x - 1][x - 1] += g;
+    if (y) G[y - 1][y - 1] += g;
+    if (x && y) { G[x - 1][y - 1] -= g; G[y - 1][x - 1] -= g; }
+  };
+  padBranches(topo, d).forEach(function (br) { add(br[0], br[1], br[2]); });
+  add(1, 0, zin);                            // source resistance
+  add(2, 0, zout);                           // load
+  I[0] = 1 / zin;                            // 1 V source behind zin
+
+  /* Gaussian elimination on a 3x3 - small enough to be exact and obvious */
+  const M = [[G[0][0], G[0][1], G[0][2], I[0]],
+             [G[1][0], G[1][1], G[1][2], I[1]],
+             [G[2][0], G[2][1], G[2][2], I[2]]];
+  for (let c = 0; c < N; c++) {
+    let piv = c;
+    for (let r = c + 1; r < N; r++) if (Math.abs(M[r][c]) > Math.abs(M[piv][c])) piv = r;
+    if (Math.abs(M[piv][c]) < 1e-15) continue;
+    const t = M[c]; M[c] = M[piv]; M[piv] = t;
+    for (let r = 0; r < N; r++) {
+      if (r === c) continue;
+      const f = M[r][c] / M[c][c];
+      for (let k = c; k <= N; k++) M[r][k] -= f * M[c][k];
+    }
+  }
+  const v = [0, 0, 0];
+  for (let c = 0; c < N; c++) v[c] = Math.abs(M[c][c]) < 1e-15 ? 0 : M[c][N] / M[c][c];
+  const vout = v[1];
+  const pLoad = vout * vout / zout;
+  const pAvail = 1 / (4 * zin);              // from a 1 V source behind zin
+  if (!(pLoad > 0)) return Infinity;
+  return 10 * Math.log10(pAvail / pLoad);
+}
+
 function calcPad() {
-  drawPad(val("pad-z2") > 0);
-  const a = val("pad-a");
-  const z0 = numOr("pad-z0", 50, 1e-9);
-  const z2 = val("pad-z2");
-  if (!isFinite(a) || !isFinite(z0)) { render("pad-out", []); return; }
-  if (a <= 0) { render("pad-out", [["", "Attenuation must be greater than 0 dB.", "err"]]); return; }
-  const K = Math.pow(10, a / 20);
-  const piSh = z0 * (K + 1) / (K - 1);
-  const piSe = z0 * (K * K - 1) / (2 * K);
-  const tSe = z0 * (K - 1) / (K + 1);
-  const tSh = 2 * K * z0 / (K * K - 1);
+  const topo = document.getElementById("pad-topo").value;
+  const split = topo === "split", bridge = topo === "bridge";
+  const zin = numOr("pad-zin", 50, 1e-9);
+  let zout = numOr("pad-zout", 50, 1e-9);
+  /* Two topologies have no free attenuation: a splitter is always 6 dB, and a
+     matched L pad delivers exactly the minimum loss its impedance ratio allows.
+     Reading the attenuation box for those would be pretending it matters. */
+  const a = split ? 20 * Math.log10(2)
+          : topo === "l" ? padMinLoss(zin, zout)
+          : val("pad-a");
+  drawPad(topo);
+  if (!isFinite(zin) || !isFinite(zout)) { render("pad-out", []); return; }
+  /* these two are symmetric by construction */
+  if (split || bridge) zout = zin;
+  if (!isFinite(a)) { render("pad-out", []); return; }
+  if (topo === "l" && !(a > 0)) {
+    render("pad-out", [["", "An L pad matches two <em>different</em> impedances. With both the same there is nothing to match, so use a PI or T pad.", "err"]]);
+    return;
+  }
+  if (!split && topo !== "l" && a <= 0) {
+    render("pad-out", [["", "Attenuation must be greater than 0 dB.", "err"]]); return;
+  }
+
+  const rows = [];
+  const aMin = padMinLoss(zin, zout);
+  if (aMin > 0 && a < aMin - 1e-9 && topo !== "l" && !split) {
+    render("pad-out", [["Minimum attenuation", aMin.toFixed(2) + " dB between " + fmt(zin, "\u03a9") +
+                        " and " + fmt(zout, "\u03a9")],
+                       ["", "No resistive pad can match both ends at " + a + " dB. Ask for at least " +
+                        aMin.toFixed(2) + " dB, or use a transformer.", "err"]]);
+    return;
+  }
+
+  const d = padDesign(topo, a, zin, zout);
+  const R = function (x) { return fmt(x, "\u03a9"); };
+  if (topo === "pi") {
+    rows.push(["Series", R(d.ser)]);
+    rows.push(["Shunt, source side", R(d.sh1)]);
+    rows.push(["Shunt, load side", R(d.sh2)]);
+  } else if (topo === "t") {
+    rows.push(["Series, source side", R(d.se1)]);
+    rows.push(["Shunt", R(d.sh)]);
+    rows.push(["Series, load side", R(d.se2)]);
+  } else if (topo === "bridge") {
+    rows.push(["Series arms", R(d.arm) + " each, equal to Z\u2080"]);
+    rows.push(["Bridging", R(d.bridge)]);
+    rows.push(["Shunt", R(d.sh)]);
+  } else if (topo === "split") {
+    rows.push(["Each arm", R(d.arm)]);
+    rows.push(["Attenuation", a.toFixed(2) + " dB per output, fixed by the topology"]);
+    rows.push(["Isolation between outputs", "6.0 dB \u2014 a resistive splitter barely isolates its ports; " +
+               "a Wilkinson gets you 20 dB or more, at the cost of being narrowband"]);
+  } else {
+    rows.push(["Series, on the " + R(d.hiSide) + " side", R(d.ser)]);
+    rows.push(["Shunt, across the " + R(d.loSide) + " side", R(d.sh)]);
+    rows.push(["Attenuation", a.toFixed(2) + " dB &mdash; fixed by the impedance ratio, not chosen"]);
+    rows.push(["", "A matched L pad has no free parameter: one geometry matches these two impedances and it gives exactly this loss. For more attenuation, follow it with a PI or T pad in the matched system.", ""]);
+  }
+
+  if (aMin > 0 && topo !== "l") {
+    rows.push(["Minimum for these impedances", aMin.toFixed(2) + " dB" +
+               (a < aMin + 0.01 ? " \u2014 you are at it, so the pad is a pure matching network" : "")]);
+  }
+
+  /* what stock parts actually deliver, by transducer loss against the real
+     source and load rather than by a symmetric shortcut */
   const series = gSeries();
   const vals = seriesValues(series, -1, 7);
-  const near = function (x) { return snap(vals, x); };
-  const rows = [
-    ["PI pad", "shunt " + fmt(piSh, "\u03a9") + " \u00b7 series " + fmt(piSe, "\u03a9") + " \u00b7 shunt " + fmt(piSh, "\u03a9")],
-    ["T pad", "series " + fmt(tSe, "\u03a9") + " \u00b7 shunt " + fmt(tSh, "\u03a9") + " \u00b7 series " + fmt(tSe, "\u03a9")]
-  ];
-  // what the nearest stock values actually deliver
-  const nPiSh = near(piSh), nPiSe = near(piSe);
-  const aPi = padLossPi(nPiSh, nPiSe, z0);
-  const aT = padLossT(near(tSe), near(tSh), z0);
-  rows.push(["Nearest " + series + " PI", fmt(nPiSh, "\u03a9") + " / " + fmt(nPiSe, "\u03a9") +
-             " \u2014 gives " + aPi.toFixed(2) + " dB"]);
-  rows.push(["Nearest " + series + " T", fmt(near(tSe), "\u03a9") + " / " + fmt(near(tSh), "\u03a9") +
-             " \u2014 gives " + aT.toFixed(2) + " dB"]);
-  if (isFinite(z2) && z2 > 0 && Math.abs(z2 - z0) > 1e-12) {
-    const hi = Math.max(z0, z2), lo = Math.min(z0, z2);
-    const ratio = hi / lo;
-    const aMin = 20 * Math.log10(Math.sqrt(ratio) + Math.sqrt(ratio - 1));
-    const rs = hi * Math.sqrt(1 - lo / hi);
-    const rp = lo / Math.sqrt(1 - lo / hi);
-    rows.push(["L pad, " + fmt(hi, "\u03a9") + " to " + fmt(lo, "\u03a9"),
-               "series " + fmt(rs, "\u03a9") + " on the " + fmt(hi, "\u03a9") + " side, shunt " + fmt(rp, "\u03a9") + " across the " + fmt(lo, "\u03a9") + " side"]);
-    rows.push(["L pad minimum loss", aMin.toFixed(2) + " dB" +
-               (a < aMin ? " \u2014 more than the " + a + " dB asked for; an L pad cannot do better between these impedances" : ""),
-               a < aMin ? "warn" : ""]);
-  }
+  const snapAll = function (o) {
+    const out = {};
+    for (const k in o) out[k] = snap(vals, o[k]);
+    return out;
+  };
+  const dn = snapAll(d);
+  const got = padLoss(topo, dn, zin, zout);
+  const parts = [];
+  for (const k in dn) parts.push(R(dn[k]));
+  rows.push(["Nearest " + series, parts.join(" \u00b7 ")]);
+  rows.push(["Those parts give", got.toFixed(2) + " dB, against " + a.toFixed(2) + " asked for"]);
   render("pad-out", rows);
 }
 
-/* What a pad built from real parts actually attenuates. For a matched pad this
-   is just the voltage division through it, and with exact values it returns the
-   design figure to the last decimal - which is the test. */
-function padLossPi(rp, rs, z0) {
-  const par = rp * z0 / (rp + z0);
-  return -20 * Math.log10(par / (rs + par));
-}
+/* ---------- transmission-line loss ----------
 
-function padLossT(rs, rp, z0) {
-  const zA = rp * (rs + z0) / (rp + rs + z0);
-  return -20 * Math.log10((zA / (rs + zA)) * (z0 / (rs + z0)));
+   Z0 and delay say where a wave goes; loss says whether it arrives, and above
+   a gigahertz it is usually the number that decides the design.
+
+   Conductor loss uses the wide-strip approximation ac = Rs/(Z0*w). It ignores
+   current crowding at the trace edges, so it is a LOWER bound - a real narrow
+   microstrip loses more. Roughness is the Hammerstad-Jensen correction, and it
+   is not a small effect: standard foil at a few GHz can double the conductor
+   loss, which is exactly the factor that makes a link budget wrong.
+
+   Dielectric loss is the usual closed form, and the same expression covers
+   stripline because eeff collapses to er there. */
+
+const MU0 = 4e-7 * Math.PI;
+const RHO_CU = 1.72e-8;
+
+function skinDepth(f, rho) { return Math.sqrt((rho || RHO_CU) / (Math.PI * f * MU0)); }
+
+function tlineLoss(f, z0, wMM, er, eeff, tand, roughUM) {
+  const delta = skinDepth(f, RHO_CU);
+  const rs = RHO_CU / delta;                       // surface resistivity, ohms/square
+  const kr = roughUM > 0
+      ? 1 + (2 / Math.PI) * Math.atan(1.4 * Math.pow((roughUM * 1e-6) / delta, 2))
+      : 1;
+  const ac = 8.686 * rs * kr / (z0 * (wMM / 1000));            // dB/m
+  const lambda0 = 299792458 / f;
+  const ad = tand > 0
+      ? 27.3 * (er * (eeff - 1)) / (Math.sqrt(eeff) * (er - 1)) * tand / lambda0
+      : 0;                                                      // dB/m
+  return { delta: delta, rs: rs, kr: kr, ac: ac, ad: ad, total: ac + ad };
 }
 
 /* ---------- Hammerstad-Jensen microstrip, shared by several cards ---------- */
@@ -4359,6 +4732,7 @@ const HELP = {
     "title": "Junction temperature",
     "body": "<p>Thermal resistance behaves like Ohm's law with power for current and temperature for voltage:</p><span class=\"eq\">T<sub>j</sub> = T<sub>a</sub> + P · Σθ &nbsp;&nbsp; θ<sub>ja</sub> = θ<sub>jc</sub> + θ<sub>cs</sub> + θ<sub>sa</sub></span><p>The resistances in the path add in series, so the largest one dominates and is the only one worth improving. There is no point fitting a better thermal pad if the heatsink-to-air resistance is ten times larger.</p><p>Rearranged, the same equation gives the two answers you usually want: the maximum power for a temperature limit, and the heatsink you would need for a given power:</p><span class=\"eq\">P<sub>max</sub> = (T<sub>j,max</sub> − T<sub>a</sub>) / θ<sub>ja</sub> &nbsp;&nbsp; θ<sub>sa</sub> = (T<sub>j</sub> − T<sub>a</sub>)/P − θ<sub>jc</sub> − θ<sub>cs</sub></span><p><b>Treat θ<sub>ja</sub> from a datasheet with suspicion.</b> It is measured on a specified test board — often JEDEC 2s2p, a four-layer board with solid planes — and your board is not that board. A SOT-23 quoted at 250 °C/W can be far worse on a two-layer board with a small copper pour. θ<sub>jc</sub> is a property of the package and is far more trustworthy; use it with your own estimate of the rest of the path.</p><p><b>Leave margin.</b> Silicon lifetime falls roughly exponentially with junction temperature — the usual rule of thumb is that every 10 °C halves it. Designing to T<sub>j,max</sub> is designing to the point where the manufacturer stops promising anything at all. Target 20–30 °C below it at the worst-case ambient, and remember that ambient inside a sealed enclosure is not room temperature.</p><p><b>This is a steady-state model.</b> Short power pulses are handled by thermal <i>impedance</i>, not resistance; a device can survive brief peaks well above its steady-state rating because the die's own heat capacity absorbs them.</p>"
   },
+  "iec": {"title": "Clearance and creepage (IEC 60664-1)", "body": "<p>IPC-2221 gives one number, a minimum clearance through air by environment. IEC 60664-1 is the standard a mains- or high-voltage-connected product is actually assessed against, and it gives two, because there are two ways for insulation to fail.</p><p><b>Clearance</b> is the shortest path through the air. It has to survive the worst <i>transient</i> the installation can deliver, not the working voltage, so it is derived from the rated impulse withstand voltage:</p><span class=\"eq\">overvoltage category + supply voltage &rarr; impulse kV &rarr; clearance</span><p>The overvoltage category says how far you are from the origin of the installation and therefore how much the wiring in between has damped the surge. II is an appliance plugged into a fixed installation; III is part of that fixed installation; IV is at its origin. For 230 V, category II implies a 2.5 kV impulse and 1.5 mm of clearance at pollution degree 2.</p><p><b>Creepage</b> is the path along the surface, and it is about slow tracking rather than a fast breakdown: contamination plus humidity plus voltage carbonises the surface over months or years. It therefore depends on the working rms voltage, on how dirty the environment gets, and on the material.</p><ul><li><b>Pollution degree</b> 1 is sealed, 2 is normal with occasional condensation, 3 is conductive pollution. Most equipment is 2; anything that can get wet inside is 3.</li><li><b>Material group</b> comes from the laminate's comparative tracking index: I is CTI &ge; 600, II is 400 to 599, IIIa is 175 to 399, IIIb is 100 to 174. <b>Most FR-4 is IIIa</b>, which is worse than people assume and costs real millimetres. The fabricator states it; do not guess.</li></ul><p><b>Reinforced insulation</b> is not simply twice basic. Creepage doubles, but clearance takes the next step <i>up the preferred series</i> of impulse voltages &mdash; 2.5 kV becomes 4 kV, giving 3.0 mm rather than 3.0 mm by doubling. The card shows which step it used.</p><p><b>Altitude</b> thins the air, so clearance is multiplied above 2000 m &mdash; 1.14&times; at 3000 m, 1.48&times; at 5000 m. Creepage is unaffected, being a surface phenomenon. This matters for anything that flies or ships to high-altitude sites.</p><p><b>Grooves.</b> A groove in the surface adds to the creepage path, but only if it is wide enough for contamination to be washed out rather than bridging it. Narrower than the stated minimum and it counts for nothing, which is why the card reports that width.</p><p><b>Creepage is floored at the clearance here</b>, because a path along a surface cannot physically be shorter than the straight line through the air beside it. At low voltages the tables often give a smaller creepage, and the clearance is then what you build to.</p><p><b>Outside the scope of this standard:</b> above 30 kHz (IEC 60664-3), conformal coating or potting (60664-4), pollution degree 4, and insulation through any medium other than air. If your design relies on coating to make the numbers work, this card does not model it.</p>"},
   "pdn": {
     "title": "PDN target impedance",
     "body": "<p>If a load steps by ΔI and the rail may only move by ΔV, the power distribution network must present no more than their ratio:</p><span class=\"eq\">Z<sub>target</sub> = ΔV / ΔI = (V<sub>rail</sub> · ripple%) / (I<sub>max</sub> · transient%)</span><p>That single number is the design target for the whole network — regulator, bulk capacitance, decoupling, planes and package — <b>across the whole frequency range of interest</b>, not just at DC. The regulator handles up to its loop bandwidth, typically tens of kilohertz; bulk capacitors take over to a few megahertz; ceramics beyond that; and above their self-resonance only the plane capacitance and the package are left.</p><p><b>Which is why the reactance card matters here.</b> Every capacitor is inductive above its self-resonance, so the impedance curve of a real PDN is a series of V shapes. Mixing values does not simply fill the gaps: between two different capacitors' resonances there is an anti-resonant <i>peak</i> where one is inductive and the other still capacitive, and that peak can be higher than either part alone. Many identical parts, or parts with heavy damping, behave better than a decade-spaced spread.</p><p><b>The transient fraction is a guess</b>, and the answer is only as good as it. If you know the actual step profile of your load — an FPGA coming out of clock gating, a radio keying up — use it rather than a percentage.</p><p><b>What this does not do:</b> it does not tell you the inductance of your via and pad layout, which is usually what stops a PDN meeting its target above 100 MHz. Placement beats part count.</p>"
@@ -4389,12 +4763,1086 @@ const HELP = {
   }
 };
 
+/* ---------- IEC 60664-1 clearance and creepage ----------
+
+   The tables are IEC 60664-1:2020-05 and they are the calculator: several
+   hundred rows across impulse withstand, clearance against transient and
+   peak voltage, and basic creepage by pollution degree and material group.
+   They were transcribed mechanically from KiCad's implementation rather than
+   retyped, because a typo in a safety table is not something a unit test
+   would catch. See eecalc_iec60664_transcribe.py.
+
+   The pollution-degree blocks are cumulative on purpose: a PD1 lookup whose
+   voltage runs past the PD1 rows falls through into PD2 and onwards, which is
+   how the standard's tables are laid out. */
+
+function iecGrooveWidth(pd, dist) {
+    if (dist <= 0)
+        return -1;
+
+    //  Based on IEC60664-1 : 2020-05 §6.8
+    if (Math.abs( dist) < 3)
+        return dist / 3;
+
+    switch (pd)
+    {
+    case 1: return 0.25;
+    case 2: return 1.0;
+    case 3: return 1.5;
+    default: return -1;
+    }
+}
+
+function iecAltitudeFactor(alt) {
+    //  Based on IEC60664-1 : 2020-05 Table A.2
+
+    if (alt <= 2000)
+        return 1.0;
+    if (alt <= 3000)
+        return 1.14;
+    if (alt <= 4000)
+        return 1.29;
+    if (alt <= 5000)
+        return 1.48;
+    if (alt <= 6000)
+        return 1.70;
+    if (alt <= 7000)
+        return 1.95;
+    if (alt <= 8000)
+        return 2.25;
+    if (alt <= 9000)
+        return 2.62;
+    if (alt <= 10000)
+        return 3.02;
+    if (alt <= 15000)
+        return 6.67;
+    if (alt <= 20000)
+        return 14.5;
+    return -1;
+}
+
+function iecClearanceTransient(v, pd, field) {
+    //  Based on IEC60664-1 : 2020-05 Table F.2
+
+    switch (field)
+    {
+    case "inhomogeneous":
+        if (pd <= 1)
+        {
+            if (v <= 0.33)
+                return 0.01;
+            if (v <= 0.40)
+                return 0.02;
+            if (v <= 0.50)
+                return 0.04;
+            if (v <= 0.60)
+                return 0.06;
+            if (v <= 0.80)
+                return 0.10;
+            if (v <= 1.0)
+                return 0.15;
+        }
+        if (pd <= 2)
+        {
+            if (v <= 1.0)
+                return 0.2;
+            if (v <= 1.2)
+                return 0.25;
+            if (v <= 1.5)
+                return 0.5;
+        }
+        if (pd <= 3)
+        {
+            if (v <= 1.5)
+                return 0.8;
+            if (v <= 2.0)
+                return 1.0;
+            if (v <= 2.5)
+                return 1.5;
+        }
+        if (( pd >= 4) && ( v <= 2.5))
+            return 1.6;
+        if (v <= 3.0)
+            return 2.0;
+        if (v <= 4.0)
+            return 3.0;
+        if (v <= 5.0)
+            return 4.0;
+        if (v <= 6.0)
+            return 5.5;
+        if (v <= 8.0)
+            return 8.0;
+        if (v <= 10)
+            return 11;
+        if (v <= 12)
+            return 14;
+        if (v <= 15)
+            return 18;
+        if (v <= 20)
+            return 25;
+        if (v <= 25)
+            return 33;
+        if (v <= 30)
+            return 40;
+        if (v <= 40)
+            return 60;
+        if (v <= 50)
+            return 75;
+        if (v <= 60)
+            return 90;
+        if (v <= 80)
+            return 130;
+        if (v <= 100)
+            return 170;
+
+        break;
+
+    case "homogeneous":
+        if (pd <= 1)
+        {
+            if (v <= 0.33)
+                return 0.01;
+            if (v <= 0.40)
+                return 0.02;
+            if (v <= 0.50)
+                return 0.04;
+            if (v <= 0.60)
+                return 0.06;
+            if (v <= 0.80)
+                return 0.10;
+            if (v <= 1.0)
+                return 0.15;
+            if (v <= 1.2)
+                return 0.2;
+        }
+        if (pd <= 2)
+        {
+            if (v <= 1.2)
+                return 0.2;
+            if (v <= 1.5)
+                return 0.3;
+            if (v <= 2.0)
+                return 0.45;
+            if (v <= 2.5)
+                return 0.60;
+            if (v <= 3.0)
+                return 0.80;
+        }
+        if (pd <= 3)
+        {
+            if (v <= 3.0)
+                return 0.80;
+            if (v <= 4.0)
+                return 1.2;
+            if (v <= 5.0)
+                return 1.5;
+        }
+        if (( pd >= 4) && ( v <= 5.0))
+            return 1.6;
+        if (v <= 6.0)
+            return 2.0;
+        if (v <= 8.0)
+            return 3.0;
+        if (v <= 10)
+            return 3.5;
+        if (v <= 12)
+            return 4.5;
+        if (v <= 15)
+            return 5.5;
+        if (v <= 20)
+            return 8.0;
+        if (v <= 25)
+            return 10;
+        if (v <= 30)
+            return 12.5;
+        if (v <= 40)
+            return 17;
+        if (v <= 50)
+            return 22;
+        if (v <= 60)
+            return 27;
+        if (v <= 80)
+            return 35;
+        if (v <= 100)
+            return 45;
+
+        break;
+
+    default:
+        break;
+    }
+
+    return -1;  // Out of range
+}
+
+function iecClearancePeak(v, field) {
+    //  Based on IEC60664-1 : 2020-05 Table F.8
+
+    switch (field)
+    {
+    case "inhomogeneous":
+        if (v <= 0.04)
+            return 0.001;
+        if (v <= 0.06)
+            return 0.002;
+        if (v <= 0.1)
+            return 0.003;
+        if (v <= 0.12)
+            return 0.004;
+        if (v <= 0.15)
+            return 0.005;
+        if (v <= 0.20)
+            return 0.006;
+        if (v <= 0.25)
+            return 0.008;
+        if (v <= 0.33)
+            return 0.01;
+        if (v <= 0.4)
+            return 0.02;
+        if (v <= 0.5)
+            return 0.04;
+        if (v <= 0.6)
+            return 0.06;
+        if (v <= 0.8)
+            return 0.13;
+        if (v <= 1.0)
+            return 0.26;
+        if (v <= 1.2)
+            return 0.42;
+        if (v <= 1.5)
+            return 0.76;
+        if (v <= 2.0)
+            return 1.27;
+        if (v <= 2.5)
+            return 1.8;
+        if (v <= 3.0)
+            return 2.4;
+        if (v <= 4.0)
+            return 3.8;
+        if (v <= 5.0)
+            return 5.7;
+        if (v <= 6.0)
+            return 7.9;
+        if (v <= 8.0)
+            return 11.0;
+        if (v <= 10)
+            return 15.2;
+        if (v <= 12)
+            return 19;
+        if (v <= 15)
+            return 25;
+        if (v <= 20)
+            return 34;
+        if (v <= 25)
+            return 44;
+        if (v <= 30)
+            return 55;
+        if (v <= 40)
+            return 77;
+        if (v <= 50)
+            return 100;
+
+        break;
+
+    case "homogeneous":
+        if (v <= 0.04)
+            return 0.001;
+        if (v <= 0.06)
+            return 0.002;
+        if (v <= 0.1)
+            return 0.003;
+        if (v <= 0.12)
+            return 0.004;
+        if (v <= 0.15)
+            return 0.005;
+        if (v <= 0.20)
+            return 0.006;
+        if (v <= 0.25)
+            return 0.008;
+        if (v <= 0.33)
+            return 0.01;
+        if (v <= 0.33)
+            return 0.01;
+        if (v <= 0.4)
+            return 0.02;
+        if (v <= 0.5)
+            return 0.04;
+        if (v <= 0.6)
+            return 0.06;
+        if (v <= 0.8)
+            return 0.1;
+        if (v <= 1.0)
+            return 0.15;
+        if (v <= 1.2)
+            return 0.2;
+        if (v <= 1.5)
+            return 0.3;
+        if (v <= 2.0)
+            return 0.45;
+        if (v <= 2.5)
+            return 0.6;
+        if (v <= 3.0)
+            return 0.8;
+        if (v <= 4.0)
+            return 1.2;
+        if (v <= 5.0)
+            return 1.5;
+        if (v <= 6.0)
+            return 2;
+        if (v <= 8.0)
+            return 3;
+        if (v <= 10)
+            return 3.5;
+        if (v <= 12)
+            return 4.5;
+        if (v <= 15)
+            return 5.5;
+        if (v <= 20)
+            return 8;
+        if (v <= 25)
+            return 10;
+        if (v <= 30)
+            return 12.5;
+        if (v <= 40)
+            return 17;
+        if (v <= 50)
+            return 22;
+        if (v <= 60)
+            return 27;
+        if (v <= 80)
+            return 35;
+        if (v <= 100)
+            return 45;
+
+        break;
+
+    default:
+        break;
+    }
+    return -1;
+}
+
+function iecRatedImpulse(v, ovc) {
+    //  Based on IEC60664-1 : 2020-05 Table F.1
+    let voltage = v;
+
+    switch (ovc)
+    {
+    case 1:
+        if (voltage <= 50)
+            return 330;
+        if (voltage <= 100)
+            return 500;
+        if (voltage <= 150)
+            return 800;
+        if (voltage <= 300)
+            return 1500;
+        if (voltage <= 600)
+            return 2500;
+        if (voltage <= 1000)
+            return 4000;
+        if (voltage <= 1250)
+            return 4000;
+        if (voltage <= 1500)
+            return 6000;
+
+        break;
+
+    case 2:
+        if (voltage <= 50)
+            return 500;
+        if (voltage <= 100)
+            return 800;
+        if (voltage <= 150)
+            return 1500;
+        if (voltage <= 300)
+            return 2500;
+        if (voltage <= 600)
+            return 4000;
+        if (voltage <= 1000)
+            return 6000;
+        if (voltage <= 1250)
+            return 6000;
+        if (voltage <= 1500)
+            return 8000;
+
+        break;
+
+    case 3:
+         if (voltage <= 50)
+            return 800;
+        if (voltage <= 100)
+            return 1500;
+        if (voltage <= 150)
+            return 2500;
+        if (voltage <= 300)
+            return 4000;
+        if (voltage <= 600)
+            return 6000;
+        if (voltage <= 1000)
+            return 8000;
+        if (voltage <= 1250)
+            return 8000;
+        if (voltage <= 1500)
+            return 10000;
+
+        break;
+
+    case 4:
+        if (voltage <= 50)
+            return 1500;
+        if (voltage <= 100)
+            return 2500;
+        if (voltage <= 150)
+            return 4000;
+        if (voltage <= 300)
+            return 6000;
+        if (voltage <= 600)
+            return 8000;
+        if (voltage <= 1000)
+            return 12000;
+        if (voltage <= 1250)
+            return 12000;
+        if (voltage <= 1500)
+            return 15000;
+
+        break;
+
+    default:
+        break;
+    }
+
+    return -1;      // Out of range
+}
+
+function iecBasicCreepage(v, pd, mg, pcb) {
+    //  Based on IEC60664-1 : 2020-05 Table F.5
+
+    let isPcb = pcb;
+
+    if (v > 1000)
+        isPcb = false;
+    if (pd >= 3)
+        isPcb = false;
+    if (pd >= 2 && mg == 4)
+        isPcb = false;
+
+    if (isPcb)
+    {
+        if (pd == 1)
+        {
+            if (v <= 50)
+                return 0.025;
+            if (v <= 63)
+                return 0.040;
+            if (v <= 80)
+                return 0.063;
+            if (v <= 100)
+                return 0.100;
+            if (v <= 125)
+                return 0.160;
+            if (v <= 160)
+                return 0.250;
+            if (v <= 200)
+                return 0.400;
+            if (v <= 250)
+                return 0.560;
+            if (v <= 320)
+                return 0.75;
+            if (v <= 400)
+                return 1.0;
+            if (v <= 500)
+                return 1.3;
+            if (v <= 630)
+                return 1.8;
+            if (v <= 800)
+                return 2.4;
+            if (v <= 1000)
+                return 3.2;
+        }
+        if (pd == 2)
+        {
+            if (v <= 50)
+                return 0.040;
+            if (v <= 63)
+                return 0.063;
+            if (v <= 80)
+                return 0.100;
+            if (v <= 100)
+                return 0.160;
+            if (v <= 125)
+                return 0.250;
+            if (v <= 160)
+                return 0.400;
+            if (v <= 200)
+                return 0.630;
+            if (v <= 250)
+                return 1.000;
+            if (v <= 320)
+                return 1.60;
+            if (v <= 400)
+                return 2.0;
+            if (v <= 500)
+                return 2.5;
+            if (v <= 630)
+                return 3.2;
+            if (v <= 800)
+                return 4.0;
+            if (v <= 1000)
+                return 5.0;
+        }
+    }
+    if (pd == 1)
+    {
+        if (v <= 10)
+            return 0.080;
+        if (v <= 12.5)
+            return 0.090;
+        if (v <= 16)
+            return 0.100;
+        if (v <= 20)
+            return 0.110;
+        if (v <= 25)
+            return 0.125;
+        if (v <= 32)
+            return 0.14;
+        if (v <= 40)
+            return 0.16;
+        if (v <= 50)
+            return 0.18;
+        if (v <= 63)
+            return 0.20;
+        if (v <= 80)
+            return 0.22;
+        if (v <= 100)
+            return 0.25;
+        if (v <= 125)
+            return 0.28;
+        if (v <= 160)
+            return 0.32;
+        if (v <= 200)
+            return 0.42;
+        if (v <= 250)
+            return 0.56;
+        if (v <= 320)
+            return 0.75;
+        if (v <= 400)
+            return 1.0;
+        if (v <= 500)
+            return 1.3;
+        if (v <= 630)
+            return 1.8;
+        if (v <= 800)
+            return 2.4;
+        if (v <= 1000)
+            return 3.2;
+        if (v <= 1250)
+            return 4.2;
+        if (v <= 1600)
+            return 5.6;
+        if (v <= 2000)
+            return 7.5;
+        if (v <= 2500)
+            return 10.0;
+        if (v <= 3200)
+            return 12.5;
+        if (v <= 4000)
+            return 16.0;
+        if (v <= 5000)
+            return 20.0;
+        if (v <= 6300)
+            return 25.0;
+        if (v <= 8000)
+            return 32.0;
+        if (v <= 10000)
+            return 40.0;
+        if (v <= 12500)
+            return 50.0;
+        if (v <= 16000)
+            return 63.0;
+        if (v <= 20000)
+            return 80.0;
+        if (v <= 25000)
+            return 100.0;
+        if (v <= 32000)
+            return 125.0;
+        if (v <= 40000)
+            return 160.0;
+        if (v <= 50000)
+            return 200.0;
+        if (v <= 63000)
+            return 250;
+    }
+    if (pd == 2 && mg == 1)
+    {
+        if (v <= 10)
+            return 0.400;
+        if (v <= 12.5)
+            return 0.420;
+        if (v <= 16)
+            return 0.450;
+        if (v <= 20)
+            return 0.480;
+        if (v <= 25)
+            return 0.500;
+        if (v <= 32)
+            return 0.53;
+        if (v <= 40)
+            return 0.56;
+        if (v <= 50)
+            return 0.60;
+        if (v <= 63)
+            return 0.63;
+        if (v <= 80)
+            return 0.67;
+        if (v <= 100)
+            return 0.71;
+        if (v <= 125)
+            return 0.75;
+        if (v <= 160)
+            return 0.80;
+        if (v <= 200)
+            return 1.00;
+        if (v <= 250)
+            return 1.25;
+        if (v <= 320)
+            return 1.60;
+        if (v <= 400)
+            return 2.0;
+        if (v <= 500)
+            return 2.5;
+        if (v <= 630)
+            return 3.2;
+        if (v <= 800)
+            return 4.0;
+        if (v <= 1000)
+            return 5.0;
+        if (v <= 1250)
+            return 6.3;
+        if (v <= 1600)
+            return 8.0;
+        if (v <= 2000)
+            return 10.0;
+        if (v <= 2500)
+            return 12.5;
+        if (v <= 3200)
+            return 16.0;
+        if (v <= 4000)
+            return 20.0;
+        if (v <= 5000)
+            return 25.0;
+        if (v <= 6300)
+            return 32.0;
+        if (v <= 8000)
+            return 40.0;
+        if (v <= 10000)
+            return 50.0;
+        if (v <= 12500)
+            return 63.0;
+        if (v <= 16000)
+            return 80.0;
+        if (v <= 20000)
+            return 100.0;
+        if (v <= 25000)
+            return 125.0;
+        if (v <= 32000)
+            return 160.0;
+        if (v <= 40000)
+            return 200.0;
+        if (v <= 50000)
+            return 250.0;
+        if (v <= 63000)
+            return 320.0;
+    }
+    if (pd == 2 && mg == 2)
+    {
+        if (v <= 10)
+            return 0.400;
+        if (v <= 12.5)
+            return 0.420;
+        if (v <= 16)
+            return 0.450;
+        if (v <= 20)
+            return 0.480;
+        if (v <= 25)
+            return 0.500;
+        if (v <= 32)
+            return 0.53;
+        if (v <= 40)
+            return 0.80;
+        if (v <= 50)
+            return 0.85;
+        if (v <= 63)
+            return 0.90;
+        if (v <= 80)
+            return 0.95;
+        if (v <= 100)
+            return 1.00;
+        if (v <= 125)
+            return 1.05;
+        if (v <= 160)
+            return 1.10;
+        if (v <= 200)
+            return 1.40;
+        if (v <= 250)
+            return 1.80;
+        if (v <= 320)
+            return 2.20;
+        if (v <= 400)
+            return 2.8;
+        if (v <= 500)
+            return 3.6;
+        if (v <= 630)
+            return 4.5;
+        if (v <= 800)
+            return 5.6;
+        if (v <= 1000)
+            return 7.1;
+        if (v <= 1250)
+            return 9.0;
+        if (v <= 1600)
+            return 11.0;
+        if (v <= 2000)
+            return 14.0;
+        if (v <= 2500)
+            return 18.0;
+        if (v <= 3200)
+            return 22.0;
+        if (v <= 4000)
+            return 28.0;
+        if (v <= 5000)
+            return 36.0;
+        if (v <= 6300)
+            return 45.0;
+        if (v <= 8000)
+            return 56.0;
+        if (v <= 10000)
+            return 71.0;
+        if (v <= 12500)
+            return 90.0;
+        if (v <= 16000)
+            return 110.0;
+        if (v <= 20000)
+            return 140.0;
+        if (v <= 25000)
+            return 180.0;
+        if (v <= 32000)
+            return 220.0;
+        if (v <= 40000)
+            return 280.0;
+        if (v <= 50000)
+            return 360.0;
+        if (v <= 63000)
+            return 450.0;
+    }
+    if (pd == 2
+        && ( mg == 3 || mg == 4))
+    {
+        if (v <= 10)
+            return 0.400;
+        if (v <= 12.5)
+            return 0.420;
+        if (v <= 16)
+            return 0.450;
+        if (v <= 20)
+            return 0.480;
+        if (v <= 25)
+            return 0.500;
+        if (v <= 32)
+            return 0.53;
+        if (v <= 40)
+            return 1.10;
+        if (v <= 50)
+            return 1.20;
+        if (v <= 63)
+            return 1.25;
+        if (v <= 80)
+            return 1.30;
+        if (v <= 100)
+            return 1.40;
+        if (v <= 125)
+            return 1.50;
+        if (v <= 160)
+            return 1.60;
+        if (v <= 50000)
+            return v / 100;
+        if (v <= 63000)
+            return 600.0;
+    }
+    if (pd == 3 && mg == 1)
+    {
+        if (v <= 10)
+            return 1.000;
+        if (v <= 12.5)
+            return 1.050;
+        if (v <= 16)
+            return 1.100;
+        if (v <= 20)
+            return 1.200;
+        if (v <= 25)
+            return 1.250;
+        if (v <= 32)
+            return 1.30;
+        if (v <= 40)
+            return 1.40;
+        if (v <= 50)
+            return 1.50;
+        if (v <= 63)
+            return 1.60;
+        if (v <= 80)
+            return 1.70;
+        if (v <= 100)
+            return 1.80;
+        if (v <= 125)
+            return 1.90;
+        if (v <= 160)
+            return 2.00;
+        if (v <= 200)
+            return 2.50;
+        if (v <= 250)
+            return 3.20;
+        if (v <= 320)
+            return 4.00;
+        if (v <= 400)
+            return 5.0;
+        if (v <= 500)
+            return 6.3;
+        if (v <= 630)
+            return 8.0;
+        if (v <= 800)
+            return 10.0;
+        if (v <= 1000)
+            return 12.5;
+        if (v <= 1250)
+            return 16.0;
+        if (v <= 1600)
+            return 20.0;
+        if (v <= 2000)
+            return 25.0;
+        if (v <= 2500)
+            return 32.0;
+        if (v <= 3200)
+            return 40.0;
+        if (v <= 4000)
+            return 50.0;
+        if (v <= 5000)
+            return 63.0;
+        if (v <= 6300)
+            return 80.0;
+        if (v <= 8000)
+            return 100.0;
+        if (v <= 10000)
+            return 125.0;
+    }
+    if (pd == 3 && mg == 2)
+    {
+        if (v <= 10)
+            return 1.000;
+        if (v <= 12.5)
+            return 1.050;
+        if (v <= 16)
+            return 1.100;
+        if (v <= 20)
+            return 1.200;
+        if (v <= 25)
+            return 1.250;
+        if (v <= 32)
+            return 1.30;
+        if (v <= 40)
+            return 1.60;
+        if (v <= 50)
+            return 1.70;
+        if (v <= 63)
+            return 1.80;
+        if (v <= 80)
+            return 1.90;
+        if (v <= 100)
+            return 2.00;
+        if (v <= 125)
+            return 2.10;
+        if (v <= 160)
+            return 2.20;
+        if (v <= 200)
+            return 2.80;
+        if (v <= 250)
+            return 3.60;
+        if (v <= 320)
+            return 4.50;
+        if (v <= 400)
+            return 5.6;
+        if (v <= 500)
+            return 7.1;
+        if (v <= 630)
+            return 9.0;
+        if (v <= 800)
+            return 11.0;
+        if (v <= 1000)
+            return 14.0;
+        if (v <= 1250)
+            return 18.0;
+        if (v <= 1600)
+            return 22.0;
+        if (v <= 2000)
+            return 28.0;
+        if (v <= 2500)
+            return 36.0;
+        if (v <= 3200)
+            return 45.0;
+        if (v <= 4000)
+            return 56.0;
+        if (v <= 5000)
+            return 71.0;
+        if (v <= 6300)
+            return 90.0;
+        if (v <= 8000)
+            return 110.0;
+        if (v <= 10000)
+            return 140.0;
+    }
+    if (pd == 3
+        && ( mg == 3 || mg == 4))
+    {
+        if (v <= 10)
+            return 1.000;
+        if (v <= 12.5)
+            return 1.050;
+        if (v <= 16)
+            return 1.100;
+        if (v <= 20)
+            return 1.200;
+        if (v <= 25)
+            return 1.250;
+        if (v <= 32)
+            return 1.30;
+        if (v <= 40)
+            return 1.80;
+        if (v <= 50)
+            return 1.90;
+        if (v <= 63)
+            return 2.00;
+        if (v <= 80)
+            return 2.10;
+        if (v <= 100)
+            return 2.20;
+        if (v <= 125)
+            return 2.40;
+        if (v <= 160)
+            return 2.50;
+        if (v <= 200)
+            return 3.20;
+        if (v <= 250)
+            return 4.00;
+        if (v <= 320)
+            return 5.00;
+        if (v <= 400)
+            return 6.3;
+        if (v <= 500)
+            return 8.0;
+        if (v <= 630)
+            return 10.0;
+        if (v <= 800)
+            return 12.5;
+        if (v <= 1000)
+            return 16.0;
+        if (v <= 1250)
+            return 20.0;
+        if (v <= 1600)
+            return 25.0;
+        if (v <= 2000)
+            return 32.0;
+        if (v <= 2500)
+            return 40.0;
+        if (v <= 3200)
+            return 50.0;
+        if (v <= 4000)
+            return 63.0;
+        if (v <= 5000)
+            return 80.0;
+        if (v <= 6300)
+            return 100.0;
+        if (v <= 8000)
+            return 125.0;
+        if (v <= 10000)
+            return 160.0;
+    }
+
+    return -1; // Pointed out of the table.
+}
+
+/* The procedure of charts G.1 and H.1: clearance is the worse of what the
+   transient demands and what the working peak demands, scaled for altitude;
+   creepage comes from the rms working voltage and doubles for reinforced
+   insulation. Creepage is then floored at the clearance, because a path along
+   a surface cannot be shorter than the path through the air beside it. */
+function iecCompute(o) {
+  const impulse = iecRatedImpulse(o.vmains, o.ovc);
+  let transientKV = impulse / 1000;
+  if (o.ins === "reinforced") {
+    /* 5.2.5: reinforced steps up the preferred series rather than scaling */
+    const STEP = { 0.33: 0.5, 0.5: 0.8, 0.8: 1.5, 1.5: 2.5, 2.5: 4, 4: 6, 6: 8, 8: 12 };
+    transientKV = STEP[transientKV] !== undefined ? STEP[transientKV] : transientKV * 1.6;
+  }
+  const peakKV = (o.ins === "reinforced" ? o.vpeak * 1.6 : o.vpeak) / 1000;
+  const c1 = iecClearanceTransient(transientKV, o.pd, o.field);
+  const c2 = iecClearancePeak(peakKV, o.field);
+  let clearance = (c1 === -1 || c2 === -1) ? -1 : Math.max(c1, c2);
+  if (clearance > 0) clearance *= iecAltitudeFactor(o.alt);
+  let creepage = iecBasicCreepage(o.vrms, o.pd, o.mg, o.pcb);
+  if (creepage > 0 && o.ins === "reinforced") creepage *= 2;
+  if (creepage < clearance || clearance <= 0) creepage = clearance;
+  return { impulse: impulse, transientKV: transientKV, clearance: clearance,
+           creepage: creepage, groove: iecGrooveWidth(o.pd, clearance) };
+}
+
+function calcIEC() {
+  const vrms = numOr("iec-vrms", 230, 0);
+  const vmains = numOr("iec-vmains", 230, 0);
+  const alt = numOr("iec-alt", 2000, 0);
+  const vpeakIn = val("iec-vpeak");
+  const vpeak = isFinite(vpeakIn) && vpeakIn > 0 ? vpeakIn : vrms * Math.SQRT2;
+  if (!isFinite(vrms) || !isFinite(vmains) || !isFinite(alt)) { render("iec-out", []); return; }
+  const o = {
+    vrms: vrms, vmains: vmains, alt: alt, vpeak: vpeak,
+    ins: document.getElementById("iec-ins").value,
+    ovc: parseInt(document.getElementById("iec-ovc").value, 10),
+    pd: parseInt(document.getElementById("iec-pd").value, 10),
+    mg: parseInt(document.getElementById("iec-mg").value, 10),
+    field: document.getElementById("iec-field").value,
+    pcb: document.getElementById("iec-pcb").value === "1"
+  };
+  const r = iecCompute(o);
+  const mm = function (x) { return x > 0 ? x.toPrecision(3) + " mm" : "outside the table"; };
+  const rows = [
+    ["Rated impulse withstand", r.impulse > 0 ? (r.impulse / 1000).toPrecision(3) + " kV" : "outside the table"],
+    ["Clearance", mm(r.clearance)],
+    ["Creepage", mm(r.creepage)]
+  ];
+  if (r.groove > 0) rows.push(["Minimum groove width", mm(r.groove) + " \u2014 a narrower groove does not count towards creepage"]);
+  if (o.ins === "reinforced") {
+    rows.push(["Reinforced", "clearance taken at the next step up the preferred series (" +
+               r.transientKV.toPrecision(3) + " kV), creepage doubled"]);
+  }
+  if (r.creepage > 0 && r.clearance > 0 && Math.abs(r.creepage - r.clearance) < 1e-9) {
+    rows.push(["", "Creepage has been floored at the clearance: the table gives a shorter surface path than the " +
+               "air path, which cannot be built.", ""]);
+  }
+  if (r.clearance <= 0 || r.creepage <= 0) {
+    rows.push(["", "Some part of this falls outside the tables in the standard. Check the voltages, and note " +
+               "that pollution degree 4 is not covered here at all.", "err"]);
+  }
+  if (alt > 2000) {
+    rows.push(["Altitude", "clearance multiplied by " + iecAltitudeFactor(alt).toFixed(2) +
+               " for " + alt + " m \u2014 thin air breaks down sooner; creepage is unaffected"]);
+  }
+  render("iec-out", rows);
+}
+
 /* ---------- wiring ---------- */
 
 const CALCS = {
   th:  { calc: calcThermal, inputs: ["th-p","th-jc","th-cs","th-sa","th-ja","th-tjmax","th-tjtarget","th-tj","th-ta"] },
   pdn: { calc: calcPDN, inputs: ["pdn-v","pdn-ripple","pdn-i","pdn-tr","pdn-fmax"] },
-  pad: { calc: calcPad, inputs: ["pad-a","pad-z0","pad-z2","pad-series"] },
+  pad: { calc: calcPad, inputs: ["pad-topo","pad-a","pad-zin","pad-zout","pad-series"] },
   ee:  { calc: calcEreff, inputs: ["ee-w","ee-h","ee-er","ee-f","ee-oz"] },
   dp:  { calc: calcDiff, inputs: ["dp-struct","dp-w","dp-s","dp-h","dp-er","dp-target","dp-oz"] },
   bat: { calc: calcBattery, inputs: ["bat-chem","bat-mah","bat-vfull","bat-v","bat-vmin","bat-s","bat-p","bat-load","bat-loadunit","bat-usable","bat-crate"] },
@@ -4407,10 +5855,11 @@ const CALCS = {
   flt: { calc: calcFilter, inputs: ["flt-type","flt-resp","flt-order","flt-r","flt-c","flt-l","flt-f"] },
   re:  { calc: calcReact, inputs: ["re-f","re-c","re-l","re-esl","re-esr","re-n","re-epc","re-dcr"] },
   tw:  { calc: calcTrace, inputs: ["tw-i","tw-w","tw-layer","tw-len","tw-f","tw-oz","tw-dt","tw-ta"] },
-  via: { calc: calcVia, inputs: ["via-d","via-tp","via-h","via-pad","via-anti","via-er","via-i","via-n","via-arlimit","via-stub","via-dt"] },
+  via: { calc: calcVia, inputs: ["via-d","via-tp","via-h","via-pad","via-anti","via-er","via-i","via-n","via-arlimit","via-stub","via-tr","via-z0","via-dt"] },
   fu:  { calc: calcFuse, inputs: ["fu-w","fu-t","fu-k","fu-oz","fu-ta"] },
   spc: { calc: calcSpacing, inputs: ["spc-v"] },
-  z:   { calc: calcZ, inputs: ["z-struct","z-w","z-h","z-er","z-ermask","z-c","z-s","z-f","z-oz"] },
+  iec: { calc: calcIEC, inputs: ["iec-ins","iec-vrms","iec-vpeak","iec-ovc","iec-vmains","iec-pd","iec-mg","iec-pcb","iec-field","iec-alt"] },
+  z:   { calc: calcZ, inputs: ["z-struct","z-w","z-h","z-er","z-ermask","z-c","z-s","z-f","z-tand","z-rough","z-oz"] },
   vs:  { calc: calcViaShield, inputs: ["vs-f","vs-tr","vs-er","vs-frac","vs-pitch","vs-len","vs-d"] },
   wl:  { calc: calcWave, inputs: ["wl-f","wl-tr","wl-eeff","wl-period","wl-div"] },
   xc:  { calc: calcXtal, inputs: ["xc-cl","xc-c1","xc-c2","xc-cs"] },

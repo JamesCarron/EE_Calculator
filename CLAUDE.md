@@ -62,6 +62,14 @@ A card whose fields depend on a selector hides the ones that do not apply, from 
 
 Shared board settings (copper weight, temp rise, ambient, E-series) are discovered from `data-mirror` attributes rather than hard-coded id lists: they appear on every card that reads them, with one value behind all copies.
 
+## Standards tables
+
+Where a card implements a published standard, **transcribe the tables mechanically, never by hand**. A typo in an IEC clearance table produces a plausible number that no unit test catches and that a reviewer will not spot. `eecalc_iec60664_transcribe.py` translates KiCad's C++ ladders into JavaScript token for token and is re-runnable; do the same for any future table.
+
+Then check the result against values published *independently* of the source you transcribed from. For IEC 60664-1 those are the ones every safety design note quotes — 2.5 kV impulse and 1.5 mm clearance at 230 V category II pollution degree 2, 3.0 mm reinforced, 1.0 mm creepage on a board at 250 V pollution degree 2 material group II — plus the monotonicity properties, since a worse pollution degree or material group can never require *less* creepage.
+
+IEC 60664-1 is paywalled and its tables came from KiCad, which is GPL-3.0. That was flagged and the user decided; note it rather than re-litigating it, and flag the same thing again for any future standard.
+
 ## Honesty about models
 
 Each card names its model and its validity window, and refuses geometry outside that window rather than returning a number that looks fine. Where a real answer lies between two computable limits — covered microstrip, say — give the bracket rather than inventing an interpolation curve. Indicative curves that are not from the user's own part must say so on the card.
