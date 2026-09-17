@@ -38,7 +38,7 @@ from dataclasses import dataclass, field, asdict
 from pathlib import Path
 
 # where `pixi run setup-em` puts the Windows runtime
-DEFAULT_RUNTIME = str(Path(__file__).resolve().parents[2] / "user_data" / "openems" / "openEMS")
+DEFAULT_RUNTIME = str(Path(__file__).resolve().parents[3] / "user_data" / "openems" / "openEMS")
 
 C0 = 299792458.0
 EPS0 = 8.8541878128e-12

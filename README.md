@@ -11,11 +11,12 @@ Copper weight, temperature rise, ambient and the E-series sit **on the cards tha
 ```
 EE_Calculator.html     the product - one self-contained file, open it directly
 EE_Calculator.bat      rebuild if pixi is present, then open
-src/                   everything that builds the page
+src/eecalc/            the package; everything that builds the page
   build_page.py          the generator; the whole HTML/CSS/JS template lives here
-  theme_inline.py        inlines the stylesheet and fonts as base64
-  theme/                 stylesheet and woff2 fonts
+  paths.py               the only module that knows where data lives
   em/model.py            openEMS model generation for pad capacitance
+  vendor/theme_inline.py inlines the stylesheet and fonts as base64
+  vendor/theme/          stylesheet and woff2 fonts, copied from Tools\brand
 ext/openEMS-Project/   the solver, pinned as a git submodule
 tests/                 every suite and structural checker; `pixi run test`
   js/                  node suites against the page's own JavaScript

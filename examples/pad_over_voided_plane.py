@@ -14,13 +14,11 @@ It writes the scripts and prints what each one costs to solve. Running them
 needs the runtime: pixi run setup-em.
 """
 
-import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(ROOT / "src"))
+from eecalc.em.model import PadModel, Plane, build_script
 
-from em.model import PadModel, Plane, build_script  # noqa: E402
+ROOT = Path(__file__).resolve().parent.parent
 
 OUT = ROOT / "user_data" / "em_models"
 

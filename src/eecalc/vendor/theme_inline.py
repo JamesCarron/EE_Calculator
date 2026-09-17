@@ -3,7 +3,7 @@
 Written 2026-08-26; vendored into this tool 2026-09-10 so the page has no
 dependency outside its own folder.
 
-    from theme_inline import inline_into
+    from eecalc.vendor.theme_inline import inline_into
     html = inline_into(html)          # adds <style> right after <head>
 
 Why the fonts are embedded

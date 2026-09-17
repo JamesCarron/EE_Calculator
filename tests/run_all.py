@@ -12,6 +12,7 @@ Usage: pixi run test        (or: python tests/run_all.py)
 
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 # The suites print the page's own units - ohms, micro, degrees - and a failure
@@ -33,7 +34,7 @@ WORK = HERE / ".work"
 # structural checkers, in the order that fails most informatively: a page that
 # does not load makes every other failure noise
 CHECKERS = [
-    ("page builds", [sys.executable, str(ROOT / "src" / "build_page.py")]),
+    ("page builds", [sys.executable, str(ROOT / "src" / "eecalc" / "build_page.py")]),
     ("harness", [sys.executable, str(CHECKS / "mkharness.py")]),
     ("script loads", [sys.executable, str(CHECKS / "load_check.py")]),
     ("diagram geometry", [sys.executable, str(CHECKS / "diagram_check.py")]),
@@ -53,6 +54,12 @@ def main():
     WORK.mkdir(exist_ok=True)
 
     failures = []
+    # The build writes the page from a path of its own; if that path ever stops being
+    # this repo's root the checkers go on reading a stale page and the whole run passes
+    # on yesterday's output. That happened once during the 2026-09-17 package move.
+    page = ROOT / "EE_Calculator.html"
+    started = time.time()
+
     for name, cmd in CHECKERS:
         if only and only not in name:
             continue
@@ -64,6 +71,11 @@ def main():
             for line in (r.stdout or "").splitlines():
                 if "FAIL" in line:
                     print("      " + line.strip())
+
+    if not only and not (page.exists() and page.stat().st_mtime >= started - 1):
+        print()
+        print("the build did not write " + str(page) + " - every check below read a stale page")
+        sys.exit(1)
 
     harness = WORK / "harness.js"
     if not harness.exists():

@@ -4,9 +4,9 @@ Conventions for this tool specifically. The user-level and `C:\Auterion` instruc
 
 ## What this is
 
-`src/build_page.py` generates one self-contained `EE_Calculator.html` at the repo root. The whole HTML/CSS/JS template lives in a raw string in that file, so **every change is an edit to `src/build_page.py` followed by `pixi run build`** — never edit the generated HTML except to test something throwaway. Logic lives in JS because the page is interactive at runtime; Python only assembles it, so there is no second implementation and no parity test owed.
+`src/eecalc/build_page.py` generates one self-contained `EE_Calculator.html` at the repo root. The whole HTML/CSS/JS template lives in a raw string in that file, so **every change is an edit to `src/eecalc/build_page.py` followed by `pixi run build`** — never edit the generated HTML except to test something throwaway. Logic lives in JS because the page is interactive at runtime; Python only assembles it, so there is no second implementation and no parity test owed.
 
-Patch `src/build_page.py` with a script written to the scratchpad, not with a shell heredoc. Backslash escapes in a non-raw Python string have silently corrupted anchors several times — `\b` became a backspace inside a regex, `\n` became a real newline inside a JS string literal. The file also contains literal Unicode (Ω, ±, —, ε), not `\u` escapes, so match those characters literally.
+Patch `src/eecalc/build_page.py` with a script written to the scratchpad, not with a shell heredoc. Backslash escapes in a non-raw Python string have silently corrupted anchors several times — `\b` became a backspace inside a regex, `\n` became a real newline inside a JS string literal. The file also contains literal Unicode (Ω, ±, —, ε), not `\u` escapes, so match those characters literally.
 
 ## Graphs
 
@@ -76,7 +76,7 @@ Each card names its model and its validity window, and refuses geometry outside 
 
 ## Layout
 
-`src/` builds the page, `tests/` checks it — `tests/js/` for the node suites, `tests/checks/` for the Python structural checkers, `tests/run_all.py` as the one runner — `ext/` holds the openEMS submodule, `scripts/` has the setup scripts and `where.py`, `docs/` the design documents and the refactor plan, `examples/` the worked examples, and `user_data/` the things that are never committed. The generated `EE_Calculator.html` and its launcher stay at the repo root because they are the product; everything else is how it is made.
+`src/eecalc/` is the package that builds the page, `tests/` checks it — `tests/js/` for the node suites, `tests/checks/` for the Python structural checkers, `tests/run_all.py` as the one runner — `ext/` holds the openEMS submodule, `scripts/` has the setup scripts and `where.py`, `docs/` the design documents and the refactor plan, `examples/` the worked examples, and `user_data/` the things that are never committed. The generated `EE_Calculator.html` and its launcher stay at the repo root because they are the product; everything else is how it is made.
 
 The tests live in `tests/`, not in `Tools\claude\scratch\` where they started. Suites are named after what they test, never after the sprint that produced them: the four `s2` to `s5` suites became `thermal_rf`, `passives_conversions`, `impedance` and `trace_width` on 2026-09-17. They are this project's tests rather than general-purpose analysis scripts, so they belong with the project; the scratch folder keeps only what is genuinely reusable elsewhere.
 

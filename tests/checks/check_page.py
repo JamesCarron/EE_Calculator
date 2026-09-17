@@ -44,7 +44,7 @@ print("page bytes:", len(html))
 # ---- every card that reads a shared value must also SHOW that control ----
 import re as _re
 
-src = (REPO / "src" / "build_page.py").read_text(encoding="utf-8")
+src = (REPO / "src" / "eecalc" / "build_page.py").read_text(encoding="utf-8")
 _js = src[src.index("/* ---------- value parsing"):]
 _funcs = {}
 for _m in _re.finditer(r"function (calc\w+)\(\) \{", _js):

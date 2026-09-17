@@ -6,7 +6,7 @@ platforms = ["win-64"]
 version = "0.1.0"
 
 [tasks]
-build = "python src/build_page.py"
+build = "python src/eecalc/build_page.py"
 test = "python tests/run_all.py"
 setup-em = "python scripts/setup_openems.py"
 where = "python scripts/where.py"

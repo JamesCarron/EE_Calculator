@@ -4,7 +4,7 @@ Written 2026-08-26.
 
 All calculator logic is in-page JavaScript because the page is interactive at
 runtime with no server; Python here is only the build harness. The house
-stylesheet and its two webfonts are inlined via the local `theme_inline`
+stylesheet and its two webfonts are inlined via the vendored `theme_inline`
 module, so the output works offline, opened straight from the filesystem.
 
 Verified by: building and exercising every tab in a browser (divider results
@@ -18,8 +18,8 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 # the page is the product, so it is written to the repo root; everything
-# that builds it lives under src/
-OUT = HERE.parent / "EE_Calculator.html"
+# that builds it lives under src/eecalc/
+OUT = HERE.parents[1] / "EE_Calculator.html"
 
 HTML = r"""<!doctype html>
 <html lang="en">
@@ -6023,10 +6023,10 @@ def write_sqrt(html: str) -> str:
 def main() -> None:
     html = write_sqrt(HTML)
     try:
-        from theme_inline import inline_into
+        from eecalc.vendor.theme_inline import inline_into
         html = inline_into(html)
     except ImportError:
-        print("build_page: theme_inline not found - writing page without house styling", file=sys.stderr)
+        print("build_page: vendor.theme_inline not found - writing page without house styling", file=sys.stderr)
     OUT.write_text(html, encoding="utf-8")
     print(f"wrote {OUT} ({OUT.stat().st_size:,} bytes)")
 
