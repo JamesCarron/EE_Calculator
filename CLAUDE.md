@@ -76,7 +76,7 @@ Each card names its model and its validity window, and refuses geometry outside 
 
 ## Layout
 
-`src/` builds the page, `tests/` checks it — `tests/js/` for the node suites, `tests/checks/` for the Python structural checkers, `tests/run_all.py` as the one runner — `ext/` holds the openEMS submodule, `tools/` has the setup scripts, `docs/` the design documents and the refactor plan, `examples/` the worked examples, and `user_data/` the things that are never committed. The generated `EE_Calculator.html` and its launcher stay at the repo root because they are the product; everything else is how it is made.
+`src/` builds the page, `tests/` checks it — `tests/js/` for the node suites, `tests/checks/` for the Python structural checkers, `tests/run_all.py` as the one runner — `ext/` holds the openEMS submodule, `scripts/` has the setup scripts and `where.py`, `docs/` the design documents and the refactor plan, `examples/` the worked examples, and `user_data/` the things that are never committed. The generated `EE_Calculator.html` and its launcher stay at the repo root because they are the product; everything else is how it is made.
 
 The tests live in `tests/`, not in `Tools\claude\scratch\` where they started. Suites are named after what they test, never after the sprint that produced them: the four `s2` to `s5` suites became `thermal_rf`, `passives_conversions`, `impedance` and `trace_width` on 2026-09-17. They are this project's tests rather than general-purpose analysis scripts, so they belong with the project; the scratch folder keeps only what is genuinely reusable elsewhere.
 

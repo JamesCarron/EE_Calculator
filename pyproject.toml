@@ -1,0 +1,15 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "eecalc"
+version = "0.1.0"
+description = "Electrical engineering calculators as one self-contained HTML page"
+requires-python = ">=3.11"
+# Dependencies are declared in pixi.toml, which owns the environment. This file exists
+# so the package can be installed editable and to hold tool configuration.
+dependencies = []
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/eecalc"]

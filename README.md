@@ -21,7 +21,7 @@ tests/                 every suite and structural checker; `pixi run test`
   js/                  node suites against the page's own JavaScript
   checks/              Python structural checkers and the harness generator
   run_all.py           the one runner
-tools/setup_openems.py fetches the solver runtime into user_data/
+scripts/                 setup_openems.py fetches the solver runtime; where.py prints the data locations
 docs/                  design documents and the reference screenshots
 examples/              worked examples that generate solver models
 user_data/             never committed; solver runtime and generated models

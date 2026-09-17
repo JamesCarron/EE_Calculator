@@ -8,7 +8,8 @@ version = "0.1.0"
 [tasks]
 build = "python src/build_page.py"
 test = "python tests/run_all.py"
-setup-em = "python tools/setup_openems.py"
+setup-em = "python scripts/setup_openems.py"
+where = "python scripts/where.py"
 
 [dependencies]
 # 3.11 because that is what the openEMS v0.0.36 Windows wheels are built for
@@ -16,3 +17,9 @@ python = "3.11.*"
 pip = "*"
 numpy = "*"
 h5py = "*"
+platformdirs = "*"
+
+[pypi-dependencies]
+# The package itself, editable: this is what makes the src/ layout importable from
+# scripts/ and tests/ without path hacks.
+eecalc = { path = ".", editable = true }
