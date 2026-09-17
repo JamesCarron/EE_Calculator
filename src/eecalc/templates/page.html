@@ -1,0 +1,1148 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EE Calculator</title>
+<style>
+{{page.css}}</style>
+</head>
+<body>
+<header class="site wrap">
+  <h1>EE Calculator</h1>
+</header>
+
+<div class="wrap">
+<nav class="tabs" role="tablist" id="tabbar">
+  <button role="tab" data-tab="fund" aria-selected="true">Fundamentals</button>
+  <button role="tab" data-tab="res" aria-selected="false">Resistors</button>
+  <button role="tab" data-tab="tol" aria-selected="false">Tolerance</button>
+  <button role="tab" data-tab="filt" aria-selected="false">Filters &amp; Resonance</button>
+  <button role="tab" data-tab="copper" aria-selected="false">PCB Copper</button>
+  <button role="tab" data-tab="signal" aria-selected="false">PCB Signal</button>
+  <button role="tab" data-tab="pwr" aria-selected="false">Power &amp; Thermal</button>
+  <button role="tab" data-tab="util" aria-selected="false">Utilities</button>
+</nav>
+</div>
+
+<main class="wrap">
+
+<section class="panel active" id="panel-fund">
+  <h2>Fundamentals</h2>
+  <p class="hint">Basic network arithmetic. Every field accepts SI suffixes (<code>4k7</code>, <code>10n</code>, <code>2.2M</code>).</p>
+  <div class="card">
+    <h3>Ohm&rsquo;s law and power</h3>
+    <div class="cardrow">
+    <div class="fields">
+      <div class="field"><label for="ohm-v">Voltage V (V)</label><input id="ohm-v" inputmode="decimal" placeholder="e.g. 12"></div>
+      <div class="field"><label for="ohm-i">Current I (A)</label><input id="ohm-i" inputmode="decimal" placeholder="e.g. 20m"></div>
+      <div class="field"><label for="ohm-r">Resistance R (&Omega;)</label><input id="ohm-r" inputmode="decimal" placeholder="e.g. 4k7"></div>
+      <div class="field"><label for="ohm-p">Power P (W)</label><input id="ohm-p" inputmode="decimal" placeholder="e.g. 250m"></div>
+    </div>
+    <svg class="schem" width="210" height="130" viewBox="0 0 210 130" role="img" aria-label="Voltage source driving a resistor">
+      <circle class="wire" cx="35" cy="65" r="14"/>
+      <text x="31" y="69">V</text>
+      <path class="wire" d="M35 51 V25 H160 V45"/>
+      <path class="wire" d="M160 85 V105 H35 V79"/>
+      <rect class="wire" x="149" y="45" width="22" height="40"/>
+      <text x="180" y="69">R</text>
+      <path class="dot" d="M92 20 L104 25 L92 30 Z"/>
+      <text x="86" y="14">I</text>
+      <text x="60" y="122">P = V&#183;I</text>
+    </svg>
+    <svg class="schem" width="240" height="240" viewBox="0 0 240 240" role="img" aria-label="Ohm and power law wheel: the four quantities at the hub, each surrounded by the three ways of computing it from the other two">
+      <path class="wire" d="M120.0 68.0 L120.0 8.0 A112 112 0 0 1 176.0 23.0 L146.0 75.0 A52 52 0 0 0 120.0 68.0 Z"/>
+      <text x="135.3" y="63.0" font-size="9" dominant-baseline="middle" transform="rotate(-75.0 135.3 63.0)">V=I&middot;R</text>
+      <path class="wire" d="M146.0 75.0 L176.0 23.0 A112 112 0 0 1 217.0 64.0 L165.0 94.0 A52 52 0 0 0 146.0 75.0 Z"/>
+      <text x="161.7" y="78.3" font-size="9" dominant-baseline="middle" transform="rotate(-45.0 161.7 78.3)">V=P/I</text>
+      <path class="wire" d="M165.0 94.0 L217.0 64.0 A112 112 0 0 1 232.0 120.0 L172.0 120.0 A52 52 0 0 0 165.0 94.0 Z"/>
+      <text x="177.0" y="104.7" font-size="9" dominant-baseline="middle" transform="rotate(-15.0 177.0 104.7)">V&sup2;=P&middot;R</text>
+      <path class="wire" d="M172.0 120.0 L232.0 120.0 A112 112 0 0 1 217.0 176.0 L165.0 146.0 A52 52 0 0 0 172.0 120.0 Z"/>
+      <text x="177.0" y="135.3" font-size="9" dominant-baseline="middle" transform="rotate(15.0 177.0 135.3)">R=V/I</text>
+      <path class="wire" d="M165.0 146.0 L217.0 176.0 A112 112 0 0 1 176.0 217.0 L146.0 165.0 A52 52 0 0 0 165.0 146.0 Z"/>
+      <text x="161.7" y="161.7" font-size="9" dominant-baseline="middle" transform="rotate(45.0 161.7 161.7)">R=V&sup2;/P</text>
+      <path class="wire" d="M146.0 165.0 L176.0 217.0 A112 112 0 0 1 120.0 232.0 L120.0 172.0 A52 52 0 0 0 146.0 165.0 Z"/>
+      <text x="135.3" y="177.0" font-size="9" dominant-baseline="middle" transform="rotate(75.0 135.3 177.0)">R=P/I&sup2;</text>
+      <path class="wire" d="M120.0 172.0 L120.0 232.0 A112 112 0 0 1 64.0 217.0 L94.0 165.0 A52 52 0 0 0 120.0 172.0 Z"/>
+      <text x="92.8" y="221.4" font-size="9" dominant-baseline="middle" transform="rotate(285.0 92.8 221.4)">P=V&middot;I</text>
+      <path class="wire" d="M94.0 165.0 L64.0 217.0 A112 112 0 0 1 23.0 176.0 L75.0 146.0 A52 52 0 0 0 94.0 165.0 Z"/>
+      <text x="45.8" y="194.2" font-size="9" dominant-baseline="middle" transform="rotate(315.0 45.8 194.2)">P=I&sup2;&middot;R</text>
+      <path class="wire" d="M75.0 146.0 L23.0 176.0 A112 112 0 0 1 8.0 120.0 L68.0 120.0 A52 52 0 0 0 75.0 146.0 Z"/>
+      <text x="18.6" y="147.2" font-size="9" dominant-baseline="middle" transform="rotate(345.0 18.6 147.2)">P=V&sup2;/R</text>
+      <path class="wire" d="M68.0 120.0 L8.0 120.0 A112 112 0 0 1 23.0 64.0 L75.0 94.0 A52 52 0 0 0 68.0 120.0 Z"/>
+      <text x="18.6" y="92.8" font-size="9" dominant-baseline="middle" transform="rotate(375.0 18.6 92.8)">I=V/R</text>
+      <path class="wire" d="M75.0 94.0 L23.0 64.0 A112 112 0 0 1 64.0 23.0 L94.0 75.0 A52 52 0 0 0 75.0 94.0 Z"/>
+      <text x="45.8" y="45.8" font-size="9" dominant-baseline="middle" transform="rotate(405.0 45.8 45.8)">I=P/V</text>
+      <path class="wire" d="M94.0 75.0 L64.0 23.0 A112 112 0 0 1 120.0 8.0 L120.0 68.0 A52 52 0 0 0 94.0 75.0 Z"/>
+      <text x="92.8" y="18.6" font-size="9" dominant-baseline="middle" transform="rotate(435.0 92.8 18.6)">I&sup2;=P/R</text>
+      <circle class="wire" cx="120" cy="120" r="50"/>
+      <path class="wire" d="M120.0 70.0 L120.0 170.0 M170.0 120.0 L70.0 120.0"/>
+      <text x="139.4" y="100.6" text-anchor="middle" dominant-baseline="middle" font-size="13">V</text>
+      <text x="139.4" y="139.4" text-anchor="middle" dominant-baseline="middle" font-size="13">R</text>
+      <text x="100.6" y="139.4" text-anchor="middle" dominant-baseline="middle" font-size="13">P</text>
+      <text x="100.6" y="100.6" text-anchor="middle" dominant-baseline="middle" font-size="13">I</text>
+      </svg>
+    </div>
+    <dl class="results" id="ohm-out"></dl>
+    <button class="reset" data-reset="ohm">Reset</button>
+  </div>
+  <div class="card">
+    <h3>Series / parallel</h3>
+    <div class="cardrow">
+    <div class="fields">
+      <div class="field"><label for="sp-type">Component</label>
+        <select id="sp-type"><option value="R" selected>Resistors (&Omega;)</option><option value="C">Capacitors (F)</option><option value="L">Inductors (H)</option></select>
+      </div>
+      <div class="field"><label for="sp-v">Applied voltage (V, optional)</label><input id="sp-v" inputmode="decimal" placeholder="e.g. 12"></div>
+      <div class="field" style="flex:1 1 100%"><label for="sp-list">Values</label><textarea id="sp-list" rows="3" placeholder="e.g. 10k, 4k7, 1k"></textarea></div>
+    </div>
+    <div class="diagram" id="sp-diagram"></div>
+    </div>
+    <dl class="results" id="sp-out"></dl>
+    <button class="reset" data-reset="sp">Reset</button>
+  </div>
+</section>
+
+<section class="panel" id="panel-res">
+  <h2>Resistors</h2>
+  <p class="hint">Dividers and LED bias. Both solve in whichever direction you have the numbers for.</p>
+<div class="card">
+    <h3>Divider solver</h3>
+    <div class="cardrow">
+    <div class="fields">
+      <div class="field"><label for="div-vin">V<sub>in</sub> (V)</label><input id="div-vin" inputmode="decimal" placeholder="e.g. 12"></div>
+      <div class="field"><label for="div-vout">V<sub>out</sub> (V)</label><input id="div-vout" inputmode="decimal" placeholder="e.g. 3.3"></div>
+      <div class="field"><label for="div-r1">R1 &mdash; top (&Omega;)</label><input id="div-r1" inputmode="decimal" placeholder="e.g. 10k"></div>
+      <div class="field"><label for="div-r2">R2 &mdash; bottom (&Omega;)</label><input id="div-r2" inputmode="decimal" placeholder="e.g. 4k7"></div>
+      <div class="field"><label for="div-rtot">Total R1&#8202;+&#8202;R2 (&Omega;, optional)</label><input id="div-rtot" inputmode="decimal" placeholder="e.g. 100k"></div>
+      <div class="field"><label for="div-iload">Load current at midpoint (A, optional)</label><input id="div-iload" inputmode="decimal" placeholder="e.g. 50u"></div>
+          <div class="field"><label for="div-series">E-series</label>
+        <select id="div-series" data-mirror="series"><option value="E12">E12 (10 %)</option><option value="E24">E24 (5 %)</option><option value="E96" selected>E96 (1 %)</option></select>
+      </div>
+    </div>
+    <svg class="schem" width="210" height="235" viewBox="0 0 210 235" role="img" aria-label="Resistor divider: R1 from Vin to the midpoint, R2 from the midpoint to ground, optional load current out of the midpoint">
+      <circle class="wire" cx="60" cy="18" r="3.5"/>
+      <text x="72" y="22">Vin</text>
+      <path class="wire" d="M60 21.5 V45"/>
+      <rect class="wire" x="49" y="45" width="22" height="46"/>
+      <text x="80" y="72">R1</text>
+      <path class="wire" d="M60 91 V115"/>
+      <circle class="dot" cx="60" cy="115" r="3"/>
+      <path class="wire" d="M60 115 H130"/>
+      <circle class="wire" cx="133.5" cy="115" r="3.5"/>
+      <text x="144" y="119">Vout</text>
+      <path class="wire opt" d="M100 115 V148"/>
+      <path class="dot" d="M96 146 L100 156 L104 146 Z"/>
+      <text x="108" y="150">I load</text>
+      <text x="108" y="163">(optional)</text>
+      <path class="wire" d="M60 115 V133"/>
+      <rect class="wire" x="49" y="133" width="22" height="46"/>
+      <text x="80" y="160">R2</text>
+      <path class="wire" d="M60 179 V202"/>
+      <path class="wire" d="M46 202 H74 M51 209 H69 M56 216 H64"/>
+    </svg>
+    </div>
+    <dl class="results" id="div-out"></dl>
+    <div class="tablewrap"><table class="finder" id="div-table" hidden>
+      <thead><tr><th>R1 (top)</th><th>R2 (bottom)</th><th>V<sub>out</sub></th><th>Error</th><th>Current in R1</th><th>Total R</th></tr></thead>
+      <tbody id="div-body"></tbody>
+    </table></div>
+    <p class="note" id="div-note"></p>
+    <p class="note">Fill in any three of V<sub>in</sub>, V<sub>out</sub>, R1 and R2 &mdash; the fourth is calculated as soon as enough is entered, and a solved resistor gets a nearest-standard-value suggestion. With only V<sub>in</sub> and V<sub>out</sub>, the best standard-value pairs are searched instead (total R, if given, sets the exact solution and steers the search; with one leg known it stands in for the other). The load is a constant current drawn out of the midpoint, so R1 carries the R2 current plus the load; leave it empty for an unloaded divider.</p>
+    <button class="reset" data-reset="div">Reset</button>
+  </div>
+<div class="card">
+    <h3>LED series resistor</h3>
+    <div class="cardrow">
+    <div class="fields">
+      <div class="field"><label for="led-vs">V<sub>supply</sub> (V)</label><input id="led-vs" inputmode="decimal" placeholder="e.g. 5"></div>
+      <div class="field"><label for="led-vf">LED V<sub>f</sub> (V)</label><input id="led-vf" inputmode="decimal" placeholder="e.g. 2.1"></div>
+      <div class="field"><label for="led-if">LED I<sub>f</sub> (A)</label><input id="led-if" inputmode="decimal" placeholder="e.g. 10m"></div>
+      <div class="field"><label for="led-r">Series R (&Omega;)</label><input id="led-r" inputmode="decimal" placeholder="solved, or enter"></div>
+          <div class="field"><label for="led-series">E-series</label>
+        <select id="led-series" data-mirror="series"><option value="E12">E12 (10 %)</option><option value="E24">E24 (5 %)</option><option value="E96" selected>E96 (1 %)</option></select>
+      </div>
+    </div>
+    <svg class="schem" width="250" height="125" viewBox="0 0 250 125" role="img" aria-label="Supply, series resistor, LED to ground">
+      <circle class="wire" cx="18" cy="45" r="3.5"/>
+      <text x="8" y="30">Vs</text>
+      <path class="wire" d="M21.5 45 H50"/>
+      <rect class="wire" x="50" y="37" width="40" height="16"/>
+      <text x="64" y="32">R</text>
+      <path class="wire" d="M90 45 H128"/>
+      <path class="wire" d="M128 31 L128 59 L154 45 Z"/>
+      <path class="wire" d="M154 31 V59"/>
+      <path class="wire" d="M146 26 L157 15 M153 29 L164 18"/>
+      <path class="dot" d="M157 15 L159 21 L163 17 Z"/>
+      <path class="dot" d="M164 18 L166 24 L170 20 Z"/>
+      <text x="126" y="76">LED</text>
+      <path class="wire" d="M154 45 H190 V80"/>
+      <path class="wire" d="M176 80 H204 M181 87 H199 M186 94 H194"/>
+    </svg>
+    </div>
+    <dl class="results" id="led-out"></dl>
+    <button class="reset" data-reset="led">Reset</button>
+  </div>
+
+
+
+</section>
+
+<section class="panel" id="panel-tol">
+  <h2>Tolerance</h2>
+  <p class="hint">What initial tolerance, temperature and time drift do to a part&rsquo;s value &mdash; and, separately, what they do to a divider&rsquo;s <em>ratio</em>, which is a different question because a divider only cares how its two legs move relative to each other.</p>
+<div class="card">
+    <h3>Component tolerance budget</h3>
+    <div class="cardrow">
+    <div class="fields">
+      <div class="field"><label for="ec-type">Component</label>
+        <select id="ec-type">
+          <option value="R" selected>Resistor</option>
+          <option value="C">Capacitor</option>
+          <option value="L">Inductor</option>
+          <option value="X">Crystal / oscillator</option>
+          <option value="V">Voltage reference</option>
+        </select>
+      </div>
+      <div class="field"><label for="ec-val" id="ec-vallabel">Nominal value (&Omega;)</label><input id="ec-val" inputmode="decimal" placeholder="e.g. 10k"></div>
+      <div class="field" id="ec-f-diel" hidden><label for="ec-diel">Dielectric</label>
+        <select id="ec-diel">
+          <option value="C0G">C0G / NP0 &mdash; class 1</option>
+          <option value="X5R" selected>X5R</option>
+          <option value="X7R">X7R</option>
+          <option value="X6S">X6S</option>
+          <option value="X7S">X7S</option>
+          <option value="X8R">X8R</option>
+          <option value="Y5V">Y5V</option>
+          <option value="Z5U">Z5U</option>
+          <option value="other">Other EIA code&hellip;</option>
+        </select>
+      </div>
+      <div class="field" id="ec-f-code" hidden><label for="ec-code">EIA code</label><input id="ec-code" placeholder="e.g. X6T"></div>
+      <div class="field"><label for="ec-tol" id="ec-tollabel">Initial tolerance (%)</label><input id="ec-tol" inputmode="decimal" placeholder="1"></div>
+      <div class="field" id="ec-f-tc"><label for="ec-tc" id="ec-tclabel">Temperature coefficient (ppm/&deg;C)</label><input id="ec-tc" inputmode="decimal" placeholder="100"></div>
+      <div class="field"><label for="ec-tmin">T min (&deg;C)</label><input id="ec-tmin" inputmode="decimal" placeholder="-40"></div>
+      <div class="field"><label for="ec-tmax">T max (&deg;C)</label><input id="ec-tmax" inputmode="decimal" placeholder="85"></div>
+      <div class="field"><label for="ec-tnom">T nominal (&deg;C)</label><input id="ec-tnom" inputmode="decimal" placeholder="25"></div>
+      <div class="field"><label for="ec-age" id="ec-agelabel">Ageing (ppm/year)</label><input id="ec-age" inputmode="decimal" placeholder="0"></div>
+      <div class="field"><label for="ec-life" id="ec-lifelabel">Service life (years)</label><input id="ec-life" inputmode="decimal" placeholder="10"></div>
+      <div class="field" id="ec-f-bias" hidden><label for="ec-bias">DC bias loss at the working voltage (%)</label><input id="ec-bias" inputmode="decimal" placeholder="e.g. 40"></div>
+      <div class="field" id="ec-f-hyst" hidden><label for="ec-hyst">Thermal hysteresis (ppm)</label><input id="ec-hyst" inputmode="decimal" placeholder="e.g. 75"></div>
+    </div>
+    <div class="diagram">
+      <svg class="schem" width="250" height="140" viewBox="0 0 250 140" role="img" aria-label="A tolerance band about a nominal value, stepping wider as temperature and then time are added">
+      <text x="6" y="84">nominal</text>
+      <path class="wire" d="M56 80 H235"/>
+      <path class="dot" d="M64 64 H121 V54 H178 V44 H235 V116 H178 V106 H121 V96 H64 Z" opacity="0.16"/>
+      <path class="wire opt" d="M121 40 V120 M178 40 V120"/>
+      <text x="70" y="34">initial</text>
+      <text x="130" y="34">+ temp</text>
+      <text x="187" y="34">+ time</text>
+    </svg>
+      <p class="plate">worst case = &Sigma;|e<sub>i</sub>| &middot; RSS = &radic;(&Sigma;e<sub>i</sub>&sup2;)</p>
+      <p class="key">Each contribution widens the band; none of them cancel.</p>
+    </div>
+    </div>
+    <dl class="results" id="ec-out"></dl>
+    <p class="note">Worst case adds every contribution at its limit, which is what a screened build must survive. RSS treats them as independent random variables, which is the realistic spread across a production run &mdash; but it assumes independence, and a reel of parts from one lot is <em>not</em> independent, so RSS understates lot-to-lot risk. Class 2 ceramics are the awkward case: their temperature figure is a bound over the dielectric&rsquo;s whole rated range and the curve is not linear, so it cannot be scaled to a narrower range, and DC bias commonly costs more than every other contribution combined.</p>
+    <button class="reset" data-reset="ec">Reset</button>
+  </div>
+  <div class="card">
+    <h3>Divider ratio error</h3>
+    <div class="cardrow">
+    <div class="fields">
+      <div class="field"><label for="ac-r1">R1 &mdash; top (&Omega;)</label><input id="ac-r1" inputmode="decimal" placeholder="e.g. 10k"></div>
+      <div class="field"><label for="ac-r2">R2 &mdash; bottom (&Omega;)</label><input id="ac-r2" inputmode="decimal" placeholder="e.g. 4k7"></div>
+      <div class="field"><label for="ac-vin">V<sub>in</sub> (V, optional)</label><input id="ac-vin" inputmode="decimal" placeholder="e.g. 12"></div>
+      <div class="field"><label for="ac-tol1">R1 tolerance (%)</label><input id="ac-tol1" inputmode="decimal" placeholder="1"></div>
+      <div class="field"><label for="ac-tol2">R2 tolerance (%)</label><input id="ac-tol2" inputmode="decimal" placeholder="1"></div>
+      <div class="field"><label for="ac-tcr1">R1 TCR (ppm/&deg;C)</label><input id="ac-tcr1" inputmode="decimal" placeholder="100"></div>
+      <div class="field"><label for="ac-tcr2">R2 TCR (ppm/&deg;C)</label><input id="ac-tcr2" inputmode="decimal" placeholder="100"></div>
+      <div class="field"><label for="ac-tmin">T min (&deg;C)</label><input id="ac-tmin" inputmode="decimal" placeholder="-40"></div>
+      <div class="field"><label for="ac-tmax">T max (&deg;C)</label><input id="ac-tmax" inputmode="decimal" placeholder="85"></div>
+      <div class="field"><label for="ac-tnom">T nominal (&deg;C)</label><input id="ac-tnom" inputmode="decimal" placeholder="25"></div>
+      <div class="field"><label for="ac-age">Ageing / drift (ppm, optional)</label><input id="ac-age" inputmode="decimal" placeholder="e.g. 500"></div>
+    </div>
+    <svg class="schem" width="150" height="180" viewBox="0 0 150 180" role="img" aria-label="Divider with tolerance bands on each leg">
+      <circle class="wire" cx="55" cy="14" r="3.5"/>
+      <text x="66" y="18">Vin</text>
+      <path class="wire" d="M55 17.5 V38"/>
+      <rect class="wire" x="44" y="38" width="22" height="40"/>
+      <text x="74" y="56">R1 &plusmn;</text>
+      <path class="wire" d="M55 78 V100"/>
+      <circle class="dot" cx="55" cy="100" r="3"/>
+      <path class="wire" d="M55 100 H100"/>
+      <circle class="wire" cx="103.5" cy="100" r="3.5"/>
+      <text x="112" y="104">out</text>
+      <path class="wire" d="M55 100 V116"/>
+      <rect class="wire" x="44" y="116" width="22" height="40"/>
+      <text x="74" y="140">R2 &plusmn;</text>
+      <path class="wire" d="M55 156 V166 M41 166 H69 M46 172 H64 M51 178 H59"/>
+    </svg>
+    </div>
+    <div id="ac-graph" class="chart" tabindex="0" role="img" aria-label="Ratio error across temperature"></div>
+    <dl class="results" id="ac-out"></dl>
+    <p class="note">Worst case is exact (both legs at their opposing extremes); RSS treats the contributions as independent random variables, which is the realistic figure for a production run but assumes the two TCRs are uncorrelated. Blank fields default to 1 %, 100 ppm/&deg;C, and &minus;40/+85/25 &deg;C.</p>
+    <button class="reset" data-reset="ac">Reset</button>
+  </div>
+</section>
+
+<section class="panel" id="panel-filt">
+  <nav class="subtabs" role="tablist" id="subbar-filt">
+    <button role="tab" data-sub="flt" aria-selected="true">Filter Design</button>
+    <button role="tab" data-sub="re" aria-selected="false">Reactance</button>
+    <button role="tab" data-sub="xc" aria-selected="false">Crystal Load</button>
+    <button role="tab" data-sub="pad" aria-selected="false">Attenuator Pads</button>
+  </nav>
+<div class="subpanel active" id="sub-flt">
+  <h2>Filter Design</h2>
+  <p class="hint">Pick a topology and give it any two values; the third follows. First-order RC and RL give a cutoff and a time constant, LC gives resonance and, with a resistance, Q and bandwidth.</p>
+  <div class="card">
+    <h3>Filter design</h3>
+    <div class="cardrow">
+    <div class="fields">
+      <div class="field"><label for="flt-type">Elements</label>
+        <select id="flt-type">
+          <option value="rc" selected>RC</option>
+          <option value="rl">RL</option>
+          <option value="lc">LC</option>
+        </select>
+      </div>
+      <div class="field"><label for="flt-resp">Response</label>
+        <select id="flt-resp">
+          <option value="lp" selected>Low-pass</option>
+          <option value="hp">High-pass</option>
+        </select>
+      </div>
+      <div class="field"><label for="flt-order">Order</label>
+        <select id="flt-order">
+          <option value="1" selected>1st</option>
+          <option value="2">2nd</option>
+          <option value="3">3rd</option>
+          <option value="4">4th</option>
+        </select>
+      </div>
+      <div class="field"><label for="flt-r">R (&Omega;)</label><input id="flt-r" inputmode="decimal" placeholder="e.g. 10k"></div>
+      <div class="field"><label for="flt-c">C (F)</label><input id="flt-c" inputmode="decimal" placeholder="e.g. 100n"></div>
+      <div class="field"><label for="flt-l">L (H)</label><input id="flt-l" inputmode="decimal" placeholder="e.g. 10u"></div>
+      <div class="field"><label for="flt-f">Section f<sub>0</sub> (Hz)</label><input id="flt-f" inputmode="decimal" placeholder="solved"></div>
+    </div>
+    <div id="flt-diagram" class="diagram"></div>
+    </div>
+    <div id="flt-graph" class="chart" tabindex="0" role="img" aria-label="Magnitude response"></div>
+    <dl class="results" id="flt-out"></dl>
+    <p class="note" id="flt-note"></p>
+    <button class="reset" data-reset="flt">Reset</button>
+  </div>
+</div>
+<div class="subpanel" id="sub-re">
+  <h2>Reactance &amp; Self-Resonance</h2>
+  <p class="hint">Ideal reactance at a frequency, and what real parts do once their parasitics matter. Every capacitor has series inductance and every inductor has winding capacitance, so both self-resonate and both stop behaving like themselves above that point.</p>
+  <div class="card">
+    <h3>Reactance and self-resonance</h3>
+    <div class="cardrow">
+    <div class="fields">
+      <div class="field"><label for="re-f">Frequency (Hz)</label><input id="re-f" inputmode="decimal" placeholder="e.g. 10M"></div>
+      <div class="field"><label for="re-c">Capacitance C (F)</label><input id="re-c" inputmode="decimal" placeholder="e.g. 100n"></div>
+      <div class="field"><label for="re-esl">C: ESL (H)</label><input id="re-esl" inputmode="decimal" placeholder="e.g. 500p"></div>
+      <div class="field"><label for="re-esr">C: ESR (&Omega;)</label><input id="re-esr" inputmode="decimal" placeholder="e.g. 10m"></div>
+      <div class="field"><label for="re-n">C in parallel</label><input id="re-n" inputmode="numeric" placeholder="1"></div>
+      <div class="field"><label for="re-l">Inductance L (H)</label><input id="re-l" inputmode="decimal" placeholder="e.g. 22u"></div>
+      <div class="field"><label for="re-epc">L: winding C (F)</label><input id="re-epc" inputmode="decimal" placeholder="e.g. 3p"></div>
+      <div class="field"><label for="re-dcr">L: DCR (&Omega;)</label><input id="re-dcr" inputmode="decimal" placeholder="e.g. 50m"></div>
+    </div>
+    <div class="diagram">
+      <svg class="schem" width="230" height="150" viewBox="0 0 230 150" role="img" aria-label="Real capacitor as C, ESL and ESR in series; real inductor as L and DCR in series with winding capacitance across">
+      <text x="6" y="14">real capacitor</text>
+      <path class="wire" d="M8 40 H26"/>
+      <path class="wire" d="M26 30 V50 M34 30 V50"/>
+      <text x="22" y="64">C</text>
+      <path class="wire" d="M34 40 H48"/>
+      <path class="wire" d="M48 40 A5 5 0 0 1 58 40 A5 5 0 0 1 68 40"/>
+      <text x="50" y="28">ESL</text>
+      <rect class="wire" x="68" y="33" width="26" height="14"/>
+      <text x="70" y="64">ESR</text>
+      <path class="wire" d="M94 40 H112"/>
+      <text x="6" y="104">real inductor</text>
+      <path class="wire" d="M136 130 H154"/>
+      <path class="wire" d="M154 130 A6 6 0 0 1 166 130 A6 6 0 0 1 178 130 A6 6 0 0 1 190 130"/>
+      <text x="162" y="146">L</text>
+      <rect class="wire" x="190" y="123" width="24" height="14"/>
+      <text x="192" y="146">DCR</text>
+      <path class="wire" d="M214 130 H224"/>
+      <path class="wire" d="M145 130 V104 H176 M182 104 H214 V130"/>
+      <path class="wire" d="M176 96 V112 M182 96 V112"/>
+      <text x="158" y="92">winding C</text>
+    </svg>
+      <p class="plate">X<sub>C</sub> = 1/2&pi;fC &middot; X<sub>L</sub> = 2&pi;fL &middot; f<sub>SRF</sub> = 1/2&pi;&radic;(LC)</p>
+    </div>
+    </div>
+    <div id="re-graph" class="chart" tabindex="0" role="img" aria-label="Impedance against frequency"></div>
+    <dl class="results" id="re-out"></dl>
+    <p class="note">A capacitor is C, ESL and ESR in series: capacitive below self-resonance, resistive at it, <em>inductive above</em>. An inductor is L and DCR in series with its winding capacitance across the whole thing: inductive below self-resonance, <em>capacitive above</em>. Paralleling n identical capacitors multiplies C and divides ESL and ESR by n, which lowers the impedance floor without moving self-resonance.</p>
+    <button class="reset" data-reset="re">Reset</button>
+  </div>
+</div>
+<div class="subpanel" id="sub-xc">
+  <h2>Crystal Load</h2>
+  <p class="hint">Pierce-oscillator load capacitance: what the crystal sees, or the partner a chosen leg needs.</p>
+  <div class="card">
+    <h3>Load capacitance</h3>
+    <div class="cardrow">
+    <div class="fields">
+      <div class="field"><label for="xc-cl">Crystal C<sub>L</sub> spec (F)</label><input id="xc-cl" inputmode="decimal" placeholder="e.g. 12p"></div>
+      <div class="field"><label for="xc-c1">C1 (F)</label><input id="xc-c1" inputmode="decimal" placeholder="e.g. 18p"></div>
+      <div class="field"><label for="xc-c2">C2 (F)</label><input id="xc-c2" inputmode="decimal" placeholder="e.g. 18p"></div>
+      <div class="field"><label for="xc-cs">Stray C (F)</label><input id="xc-cs" inputmode="decimal" placeholder="3p"></div>
+    </div>
+    <svg class="schem" width="220" height="130" viewBox="0 0 220 130" role="img" aria-label="Crystal with two load capacitors to ground">
+      <path class="wire" d="M40 30 H180"/>
+      <rect class="wire" x="95" y="20" width="30" height="20"/>
+      <path class="wire" d="M88 15 V45 M132 15 V45"/>
+      <text x="98" y="60">XTAL</text>
+      <path class="wire" d="M60 30 V62 M48 62 H72 M48 72 H72 M60 72 V92 M48 92 H72 M53 99 H67 M58 106 H62"/>
+      <text x="26" y="72">C1</text>
+      <path class="wire" d="M160 30 V62 M148 62 H172 M148 72 H172 M160 72 V92 M148 92 H172 M153 99 H167 M158 106 H162"/>
+      <text x="178" y="72">C2</text>
+    </svg>
+    </div>
+    <dl class="results" id="xc-out"></dl>
+    <p class="note">C<sub>L</sub> = C1&middot;C2/(C1+C2) + C<sub>stray</sub>. Give C1 and C2 to check the load the crystal sees, or just the C<sub>L</sub> spec to get the required C1 = C2. Stray defaults to 3 pF (pads + pins).</p>
+    <button class="reset" data-reset="xc">Reset</button>
+  </div>
+</div>
+<div class="subpanel" id="sub-pad">
+  <h2>Attenuator Pads</h2>
+  <p class="hint">Five resistive topologies, between equal or unequal impedances. The E-series suggestion shows what stock parts would actually deliver.</p>
+  <div class="card">
+    <h3>Attenuator pad</h3>
+    <div class="cardrow">
+    <div class="fields">
+      <div class="field"><label for="pad-topo">Topology</label>
+        <select id="pad-topo">
+          <option value="pi" selected>PI</option>
+          <option value="t">T</option>
+          <option value="bridge">Bridged T</option>
+          <option value="l">L</option>
+          <option value="split">Resistive splitter</option>
+        </select>
+      </div>
+      <div class="field"><label for="pad-a">Attenuation (dB)</label><input id="pad-a" inputmode="decimal" placeholder="e.g. 6"></div>
+      <div class="field"><label for="pad-zin">Source Z<sub>in</sub> (&Omega;)</label><input id="pad-zin" inputmode="decimal" placeholder="50"></div>
+      <div class="field"><label for="pad-zout">Load Z<sub>out</sub> (&Omega;)</label><input id="pad-zout" inputmode="decimal" placeholder="50"></div>
+          <div class="field"><label for="pad-series">E-series</label>
+        <select id="pad-series" data-mirror="series"><option value="E12">E12 (10 %)</option><option value="E24">E24 (5 %)</option><option value="E96" selected>E96 (1 %)</option></select>
+      </div>
+    </div>
+    <div class="diagram" id="pad-diagram"></div>
+    </div>
+    <dl class="results" id="pad-out"></dl>
+    <p class="note">PI and T match <em>any</em> two impedances, not just equal ones, and reduce to the familiar symmetric formulas when Z<sub>in</sub> = Z<sub>out</sub>. Between unequal impedances every topology has a minimum attenuation set by their ratio, 10&middot;log<sub>10</sub>(2r &minus; 1 + 2&radic;(r(r&minus;1))) with r the larger over the smaller; ask for less and no resistive network can match both ends, so use a transformer. A bridged T and a splitter are symmetric only. The delivered attenuation for stock parts is a full transducer-loss calculation against the actual source and load, so it stays right when the impedances differ.</p>
+    <button class="reset" data-reset="pad">Reset</button>
+  </div>
+</div>
+</section>
+
+<section class="panel" id="panel-copper">
+  <nav class="subtabs" role="tablist" id="subbar-copper">
+    <button role="tab" data-sub="tw" aria-selected="true">Trace Current</button>
+    <button role="tab" data-sub="via" aria-selected="false">Via</button>
+    <button role="tab" data-sub="fu" aria-selected="false">Fusing Current</button>
+    <button role="tab" data-sub="spc" aria-selected="false">Conductor Spacing</button>
+  </nav>
+<div class="subpanel active" id="sub-tw">
+  <h2>Trace Current</h2>
+  <p class="hint">Will the copper carry the current. Dimension fields take mm by default and accept <code>mil</code>, <code>um</code> and <code>in</code>.</p>
+  <div class="card">
+    <h3>Trace width &harr; current (IPC-2221)</h3>
+    <div class="cardrow">
+    <div class="fields">
+      <div class="field"><label for="tw-i">Current (A)</label><input id="tw-i" inputmode="decimal" placeholder="e.g. 3"></div>
+      <div class="field"><label for="tw-w">Trace width (mm)</label><input id="tw-w" inputmode="decimal" placeholder="or e.g. 20mil"></div>
+      <div class="field"><label for="tw-layer">Layer</label>
+        <select id="tw-layer"><option value="ext" selected>External</option><option value="int">Internal</option></select>
+      </div>
+      <div class="field"><label for="tw-len">Length (mm, optional)</label><input id="tw-len" inputmode="decimal" placeholder="e.g. 50"></div>
+      <div class="field"><label for="tw-f">Frequency (Hz, optional)</label><input id="tw-f" inputmode="decimal" placeholder="e.g. 1M"></div>
+          <div class="field"><label for="tw-oz">Copper weight</label>
+        <select id="tw-oz" data-mirror="copper"><option value="17.5">0.5 oz (17.5 &micro;m)</option><option value="35" selected>1 oz (35 &micro;m)</option><option value="70">2 oz (70 &micro;m)</option><option value="105">3 oz (105 &micro;m)</option></select>
+      </div>
+      <div class="field"><label for="tw-dt">Temp rise (&deg;C)</label><input id="tw-dt" data-mirror="dt" inputmode="decimal" placeholder="10"></div>
+      <div class="field"><label for="tw-ta">Ambient (&deg;C)</label><input id="tw-ta" data-mirror="ta" inputmode="decimal" placeholder="25"></div>
+    </div>
+    <div class="diagram" id="tw-diagram"></div>
+    </div>
+    <dl class="results" id="tw-out"></dl>
+    <p class="note">IPC-2221: I = k&middot;&Delta;T<sup>0.44</sup>&middot;A<sup>0.725</sup> (k = 0.048 external, 0.024 internal, A in mil&sup2;). Enter current to get width, width to get max current, or both to check margin. Blank temp rise defaults to 10 &deg;C, ambient to 25 &deg;C. IPC-2152 allows somewhat more; this is the conservative classic.</p>
+    <button class="reset" data-reset="tw">Reset</button>
+  </div>
+</div>
+<div class="subpanel" id="sub-via">
+  <h2>Via</h2>
+  <p class="hint">Electrical, thermal and fabrication properties of a plated through hole.</p>
+  <div class="card">
+    <h3>Via</h3>
+    <div class="cardrow">
+    <div class="fields">
+      <div class="field"><label for="via-d">Drill diameter (mm)</label><input id="via-d" inputmode="decimal" placeholder="e.g. 0.3"></div>
+      <div class="field"><label for="via-tp">Plating (&micro;m)</label><input id="via-tp" inputmode="decimal" placeholder="25"></div>
+      <div class="field"><label for="via-h">Board thickness (mm)</label><input id="via-h" inputmode="decimal" placeholder="1.6"></div>
+      <div class="field"><label for="via-pad">Pad dia (mm, optional)</label><input id="via-pad" inputmode="decimal" placeholder="e.g. 0.6"></div>
+      <div class="field"><label for="via-anti">Antipad dia (mm, optional)</label><input id="via-anti" inputmode="decimal" placeholder="e.g. 1.0"></div>
+      <div class="field"><label for="via-er">&epsilon;<sub>r</sub></label><input id="via-er" inputmode="decimal" placeholder="4.3"></div>
+      <div class="field"><label for="via-i">Current (A, optional)</label><input id="via-i" inputmode="decimal" placeholder="e.g. 3"></div>
+      <div class="field"><label for="via-n">Vias in parallel</label><input id="via-n" inputmode="numeric" placeholder="1"></div>
+      <div class="field"><label for="via-arlimit">Aspect ratio limit</label><input id="via-arlimit" inputmode="decimal" placeholder="10"></div>
+      <div class="field"><label for="via-stub">Stub length (mm, optional)</label><input id="via-stub" inputmode="decimal" placeholder="e.g. 1.2"></div>
+      <div class="field"><label for="via-tr">Signal rise time (s, optional)</label><input id="via-tr" inputmode="decimal" placeholder="e.g. 200p"></div>
+      <div class="field"><label for="via-z0">Trace Z<sub>0</sub> (&Omega;, optional)</label><input id="via-z0" inputmode="decimal" placeholder="50"></div>
+          <div class="field"><label for="via-dt">Temp rise (&deg;C)</label><input id="via-dt" data-mirror="dt" inputmode="decimal" placeholder="10"></div>
+    </div>
+    <div class="diagram" id="via-diagram"></div>
+    </div>
+    <dl class="results" id="via-out"></dl>
+    <p class="note">Ampacity uses the IPC-2221 internal-layer constant on the barrel cross-section; L and C are the classic first-order via formulas (C needs pad and antipad diameters). Blank plating/thickness default to 25 &micro;m and 1.6 mm.</p>
+    <button class="reset" data-reset="via">Reset</button>
+  </div>
+</div>
+<div class="subpanel" id="sub-fu">
+  <h2>Fusing Current</h2>
+  <p class="hint">What destroys the trace, as opposed to what merely warms it.</p>
+  <div class="card">
+    <h3>Fusing current (Onderdonk)</h3>
+    <div class="cardrow">
+    <div class="fields">
+      <div class="field"><label for="fu-w">Trace width (mm)</label><input id="fu-w" inputmode="decimal" placeholder="e.g. 1"></div>
+      <div class="field"><label for="fu-t">Fault duration (s)</label><input id="fu-t" inputmode="decimal" placeholder="e.g. 1"></div>
+      <div class="field"><label for="fu-k">Onderdonk multiplier</label><input id="fu-k" inputmode="decimal" placeholder="1"></div>
+          <div class="field"><label for="fu-oz">Copper weight</label>
+        <select id="fu-oz" data-mirror="copper"><option value="17.5">0.5 oz (17.5 &micro;m)</option><option value="35" selected>1 oz (35 &micro;m)</option><option value="70">2 oz (70 &micro;m)</option><option value="105">3 oz (105 &micro;m)</option></select>
+      </div>
+      <div class="field"><label for="fu-ta">Ambient (&deg;C)</label><input id="fu-ta" data-mirror="ta" inputmode="decimal" placeholder="25"></div>
+    </div>
+    <div class="diagram">
+      <svg class="schem" width="215" height="130" viewBox="0 0 215 130" role="img" aria-label="Trace cross-section showing width and copper thickness, the two dimensions that set the fusing current">
+      <rect class="wire" x="18" y="62" width="180" height="30"/>
+      <text x="22" y="82">substrate</text>
+      <path class="dot" d="M62 44 H154 V60 H62 Z"/>
+      <path class="wire" d="M62 30 V40 M154 30 V40 M62 35 H154"/>
+      <text x="100" y="26">w</text>
+      <path class="wire" d="M162 44 H172 M162 60 H172 M167 44 V60"/>
+      <text x="176" y="56">t</text>
+      <text x="18" y="112">cross-section = w &#215; t</text>
+    </svg>
+      <p class="key">the fuse is the copper, not the current.</p>
+      <p class="plate">I = A &middot; &radic;( log<sub>10</sub>(1 + (T<sub>m</sub>&minus;T<sub>a</sub>) / (234+T<sub>a</sub>)) / 33t ), A in circular mils</p>
+    </div>
+    </div>
+    <div id="fu-graph" class="chart" tabindex="0" role="img" aria-label="Fusing current against fault duration"></div>
+    <dl class="results" id="fu-out"></dl>
+    <p class="note">Copper is treated as a rectangle of w &times; t; real etched copper is a trapezoid with slightly less metal, so a narrow trace fuses a little sooner than this. Onderdonk&rsquo;s equation, copper melting at 1083 &deg;C, adiabatic &mdash; valid for events up to a few seconds; longer events shed heat and survive more.</p>
+    <button class="reset" data-reset="fu">Reset</button>
+  </div>
+</div>
+<div class="subpanel" id="sub-spc">
+  <h2>Conductor Spacing</h2>
+  <p class="hint">Two standards, because they answer different questions. IPC-2221 gives a bare minimum clearance by environment; IEC 60664-1 gives the clearance <em>and</em> the creepage that a mains- or high-voltage-connected product is actually assessed against.</p>
+  <div class="card">
+    <h3>Conductor spacing (IPC-2221 Table 6-1)</h3>
+    <div class="cardrow">
+    <div class="fields">
+      <div class="field"><label for="spc-v">Peak voltage between conductors (V)</label><input id="spc-v" inputmode="decimal" placeholder="e.g. 48"></div>
+    </div>
+    <div class="diagram">
+      <svg class="schem" width="225" height="130" viewBox="0 0 225 130" role="img" aria-label="Two conductors on a substrate separated by a gap, with an optional coating over them">
+      <rect class="wire" x="14" y="58" width="196" height="30"/>
+      <path class="dot" d="M40 40 H86 V56 H40 Z"/>
+      <path class="dot" d="M138 40 H184 V56 H138 Z"/>
+      <path class="wire" d="M86 48 H138"/>
+      <path class="wire" d="M86 34 V44 M138 34 V44"/>
+      <text x="102" y="30">S</text>
+      <path class="wire opt" d="M30 34 H194 V58"/>
+      <text x="120" y="24">coating, if any</text>
+    </svg>
+      <p class="key">S is the gap between copper edges, and the. minimum depends on coating and altitude.</p>
+      <p class="plate">IPC-2221 Table 6-1, by environment &mdash; above 500 V, a per-volt slope</p>
+    </div>
+    </div>
+    <dl class="results" id="spc-out"></dl>
+    <p class="note">Minimum spacing per environment. B1 internal layers; B2 external uncoated &le;3050 m; B3 external uncoated &gt;3050 m; B4 external with permanent polymer coating; A5 external conformal coated; A6 external component leads uncoated; A7 component leads conformal coated.</p>
+    <button class="reset" data-reset="spc">Reset</button>
+  </div>
+  <div class="card">
+    <h3>Clearance and creepage (IEC 60664-1)</h3>
+    <div class="cardrow">
+    <div class="fields">
+      <div class="field"><label for="iec-ins">Insulation</label>
+        <select id="iec-ins">
+          <option value="functional">Functional</option>
+          <option value="basic" selected>Basic</option>
+          <option value="reinforced">Reinforced</option>
+        </select>
+      </div>
+      <div class="field"><label for="iec-vrms">Working voltage (V rms or DC)</label><input id="iec-vrms" inputmode="decimal" placeholder="230"></div>
+      <div class="field"><label for="iec-vpeak">Peak working voltage (V)</label><input id="iec-vpeak" inputmode="decimal" placeholder="1.41 &times; rms"></div>
+      <div class="field"><label for="iec-ovc">Overvoltage category</label>
+        <select id="iec-ovc">
+          <option value="1">I &mdash; protected, inside equipment</option>
+          <option value="2" selected>II &mdash; appliance on a fixed installation</option>
+          <option value="3">III &mdash; fixed installation, distribution</option>
+          <option value="4">IV &mdash; origin of the installation</option>
+        </select>
+      </div>
+      <div class="field"><label for="iec-vmains">Supply voltage to earth (V)</label><input id="iec-vmains" inputmode="decimal" placeholder="230"></div>
+      <div class="field"><label for="iec-pd">Pollution degree</label>
+        <select id="iec-pd">
+          <option value="1">1 &mdash; sealed, no pollution</option>
+          <option value="2" selected>2 &mdash; normal, occasional condensation</option>
+          <option value="3">3 &mdash; conductive pollution</option>
+        </select>
+      </div>
+      <div class="field"><label for="iec-mg">Material group</label>
+        <select id="iec-mg">
+          <option value="1">I &mdash; CTI &ge; 600</option>
+          <option value="2" selected>II &mdash; CTI 400 to 599</option>
+          <option value="3">IIIa &mdash; CTI 175 to 399</option>
+          <option value="4">IIIb &mdash; CTI 100 to 174</option>
+        </select>
+      </div>
+      <div class="field"><label for="iec-pcb">Construction</label>
+        <select id="iec-pcb">
+          <option value="1" selected>Printed board</option>
+          <option value="0">Other insulation</option>
+        </select>
+      </div>
+      <div class="field"><label for="iec-field">Field</label>
+        <select id="iec-field">
+          <option value="inhomogeneous" selected>Inhomogeneous &mdash; any real layout</option>
+          <option value="homogeneous">Homogeneous &mdash; deliberately rounded electrodes</option>
+        </select>
+      </div>
+      <div class="field"><label for="iec-alt">Altitude (m)</label><input id="iec-alt" inputmode="decimal" placeholder="2000"></div>
+    </div>
+    <div class="diagram">
+      <svg class="schem" width="250" height="150" viewBox="0 0 250 150" role="img" aria-label="Two conductors on a board, with clearance measured through the air between them and creepage measured along the surface, around a groove">
+      <rect class="wire" x="14" y="76" width="222" height="40"/>
+      <text x="20" y="102">insulator</text>
+      <path class="dot" d="M24 56 H86 V74 H24 Z"/>
+      <path class="dot" d="M164 56 H226 V74 H164 Z"/>
+      <path class="wire" d="M110 76 V96 H140 V76"/>
+      <path class="wire opt" d="M86 40 H164"/>
+      <path class="wire" d="M86 36 V44 M164 36 V44"/>
+      <text x="110" y="32">clearance</text>
+      <path class="wire" d="M86 74 H110 V94 H140 V74 H164" stroke-dasharray="3 2"/>
+      <text x="112" y="136">creepage</text>
+      <text x="112" y="70">groove</text>
+    </svg>
+      <p class="plate">clearance &times; altitude factor &middot; creepage &times; 2 if reinforced</p>
+      <p class="key">Clearance is the shortest path <b>through air</b>; creepage follows the <b>surface</b>, so a groove wider than the minimum adds to it. The card reports that minimum groove width.</p>
+    </div>
+    </div>
+    <dl class="results" id="iec-out"></dl>
+    <p class="note">IEC 60664-1:2020-05, the standard IPC-2221 does not cover. Clearance is set by the transient the insulation must survive &mdash; derived from the overvoltage category and the supply voltage &mdash; and by the working peak; creepage is set by the working rms voltage, the pollution degree and the material group, and doubles for reinforced insulation. Creepage is never reported below the clearance, since the surface path cannot be shorter than the air path. <b>Outside its scope:</b> above 30 kHz (that is IEC 60664-3), conformal coating or potting (60664-4), pollution degree 4, and insulation through anything other than air. Material group comes from the laminate&rsquo;s CTI, which the fabricator states &mdash; most FR-4 is IIIa, which is worse than people assume.</p>
+    <button class="reset" data-reset="iec">Reset</button>
+  </div>
+</div>
+</section>
+
+<section class="panel" id="panel-signal">
+  <nav class="subtabs" role="tablist" id="subbar-signal">
+    <button role="tab" data-sub="z" aria-selected="true">Impedance</button>
+    <button role="tab" data-sub="dp" aria-selected="false">Differential Pair</button>
+    <button role="tab" data-sub="ee" aria-selected="false">Effective &epsilon;<sub>r</sub></button>
+    <button role="tab" data-sub="wl" aria-selected="false">Wavelength</button>
+    <button role="tab" data-sub="vs" aria-selected="false">Via Shielding</button>
+  </nav>
+<div class="subpanel active" id="sub-z">
+  <h2>Impedance</h2>
+  <p class="hint">Five structures on one consistent model. Each result names the model and its validity window; for a real stackup, confirm with the fab&rsquo;s field solver.</p>
+  <div class="card">
+    <h3>Single-ended Z<sub>0</sub></h3>
+    <div class="cardrow">
+    <div class="fields">
+      <div class="field"><label for="z-struct">Structure</label>
+        <select id="z-struct">
+          <option value="ms" selected>Microstrip, bare</option>
+          <option value="mscov">Microstrip, covered</option>
+          <option value="sl">Stripline, centred</option>
+          <option value="asym">Stripline, offset</option>
+          <option value="cpwg">Coplanar over ground</option>
+        </select>
+      </div>
+      <div class="field"><label for="z-w">Trace width (mm)</label><input id="z-w" inputmode="decimal" placeholder="e.g. 0.3"></div>
+      <div class="field"><label for="z-h" id="z-hlabel">Dielectric height h (mm)</label><input id="z-h" inputmode="decimal" placeholder="e.g. 0.2"></div>
+      <div class="field"><label for="z-er">&epsilon;<sub>r</sub></label><input id="z-er" inputmode="decimal" placeholder="4.3"></div>
+      <div class="field"><label for="z-ermask">Cover &epsilon;<sub>r</sub></label><input id="z-ermask" inputmode="decimal" placeholder="3.8 (solder mask)"></div>
+      <div class="field"><label for="z-c">Far plane distance (mm)</label><input id="z-c" inputmode="decimal" placeholder="offset stripline"></div>
+      <div class="field"><label for="z-s">Gap to ground (mm)</label><input id="z-s" inputmode="decimal" placeholder="coplanar"></div>
+      <div class="field"><label for="z-f">Frequency (Hz, optional)</label><input id="z-f" inputmode="decimal" placeholder="e.g. 1G"></div>
+      <div class="field"><label for="z-tand">Loss tangent tan&nbsp;&delta;</label><input id="z-tand" inputmode="decimal" placeholder="0.02 (FR-4)"></div>
+      <div class="field"><label for="z-rough">Copper roughness (&micro;m rms)</label><input id="z-rough" inputmode="decimal" placeholder="0.4 (VLP) to 2 (standard)"></div>
+          <div class="field"><label for="z-oz">Copper weight</label>
+        <select id="z-oz" data-mirror="copper"><option value="17.5">0.5 oz (17.5 &micro;m)</option><option value="35" selected>1 oz (35 &micro;m)</option><option value="70">2 oz (70 &micro;m)</option><option value="105">3 oz (105 &micro;m)</option></select>
+      </div>
+    </div>
+    <div class="diagram" id="z-diagram"></div>
+    </div>
+    <dl class="results" id="z-out"></dl>
+    <button class="reset" data-reset="z">Reset</button>
+  </div>
+</div>
+<div class="subpanel" id="sub-dp">
+  <h2>Differential Pair</h2>
+  <p class="hint">Edge-coupled pairs against a target impedance band.</p>
+  <div class="card">
+    <h3>Differential pair</h3>
+    <div class="cardrow">
+    <div class="fields">
+      <div class="field"><label for="dp-struct">Structure</label>
+        <select id="dp-struct"><option value="ms" selected>Edge-coupled microstrip</option><option value="sl">Edge-coupled stripline</option></select>
+      </div>
+      <div class="field"><label for="dp-w">Trace width (mm)</label><input id="dp-w" inputmode="decimal" placeholder="e.g. 0.2"></div>
+      <div class="field"><label for="dp-s">Edge-to-edge spacing (mm)</label><input id="dp-s" inputmode="decimal" placeholder="e.g. 0.2"></div>
+      <div class="field"><label for="dp-h">Dielectric height (mm)</label><input id="dp-h" inputmode="decimal" placeholder="e.g. 0.2"></div>
+      <div class="field"><label for="dp-er">&epsilon;<sub>r</sub></label><input id="dp-er" inputmode="decimal" placeholder="4.3"></div>
+      <div class="field"><label for="dp-target">Target Z<sub>diff</sub> (&Omega;)</label>
+        <select id="dp-target">
+          <option value="">none</option>
+          <option value="90">90 &mdash; USB 2.0</option>
+          <option value="100" selected>100 &mdash; Ethernet, LVDS, PCIe</option>
+          <option value="85">85 &mdash; PCIe (85 &Omega; variant)</option>
+          <option value="100dsi">100 &mdash; MIPI D-PHY</option>
+        </select>
+      </div>
+          <div class="field"><label for="dp-oz">Copper weight</label>
+        <select id="dp-oz" data-mirror="copper"><option value="17.5">0.5 oz (17.5 &micro;m)</option><option value="35" selected>1 oz (35 &micro;m)</option><option value="70">2 oz (70 &micro;m)</option><option value="105">3 oz (105 &micro;m)</option></select>
+      </div>
+    </div>
+    <div class="diagram" id="dp-diagram"></div>
+    </div>
+    <dl class="results" id="dp-out"></dl>
+    <p class="note"><b>Validity: 0.1 &lt; w/h &lt; 3.0 and 0.1 &lt; s/h &lt; 3.0.</b> Empirical coupling fits &mdash; treat the result as a starting geometry and have the fabricator field-solve the real stackup before release. Z<sub>diff</sub> = 2Z<sub>0</sub>(1 &minus; k&middot;e<sup>&minus;m&middot;s/h</sup>).</p>
+    <button class="reset" data-reset="dp">Reset</button>
+  </div>
+</div>
+<div class="subpanel" id="sub-ee">
+  <h2>Effective &epsilon;<sub>r</sub></h2>
+  <p class="hint">What a microstrip&rsquo;s field actually sees, with dispersion.</p>
+  <div class="card">
+    <h3>Effective permittivity</h3>
+    <div class="cardrow">
+    <div class="fields">
+      <div class="field"><label for="ee-w">Trace width (mm)</label><input id="ee-w" inputmode="decimal" placeholder="e.g. 0.3"></div>
+      <div class="field"><label for="ee-h">Dielectric height (mm)</label><input id="ee-h" inputmode="decimal" placeholder="e.g. 0.2"></div>
+      <div class="field"><label for="ee-er">&epsilon;<sub>r</sub></label><input id="ee-er" inputmode="decimal" placeholder="4.3"></div>
+      <div class="field"><label for="ee-f">Frequency (Hz, optional)</label><input id="ee-f" inputmode="decimal" placeholder="e.g. 1G"></div>
+          <div class="field"><label for="ee-oz">Copper weight</label>
+        <select id="ee-oz" data-mirror="copper"><option value="17.5">0.5 oz (17.5 &micro;m)</option><option value="35" selected>1 oz (35 &micro;m)</option><option value="70">2 oz (70 &micro;m)</option><option value="105">3 oz (105 &micro;m)</option></select>
+      </div>
+    </div>
+    <div class="diagram">
+      <svg class="schem" width="230" height="140" viewBox="0 0 230 140" role="img" aria-label="Microstrip cross-section: trace width W, dielectric height H, copper thickness t, with field partly in air and partly in the substrate">
+      <text x="14" y="18">air, &#949;r = 1</text>
+      <rect class="wire" x="14" y="56" width="196" height="34"/>
+      <text x="20" y="78">substrate &#949;r</text>
+      <path class="dot" d="M84 42 H140 V54 H84 Z"/>
+      <path class="wire" d="M84 28 V38 M140 28 V38 M84 33 H140"/>
+      <text x="106" y="24">W</text>
+      <path class="wire" d="M148 42 H158 M148 54 H158 M153 42 V54"/>
+      <text x="162" y="52">t</text>
+      <path class="wire" d="M216 56 V90 M212 56 H220 M212 90 H220"/>
+      <text x="206" y="104">H</text>
+      <path class="wire" d="M14 90 H210" stroke-width="3"/>
+      <text x="14" y="106">reference plane</text>
+      <path class="wire opt" d="M112 42 C 70 30 46 46 40 56"/>
+      <path class="wire opt" d="M112 42 C 154 30 178 46 184 56"/>
+    </svg>
+      <p class="key">some field is in air, so &#949;eff sits between (&#949;r+1)/2 and &#949;r.</p>
+      <p class="plate">&epsilon;<sub>eff</sub> = (&epsilon;<sub>r</sub>+1)/2 + (&epsilon;<sub>r</sub>&minus;1)/2 &middot; (1 + 10h/w)<sup>&minus;ab</sup> &mdash; Hammerstad&ndash;Jensen</p>
+    </div>
+    </div>
+    <dl class="results" id="ee-out"></dl>
+    <p class="note">Hammerstad&ndash;Jensen for the static value, with Kirschning&ndash;Jansen dispersion when a frequency is given. A microstrip&rsquo;s field is partly in air, so &epsilon;<sub>eff</sub> always lies between (&epsilon;<sub>r</sub>+1)/2 and &epsilon;<sub>r</sub>, rising towards &epsilon;<sub>r</sub> as the trace widens. Valid for 0.01 &le; w/h &le; 100.</p>
+    <button class="reset" data-reset="ee">Reset</button>
+  </div>
+</div>
+<div class="subpanel" id="sub-wl">
+  <h2>Wavelength</h2>
+  <p class="hint">Wavelength, knee frequency and the length beyond which a trace is a transmission line.</p>
+  <div class="card">
+    <h3>Wavelength &amp; critical length</h3>
+    <div class="cardrow">
+    <div class="fields">
+      <div class="field"><label for="wl-f">Frequency (Hz)</label><input id="wl-f" inputmode="decimal" placeholder="e.g. 100M"></div>
+      <div class="field"><label for="wl-tr">Rise time (s)</label><input id="wl-tr" inputmode="decimal" placeholder="or e.g. 2n"></div>
+      <div class="field"><label for="wl-eeff">&epsilon;<sub>eff</sub></label><input id="wl-eeff" inputmode="decimal" placeholder="3.3 (microstrip FR4)"></div>
+      <div class="field"><label for="wl-period">or period (s)</label><input id="wl-period" inputmode="decimal" placeholder="e.g. 10n"></div>
+      <div class="field"><label for="wl-div">Fraction of &lambda;</label>
+        <select id="wl-div"><option value="1">full &lambda;</option><option value="2">&lambda;/2</option><option value="4" selected>&lambda;/4</option><option value="8">&lambda;/8</option><option value="10">&lambda;/10</option><option value="16">&lambda;/16</option><option value="20">&lambda;/20</option></select>
+      </div>
+    </div>
+    <div class="diagram">
+      <svg class="schem" width="235" height="120" viewBox="0 0 235 120" role="img" aria-label="A wave along a trace with the wavelength marked, and the critical length below which no termination is needed">
+      <path class="wire" d="M14 50 Q 33 18 52 50 T 90 50 T 128 50 T 166 50 T 204 50"/>
+      <path class="wire" d="M14 66 V78 M90 66 V78 M14 72 H90"/>
+      <text x="44" y="92">&#955;</text>
+      <path class="wire" d="M128 66 V78 M166 66 V78 M128 72 H166"/>
+      <text x="136" y="92">&#955;/2</text>
+      <path class="dot" d="M14 100 H62 V106 H14 Z"/>
+      <text x="68" y="106">critical length</text>
+      <text x="14" y="24">v = c / &#8730;&#949;eff</text>
+    </svg>
+      <p class="plate">&lambda; = c / (f &middot; &radic;&epsilon;<sub>eff</sub>) &middot; f<sub>knee</sub> = 0.35 / t<sub>r</sub></p>
+    </div>
+    </div>
+    <dl class="results" id="wl-out"></dl>
+    <p class="note">Enter a frequency for wavelength fractions, or a rise time for the knee frequency (0.35/t<sub>r</sub>) and the critical length beyond which a trace behaves as a transmission line (t<sub>r</sub>/2 of propagation delay). &epsilon;<sub>eff</sub> defaults to 3.3; stripline in FR4 is &asymp; &epsilon;<sub>r</sub>.</p>
+    <button class="reset" data-reset="wl">Reset</button>
+  </div>
+</div>
+<div class="subpanel" id="sub-vs">
+  <h2>Via Shielding</h2>
+  <p class="hint">Stitching vias along a trace or around a board edge only behave as a wall while the gaps between them are small against a wavelength. Above that the fence starts to leak, and the usual rule is to keep the pitch under a tenth of the shortest wavelength you care about.</p>
+  <div class="card">
+    <h3>Stitching via pitch</h3>
+    <div class="cardrow">
+    <div class="fields">
+      <div class="field"><label for="vs-f">Highest frequency (Hz)</label><input id="vs-f" inputmode="decimal" placeholder="e.g. 6G"></div>
+      <div class="field"><label for="vs-tr">or signal rise time (s)</label><input id="vs-tr" inputmode="decimal" placeholder="e.g. 100p"></div>
+      <div class="field"><label for="vs-er">&epsilon;<sub>r</sub></label><input id="vs-er" inputmode="decimal" placeholder="4.3"></div>
+      <div class="field"><label for="vs-frac">Pitch limit</label>
+        <select id="vs-frac">
+          <option value="20">&lambda;/20 &mdash; conservative</option>
+          <option value="10" selected>&lambda;/10 &mdash; usual rule</option>
+          <option value="8">&lambda;/8 &mdash; relaxed</option>
+        </select>
+      </div>
+      <div class="field"><label for="vs-pitch">Pitch you plan to use (mm)</label><input id="vs-pitch" inputmode="decimal" placeholder="solved"></div>
+      <div class="field"><label for="vs-len">Fence length (mm, optional)</label><input id="vs-len" inputmode="decimal" placeholder="e.g. 50"></div>
+      <div class="field"><label for="vs-d">Via drill (mm, optional)</label><input id="vs-d" inputmode="decimal" placeholder="e.g. 0.3"></div>
+    </div>
+    <div class="diagram">
+      <svg class="schem" width="240" height="170" viewBox="0 0 240 170" role="img" aria-label="A trace flanked by two rows of stitching vias, showing pitch and setback">
+      <rect class="wire" x="14" y="30" width="212" height="106"/>
+      <path class="dot" d="M14 78 H226 V90 H14 Z"/>
+      <text x="18" y="74">trace</text>
+      <circle class="wire" cx="34" cy="48" r="6"/><circle class="wire" cx="74" cy="48" r="6"/>
+      <circle class="wire" cx="114" cy="48" r="6"/><circle class="wire" cx="154" cy="48" r="6"/>
+      <circle class="wire" cx="194" cy="48" r="6"/>
+      <circle class="wire" cx="34" cy="120" r="6"/><circle class="wire" cx="74" cy="120" r="6"/>
+      <circle class="wire" cx="114" cy="120" r="6"/><circle class="wire" cx="154" cy="120" r="6"/>
+      <circle class="wire" cx="194" cy="120" r="6"/>
+      <path class="wire" d="M34 26 V16 M74 26 V16 M34 21 H74"/>
+      <text x="44" y="13">pitch</text>
+      <path class="wire" d="M204 48 H216 M204 78 H216 M210 48 V78"/>
+      <text x="176" y="160">setback</text>
+      <path class="wire" d="M114 54 V72"/>
+      <text x="120" y="66">d</text>
+    </svg>
+      <p class="plate">pitch &le; &lambda;/10, &lambda; = c / (f &middot; &radic;&epsilon;<sub>r</sub>)</p>
+    </div>
+    </div>
+    <dl class="results" id="vs-out"></dl>
+    <p class="note">A via fence is a waveguide wall made of holes. It leaks through the gaps once the pitch approaches a half wavelength, so the working rule keeps the pitch an order of magnitude below that. Setback from the trace matters too: too close and the fence loads the line and shifts its impedance, so keep it beyond roughly three trace widths unless you have solved the geometry.</p>
+    <button class="reset" data-reset="vs">Reset</button>
+  </div>
+</div>
+</section>
+
+<section class="panel" id="panel-pwr">
+  <h2>Power &amp; Thermal</h2>
+  <p class="hint">Getting power in and heat out.</p>
+  <div class="card">
+    <h3>Junction temperature</h3>
+    <div class="cardrow">
+    <div class="fields">
+      <div class="field"><label for="th-p">Power dissipated (W)</label><input id="th-p" inputmode="decimal" placeholder="e.g. 5"></div>
+      <div class="field"><label for="th-jc">&theta; junction&ndash;case (&deg;C/W)</label><input id="th-jc" inputmode="decimal" placeholder="e.g. 1.5"></div>
+      <div class="field"><label for="th-cs">&theta; case&ndash;sink (&deg;C/W)</label><input id="th-cs" inputmode="decimal" placeholder="e.g. 0.5"></div>
+      <div class="field"><label for="th-sa">&theta; sink&ndash;ambient (&deg;C/W)</label><input id="th-sa" inputmode="decimal" placeholder="e.g. 8"></div>
+      <div class="field"><label for="th-ja">or &theta; junction&ndash;ambient (&deg;C/W)</label><input id="th-ja" inputmode="decimal" placeholder="single figure"></div>
+      <div class="field"><label for="th-tjmax">T<sub>j</sub> max (&deg;C)</label><input id="th-tjmax" inputmode="decimal" placeholder="e.g. 150"></div>
+      <div class="field"><label for="th-tjtarget">Design T<sub>j</sub> target (&deg;C)</label><input id="th-tjtarget" inputmode="decimal" placeholder="defaults to Tj max"></div>
+      <div class="field"><label for="th-tj">T<sub>j</sub> (&deg;C)</label><input id="th-tj" inputmode="decimal" placeholder="solved"></div>
+          <div class="field"><label for="th-ta">Ambient (&deg;C)</label><input id="th-ta" data-mirror="ta" inputmode="decimal" placeholder="25"></div>
+    </div>
+    <div class="diagram">
+      <svg class="schem" width="150" height="190" viewBox="0 0 150 190" role="img" aria-label="Thermal resistance chain from junction to ambient">
+      <rect class="wire" x="40" y="12" width="70" height="20"/>
+      <text x="54" y="26">junction</text>
+      <path class="wire" d="M75 32 V48"/>
+      <rect class="wire" x="63" y="48" width="24" height="26"/>
+      <text x="94" y="65">&#952;jc</text>
+      <path class="wire" d="M75 74 V86"/>
+      <text x="58" y="84" text-anchor="end">case</text>
+      <rect class="wire" x="63" y="86" width="24" height="26"/>
+      <text x="94" y="103">&#952;cs</text>
+      <path class="wire" d="M75 112 V124"/>
+      <text x="58" y="122" text-anchor="end">sink</text>
+      <rect class="wire" x="63" y="124" width="24" height="26"/>
+      <text x="94" y="141">&#952;sa</text>
+      <path class="wire" d="M75 150 V164 M55 164 H95 M60 171 H90 M65 178 H85"/>
+      <text x="8" y="168">ambient</text>
+    </svg>
+      <p class="plate">T<sub>j</sub> = T<sub>a</sub> + P &middot; &Sigma;&theta;</p>
+    </div>
+    </div>
+    <dl class="results" id="th-out"></dl>
+    <p class="note">Series thermal resistances add, exactly like resistors carrying power instead of current. Give the three-part chain, or a single junction&ndash;ambient figure. Note that a datasheet &theta;<sub>ja</sub> is a JEDEC board measurement, not a physical resistance you can chain, and will not match a real stackup with thermal vias.</p>
+    <button class="reset" data-reset="th">Reset</button>
+  </div>
+  <div class="card">
+    <h3>PDN target impedance</h3>
+    <div class="cardrow">
+    <div class="fields">
+      <div class="field"><label for="pdn-v">Rail voltage (V)</label><input id="pdn-v" inputmode="decimal" placeholder="e.g. 1.2"></div>
+      <div class="field"><label for="pdn-ripple">Allowed ripple (%)</label><input id="pdn-ripple" inputmode="decimal" placeholder="e.g. 2"></div>
+      <div class="field"><label for="pdn-i">Maximum current (A)</label><input id="pdn-i" inputmode="decimal" placeholder="e.g. 20"></div>
+      <div class="field"><label for="pdn-tr">Transient fraction (%)</label><input id="pdn-tr" inputmode="decimal" placeholder="e.g. 50"></div>
+      <div class="field"><label for="pdn-fmax">Bandwidth of interest (Hz)</label><input id="pdn-fmax" inputmode="decimal" placeholder="e.g. 100M"></div>
+    </div>
+    <svg class="schem" width="230" height="130" viewBox="0 0 230 130" role="img" aria-label="A supply rail dipping as a current step is drawn, with the allowed ripple and the transient step marked">
+      <path class="wire" d="M14 34 H70 C 84 34 84 58 98 58 L 150 58 C 164 58 164 34 178 34 H216"/>
+      <path class="grid opt" d="M14 34 H216"/>
+      <text x="14" y="30">V rail</text>
+      <path class="wire" d="M96 34 V58 M90 34 H102 M90 58 H102"/>
+      <text x="104" y="50">&#916;V ripple</text>
+      <path class="wire" d="M14 96 H70 V78 H150 V96 H216"/>
+      <text x="14" y="118">I load</text>
+      <path class="wire" d="M160 78 V96 M154 78 H166 M154 96 H166"/>
+      <text x="170" y="92">&#916;I step</text>
+      <text x="14" y="12">Z target = &#916;V / &#916;I</text>
+    </svg>
+    </div>
+    <dl class="results" id="pdn-out"></dl>
+    <p class="note">Z<sub>target</sub> = (V<sub>rail</sub> &middot; ripple%) / (I<sub>max</sub> &middot; transient%). The network must stay below this from DC to the bandwidth of interest, which is the hard part &mdash; see the capacitor card for what a real part does above its self-resonance.</p>
+    <button class="reset" data-reset="pdn">Reset</button>
+  </div>
+</section>
+
+<section class="panel" id="panel-util">
+  <nav class="subtabs" role="tablist" id="subbar-util">
+    <button role="tab" data-sub="awg" aria-selected="true">AWG Wire</button>
+    <button role="tab" data-sub="bat" aria-selected="false">Battery</button>
+    <button role="tab" data-sub="pp" aria-selected="false">Frequency Error</button>
+    <button role="tab" data-sub="cv" aria-selected="false">Conversions</button>
+  </nav>
+<div class="subpanel active" id="sub-awg">
+  <h2>AWG Wire</h2>
+  <p class="hint">Gauge data, and the drop over a real run.</p>
+  <div class="card">
+    <h3>AWG wire</h3>
+    <div class="cardrow">
+    <div class="fields">
+      <div class="field"><label for="awg-n">AWG (40 &hellip; 0000 or 4/0)</label><input id="awg-n" placeholder="e.g. 18"></div>
+      <div class="field"><label for="awg-len">Run length (m)</label><input id="awg-len" inputmode="decimal" placeholder="e.g. 0.5"></div>
+      <div class="field"><label for="awg-return">Conductors</label>
+        <select id="awg-return"><option value="2" selected>Round trip (out and back)</option><option value="1">One way</option></select>
+      </div>
+      <div class="field"><label for="awg-i">Load current (A)</label><input id="awg-i" inputmode="decimal" placeholder="e.g. 40"></div>
+      <div class="field"><label for="awg-temp">Conductor temp (&deg;C)</label><input id="awg-temp" inputmode="decimal" placeholder="20"></div>
+      <div class="field"><label for="awg-vsupply">Supply voltage (V, optional)</label><input id="awg-vsupply" inputmode="decimal" placeholder="e.g. 22.2"></div>
+    </div>
+    <svg class="schem" width="230" height="120" viewBox="0 0 230 120" role="img" aria-label="A round conductor of a given diameter carrying current over a run length, showing the out and back path">
+      <circle class="wire" cx="40" cy="44" r="26"/>
+      <path class="wire" d="M14 44 H66"/>
+      <path class="wire" d="M14 38 V50 M66 38 V50"/>
+      <text x="30" y="34">d</text>
+      <text x="12" y="88">A = &#960;d&#178;/4</text>
+      <path class="wire" d="M104 32 H214"/>
+      <path class="dot" d="M196 27 L208 32 L196 37 Z"/>
+      <path class="wire" d="M104 60 H214"/>
+      <path class="dot" d="M122 55 L110 60 L122 65 Z"/>
+      <text x="126" y="24">out</text>
+      <text x="122" y="80">return</text>
+      <path class="wire" d="M104 92 V104 M214 92 V104 M104 98 H214"/>
+      <text x="146" y="116">length</text>
+    </svg>
+    </div>
+    <dl class="results" id="awg-out"></dl>
+    <p class="note">Solid copper at 20 &deg;C. The two ampacities are the classic handbook rules of thumb: &ldquo;chassis wiring&rdquo; (short runs in free air) and &ldquo;power transmission&rdquo; (bundled, conservative) &mdash; insulation rating and bundling govern real limits.</p>
+    <button class="reset" data-reset="awg">Reset</button>
+  </div>
+</div>
+<div class="subpanel" id="sub-bat">
+  <h2>Battery</h2>
+  <p class="hint">Pack energy, C-rate and runtime.</p>
+  <div class="card">
+    <h3>Battery energy and runtime</h3>
+    <div class="cardrow">
+    <div class="fields">
+      <div class="field"><label for="bat-chem">Cell chemistry</label>
+        <select id="bat-chem">
+          <option value="lipo" selected>LiPo</option>
+          <option value="lihv">LiHV</option>
+          <option value="liion">Li-ion</option>
+          <option value="lifepo4">LiFePO4 / LiFe</option>
+          <option value="nimh">NiMH</option>
+          <option value="lead">Lead-acid</option>
+          <option value="custom">Custom</option>
+        </select>
+      </div>
+      <div class="field"><label for="bat-mah">Cell capacity (mAh)</label><input id="bat-mah" inputmode="decimal" placeholder="e.g. 5000"></div>
+      <div class="field"><label for="bat-vfull">Cell full (V)</label><input id="bat-vfull" inputmode="decimal" placeholder="4.2"></div>
+      <div class="field"><label for="bat-v">Cell nominal (V)</label><input id="bat-v" inputmode="decimal" placeholder="3.7"></div>
+      <div class="field"><label for="bat-vmin">Cell minimum (V)</label><input id="bat-vmin" inputmode="decimal" placeholder="3.0"></div>
+      <div class="field"><label for="bat-s">Cells in series (S)</label><input id="bat-s" inputmode="numeric" placeholder="1"></div>
+      <div class="field"><label for="bat-p">Cells in parallel (P)</label><input id="bat-p" inputmode="numeric" placeholder="1"></div>
+      <div class="field"><label for="bat-load">Load (A or W)</label><input id="bat-load" inputmode="decimal" placeholder="e.g. 2"></div>
+      <div class="field"><label for="bat-loadunit">Load is</label>
+        <select id="bat-loadunit"><option value="A" selected>Amps</option><option value="W">Watts</option></select>
+      </div>
+      <div class="field"><label for="bat-usable">Usable capacity (%)</label><input id="bat-usable" inputmode="decimal" placeholder="80"></div>
+      <div class="field"><label for="bat-crate">Cell discharge rating (C, optional)</label><input id="bat-crate" inputmode="decimal" placeholder="e.g. 25"></div>
+    </div>
+    <div class="diagram">
+      <svg class="schem" width="215" height="125" viewBox="0 0 215 125" role="img" aria-label="A battery pack of cells in series and parallel, showing what S and P mean">
+      <g>
+        <rect class="wire" x="24" y="26" width="34" height="18"/><path class="wire" d="M58 31 V39 H62 V31 Z"/>
+        <rect class="wire" x="72" y="26" width="34" height="18"/><path class="wire" d="M106 31 V39 H110 V31 Z"/>
+        <rect class="wire" x="120" y="26" width="34" height="18"/><path class="wire" d="M154 31 V39 H158 V31 Z"/>
+        <path class="wire" d="M62 35 H72 M110 35 H120"/>
+      </g>
+      <g>
+        <rect class="wire" x="24" y="64" width="34" height="18"/><path class="wire" d="M58 69 V77 H62 V69 Z"/>
+        <rect class="wire" x="72" y="64" width="34" height="18"/><path class="wire" d="M106 69 V77 H110 V69 Z"/>
+        <rect class="wire" x="120" y="64" width="34" height="18"/><path class="wire" d="M154 69 V77 H158 V69 Z"/>
+        <path class="wire" d="M62 73 H72 M110 73 H120"/>
+      </g>
+      <path class="wire" d="M14 35 V73 M14 54 H8 M158 35 V73 M158 54 H168"/>
+      <path class="wire" d="M24 35 H14 M24 73 H14"/>
+      <path class="wire" d="M158 35 H166 M158 73 H166"/>
+    </svg>
+      <p class="key">S cells in series raise voltage. P strings in parallel raise capacity. pack V = S &#215; cell V, pack Ah = P &#215; cell Ah.</p>
+    </div>
+    </div>
+    <div id="bat-graph" class="chart" tabindex="0" role="img" aria-label="Typical discharge curve"></div>
+    <dl class="results" id="bat-out"></dl>
+    <p class="note">Pick a chemistry and its three cell voltages fill in, highlighted; they are used from that moment and typing over one makes it yours, so Custom is for a cell that matches none of the presets. Full is the <em>resting</em> voltage of a charged cell, which is why lead-acid shows a separate charging setpoint. Charge rates are the ordinary rate for the chemistry; maximum discharge is not tabulated because it varies a hundredfold within one chemistry, so it comes from the cell&rsquo;s own C rating. Runtime assumes a flat load and ignores temperature, cable loss and cell ageing.</p>
+    <button class="reset" data-reset="bat">Reset</button>
+  </div>
+</div>
+<div class="subpanel" id="sub-pp">
+  <h2>Frequency Error</h2>
+  <p class="hint">Parts per million against a centre frequency, and the drift that follows.</p>
+  <div class="card">
+    <h3>Frequency error (ppm)</h3>
+    <div class="cardrow">
+    <div class="fields">
+      <div class="field"><label for="pp-f">Frequency (Hz)</label><input id="pp-f" inputmode="decimal" placeholder="e.g. 16M"></div>
+      <div class="field"><label for="pp-ppm">Tolerance (ppm)</label><input id="pp-ppm" inputmode="decimal" placeholder="e.g. 20"></div>
+      <div class="field"><label for="pp-df">&Delta;f (Hz)</label><input id="pp-df" inputmode="decimal" placeholder="or e.g. 320"></div>
+    </div>
+    <svg class="schem" width="225" height="105" viewBox="0 0 225 105" role="img" aria-label="A frequency axis showing the centre frequency and the tolerance window either side of it">
+      <path class="axis wire" d="M14 62 H212"/>
+      <path class="wire" d="M113 50 V74"/>
+      <text x="98" y="90">centre f</text>
+      <path class="wire opt" d="M62 50 V74 M164 50 V74"/>
+      <path class="dot" d="M62 62 H164 V64 H62 Z"/>
+      <path class="wire" d="M62 40 H164 M62 36 V44 M164 36 V44"/>
+      <text x="86" y="30">&#177; ppm window</text>
+      <text x="40" y="90">f min</text>
+      <text x="158" y="90">f max</text>
+    </svg>
+    </div>
+    <dl class="results" id="pp-out"></dl>
+    <button class="reset" data-reset="pp">Reset</button>
+  </div>
+</div>
+
+
+<div class="subpanel" id="sub-cv">
+  <h2>Conversions</h2>
+  <p class="hint">Units, ratios and number bases. Every card here works both ways: edit any field and the rest follow.</p>
+  <div class="card">
+    <h3>Conversions</h3>
+    <div class="fields">
+      <div class="field"><label for="cv-mm">mm</label><input id="cv-mm" inputmode="decimal" placeholder="e.g. 0.254"></div>
+      <div class="field"><label for="cv-mil">mil</label><input id="cv-mil" inputmode="decimal" placeholder="e.g. 10"></div>
+    </div>
+    <div class="fields" style="margin-top:.9rem">
+      <div class="field"><label for="cv-c">&deg;C</label><input id="cv-c" inputmode="decimal" placeholder="e.g. 25"></div>
+      <div class="field"><label for="cv-f">&deg;F</label><input id="cv-f" inputmode="decimal" placeholder="e.g. 77"></div>
+    </div>
+    <div class="fields" style="margin-top:.9rem">
+      <div class="field"><label for="cv-db">dB</label><input id="cv-db" inputmode="decimal" placeholder="e.g. 6"></div>
+      <div class="field"><label for="cv-vr">Voltage ratio</label><input id="cv-vr" inputmode="decimal" placeholder="e.g. 2"></div>
+      <div class="field"><label for="cv-pr">Power ratio</label><input id="cv-pr" inputmode="decimal" placeholder="e.g. 4"></div>
+    </div>
+    <div class="fields" style="margin-top:.9rem">
+      <div class="field"><label for="cv-re">Real</label><input id="cv-re" inputmode="decimal" placeholder="e.g. 3"></div>
+      <div class="field"><label for="cv-im">Imaginary (j)</label><input id="cv-im" inputmode="decimal" placeholder="e.g. 4"></div>
+      <div class="field"><label for="cv-mag">Magnitude</label><input id="cv-mag" inputmode="decimal" placeholder="e.g. 5"></div>
+      <div class="field"><label for="cv-ang">Angle (&deg;)</label><input id="cv-ang" inputmode="decimal" placeholder="e.g. 53.13"></div>
+    </div>
+    <div class="fields" style="margin-top:.9rem">
+      <div class="field"><label for="cv-deg">Degrees</label><input id="cv-deg" inputmode="decimal" placeholder="e.g. 90"></div>
+      <div class="field"><label for="cv-rad">Radians</label><input id="cv-rad" inputmode="decimal" placeholder="e.g. 1.5708"></div>
+    </div>
+    <p class="note">Edit either side of a pair; the rest follows. dB assumes 20&middot;log<sub>10</sub> for voltage and 10&middot;log<sub>10</sub> for power.</p>
+    <button class="reset" data-reset="cv">Reset</button>
+  </div>
+  <div class="card">
+    <h3>dBm and volts</h3>
+    <div class="cardrow">
+    <div class="fields">
+      <div class="field"><label for="dbm-p">Power (dBm)</label><input id="dbm-p" inputmode="decimal" placeholder="e.g. 0"></div>
+      <div class="field"><label for="dbm-w">Power (W)</label><input id="dbm-w" inputmode="decimal" placeholder="e.g. 1m"></div>
+      <div class="field"><label for="dbm-z">Impedance (&Omega;)</label><input id="dbm-z" inputmode="decimal" placeholder="50"></div>
+      <div class="field"><label for="dbm-vrms">V rms</label><input id="dbm-vrms" inputmode="decimal" placeholder="e.g. 223.6m"></div>
+      <div class="field"><label for="dbm-vpk">V peak</label><input id="dbm-vpk" inputmode="decimal" placeholder="e.g. 316.2m"></div>
+      <div class="field"><label for="dbm-vpp">V peak-to-peak</label><input id="dbm-vpp" inputmode="decimal" placeholder="e.g. 632.5m"></div>
+    </div>
+    <div class="diagram">
+      <svg class="schem" width="250" height="150" viewBox="0 0 250 150" role="img" aria-label="A sine wave across a load, with the rms level, the peak and the peak-to-peak swing marked">
+      <path class="wire" d="M18 74 H240"/>
+      <path class="wire" d="M18 74 Q 40 18 62 74 T 106 74 T 150 74 T 194 74"/>
+      <path class="wire opt" d="M18 36 H240"/>
+      <text x="202" y="32">rms</text>
+      <path class="wire" d="M40 20 V74 M34 20 H46 M34 74 H46"/>
+      <text x="26" y="14">peak</text>
+      <path class="wire" d="M84 20 V128 M78 20 H90 M78 128 H90"/>
+      <text x="94" y="144">peak-to-peak</text>
+    </svg>
+      <p class="key">One cycle of a sine across the load. The rms level is the dashed line; peak and peak-to-peak are measured from it and from trough to crest. The sine is where the root-two factors come from &mdash; no other waveform has them.</p>
+      <p class="plate">V<sub>rms</sub> = sqrt(P&middot;Z) &middot; V<sub>pk</sub> = sqrt(2)&middot;V<sub>rms</sub> &middot; V<sub>pp</sub> = 2&middot;V<sub>pk</sub></p>
+    </div>
+    </div>
+    <dl class="results" id="dbm-out"></dl>
+    <p class="note">Type into any one box and the rest follow. dBm is an absolute power, so it only becomes a voltage once the impedance is fixed &mdash; 50 &Omega; unless you say otherwise, 75 &Omega; for video and cable, 600 &Omega; for legacy audio lines. <b>The peak and peak-to-peak figures assume a sine wave.</b> For noise, a modulated carrier or any other waveform the crest factor differs and only the rms figure follows from the power; digital modulation routinely peaks 3 to 10 dB above its average, which is exactly what clips an amplifier that looked fine on paper.</p>
+    <button class="reset" data-reset="dbm">Reset</button>
+  </div>
+<div class="card">
+    <h3>Ratio units</h3>
+    <div class="fields">
+      <div class="field"><label for="rt-pct">Percent (%)</label><input id="rt-pct" inputmode="decimal" placeholder="e.g. 0.1"></div>
+      <div class="field"><label for="rt-ppm">ppm</label><input id="rt-ppm" inputmode="decimal" placeholder="e.g. 1000"></div>
+      <div class="field"><label for="rt-ppb">ppb</label><input id="rt-ppb" inputmode="decimal" placeholder="e.g. 1e6"></div>
+      <div class="field"><label for="rt-ratio">Ratio (decimal)</label><input id="rt-ratio" inputmode="decimal" placeholder="e.g. 0.001"></div>
+    </div>
+    <p class="note">Edit any field and the rest follow. 1 % = 10 000 ppm = 10<sup>7</sup> ppb = 0.01 as a plain ratio.</p>
+    <button class="reset" data-reset="rt">Reset</button>
+  </div>
+<div class="card">
+    <h3>Number bases</h3>
+    <div class="fields">
+      <div class="field"><label for="nb-dec">Decimal</label><input id="nb-dec" placeholder="e.g. 4096"></div>
+      <div class="field"><label for="nb-hex">Hex</label><input id="nb-hex" placeholder="e.g. 0x1000"></div>
+      <div class="field"><label for="nb-bin">Binary</label><input id="nb-bin" placeholder="e.g. 0b1010"></div>
+      <div class="field"><label for="nb-oct">Octal</label><input id="nb-oct" placeholder="e.g. 0o7777"></div>
+    </div>
+    <dl class="results" id="nb-out"></dl>
+    <p class="note">Integers of any size. Prefixes (<code>0x</code>, <code>0b</code>, <code>0o</code>) are optional, and spaces or underscores may be used as digit separators. Negative decimals are shown as two&rsquo;s complement at each standard width that can hold them.</p>
+    <button class="reset" data-reset="nb">Reset</button>
+  </div>
+</div>
+</section>
+
+</main>
+
+<footer class="site"><div class="wrap">
+<p class="legend"><b>Highlighted</b> fields are calculated from what you entered &mdash; type in one and it becomes an input instead.</p>
+<p>EE Calculator &mdash; all calculation runs locally in this page; nothing leaves your machine.</p>
+</div></footer>
+
+<script>
+{{page.js}}</script>
+</body>
+</html>

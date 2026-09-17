@@ -44,7 +44,9 @@ print("page bytes:", len(html))
 # ---- every card that reads a shared value must also SHOW that control ----
 import re as _re
 
-src = (REPO / "src" / "eecalc" / "build_page.py").read_text(encoding="utf-8")
+# the page's markup and JavaScript are real files since the 2026-09-17 template split
+src = (REPO / "src" / "eecalc" / "static" / "page.js").read_text(encoding="utf-8")
+_markup = (REPO / "src" / "eecalc" / "templates" / "page.html").read_text(encoding="utf-8")
 _js = src[src.index("/* ---------- value parsing"):]
 _funcs = {}
 for _m in _re.finditer(r"function (calc\w+)\(\) \{", _js):
@@ -58,7 +60,7 @@ _calcs = dict(_re.findall(r"^\s+(\w+):\s*\{ calc: (calc\w+)", src, _re.M))
 # nb, rt and cv register an inline function rather than a named one
 _all_cards = set(_calcs) | set(_re.findall(r"^\s+(\w+):\s*\{ calc: ", src, _re.M))
 _card_of = {v: k for k, v in _calcs.items()}
-_html = src[src.index('<main class="wrap">'):src.index("</main>")]
+_html = _markup[_markup.index('<main class="wrap">'):_markup.index("</main>")]
 _cards = {}
 for _m in _re.finditer(r'<div class="card">(.*?)data-reset="(\w+)"', _html, _re.S):
     _cards[_m.group(2)] = set(_re.findall(r'data-mirror="(\w+)"', _m.group(1)))

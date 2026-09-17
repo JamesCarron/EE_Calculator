@@ -12,7 +12,10 @@ Copper weight, temperature rise, ambient and the E-series sit **on the cards tha
 EE_Calculator.html     the product - one self-contained file, open it directly
 EE_Calculator.bat      rebuild if pixi is present, then open
 src/eecalc/            the package; everything that builds the page
-  build_page.py          the generator; the whole HTML/CSS/JS template lives here
+  build_page.py          assembles the page and writes it to the repo root
+  templates/page.html    the page's markup
+  static/page.css        the page's stylesheet
+  static/page.js         the page's JavaScript - every calculator lives here
   paths.py               the only module that knows where data lives
   em/model.py            openEMS model generation for pad capacitance
   vendor/theme_inline.py inlines the stylesheet and fonts as base64
@@ -94,7 +97,7 @@ Everything the build needs is in this folder; `src/eecalc/vendor/theme/` holds t
 
 ## Layout
 
-- `src/eecalc/build_page.py` — page generator; the HTML/CSS/JS template lives here.
+- `src/eecalc/build_page.py` — assembles `templates/page.html` with `static/page.css` and `static/page.js` into the single output file.
 - `src/eecalc/vendor/` — stylesheet and webfonts, with `VENDORED.md`.
 - `EE_Calculator.html` — generated output, committed so the tool works without pixi.
 - `docs/` — the design record, including `Refactor_Plan.md`.

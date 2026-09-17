@@ -1,0 +1,106 @@
+  body { background: var(--a-bg); color: var(--a-ink); font-family: var(--a-font); margin: 0; }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 0 1.25rem; }
+  header.site { padding: 2rem 0 1rem; }
+  .eyebrow { font-size: var(--a-text-xs); letter-spacing: var(--a-tracking-eyebrow); text-transform: uppercase; color: var(--a-ink-muted); margin: 0 0 .35rem; }
+  h1 { font-family: var(--a-font-display); line-height: var(--a-lh-heading); margin: 0; }
+  .tabs { display: flex; flex-wrap: wrap; gap: .4rem; border-bottom: var(--a-border) solid var(--a-line); padding-bottom: .6rem; margin-bottom: 1.4rem; }
+  .tabs button { font: inherit; font-size: var(--a-text-sm); color: var(--a-ink-secondary); background: var(--a-bg-subtle); border: var(--a-border) solid var(--a-line); border-radius: var(--a-radius-chip); padding: .4rem .85rem; cursor: pointer; }
+  .tabs button:hover { color: var(--a-ink); border-color: var(--a-line-strong); }
+  .tabs button[aria-selected="true"] { background: var(--a-link); color: var(--a-on-accent); border-color: var(--a-link); }
+  .tabs button:focus-visible { outline: 2px solid var(--a-focus); outline-offset: 2px; }
+  .serieswrap { margin-left: auto; display: flex; align-items: center; gap: .45rem; font-size: var(--a-text-xs); color: var(--a-ink-secondary); }
+  .serieswrap select { font: inherit; font-family: var(--a-font-mono); color: var(--a-ink); background: var(--a-bg); border: var(--a-border) solid var(--a-line-strong); border-radius: var(--a-radius-sm); padding: .3rem .45rem; }
+  .serieswrap select:focus-visible { outline: 2px solid var(--a-focus); outline-offset: 1px; }
+  .subtabs { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem; margin: 0 0 1.4rem; }
+  .subtabs button { font: inherit; font-size: var(--a-text-sm); color: var(--a-ink-secondary); background: none; border: none; border-bottom: 2px solid transparent; padding: .35rem .2rem; margin-right: .7rem; cursor: pointer; }
+  .subtabs button:hover { color: var(--a-ink); }
+  .subtabs button[aria-selected="true"] { color: var(--a-ink); border-bottom-color: var(--a-link); }
+  .subtabs button:focus-visible { outline: 2px solid var(--a-focus); outline-offset: 2px; }
+  .subpanel { display: none; }
+  .subpanel.active { display: block; }
+  .panel { display: none; padding-bottom: 3rem; }
+  .panel.active { display: block; }
+  .panel h2 { font-family: var(--a-font-display); margin: 0 0 .3rem; }
+  .panel p.hint { color: var(--a-ink-secondary); font-size: var(--a-text-sm); margin: 0 0 1.2rem; max-width: var(--a-measure); }
+  .card { background: var(--a-bg-panel); border: var(--a-border) solid var(--a-line); border-radius: var(--a-radius); padding: 1.1rem 1.25rem 1.25rem; margin-bottom: 1rem; }
+  .card h3 { margin: 0 0 .8rem; font-size: var(--a-text-body); }
+  .cardrow { display: flex; flex-wrap: wrap; gap: 1rem 2.5rem; align-items: flex-start; }
+  .cardrow .fields { flex: 1 1 20rem; }
+  svg.schem { color: var(--a-ink-secondary); flex: 0 0 auto; max-width: 100%; }
+  .diagram { flex: 0 0 auto; color: var(--a-ink-secondary); }
+  .diagram svg { max-width: 100%; }
+  /* the container sizes to plot + axis band, so the axis labels are never
+     clipped into a nested scrollbar */
+  .chart { margin-top: 1.1rem; cursor: crosshair; }
+  .chart svg { display: block; max-width: 100%; }
+  .chart:focus-visible { outline: 2px solid var(--a-focus); outline-offset: 3px; }
+  .chart .grid { stroke: var(--a-line); stroke-width: 1; fill: none; }
+  /* the 2-9 lines inside each decade: bunching towards the next decade is
+     what makes a log axis legible at a glance, so they are always drawn */
+  .chart .gridmin { stroke: var(--a-line); stroke-width: 1; fill: none; opacity: .45; }
+  .chart .axis { stroke: var(--a-line-strong); stroke-width: 1; fill: none; }
+  .chart .curve { stroke: var(--a-link); stroke-width: 2; fill: none; stroke-linejoin: round; }
+  .chart .hair { stroke: var(--a-ink-muted); stroke-width: 1; }
+  /* a second series is told apart by dash and by its own direct label, never
+     by hue alone, so it survives any colour vision and a monochrome print */
+  .chart .curve.alt { stroke-dasharray: 5 4; }
+  .chart .band { fill: var(--a-link); opacity: .13; stroke: none; }
+  .chart text.tag { fill: var(--a-ink-secondary); font-size: 10px; }
+  .chart .knob { fill: var(--a-link); stroke: var(--a-bg-panel); stroke-width: 2; }
+  .chart text { fill: var(--a-ink-muted); font-size: 10px; font-family: var(--a-font-mono); }
+  .chart text.read { fill: var(--a-ink); font-size: 11px; }
+  .chart text.readlabel { fill: var(--a-ink-secondary); font-size: 10px; }
+  svg.schem .wire { fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+  svg.schem .dot { fill: currentColor; stroke: none; }
+  svg.schem .opt { stroke-dasharray: 4 3; }
+  /* the governing equation, beside the drawing rather than buried in a note */
+  .plate { margin: .5rem 0 0; padding: .4rem .6rem; max-width: 16rem; background: var(--a-bg-subtle); border: var(--a-border) solid var(--a-line); border-radius: var(--a-radius-sm); font-family: var(--a-font-mono); font-size: var(--a-text-xs); color: var(--a-ink-secondary); }
+  /* a cross-section is monochrome, so the key maps line style to material */
+  .key { margin: .4rem 0 0; max-width: 16rem; font-size: var(--a-text-xs); color: var(--a-ink-muted); line-height: 1.5; }
+  svg.schem text { fill: currentColor; stroke: none; font-family: var(--a-font-mono); font-size: 11px; }
+  .fields { display: flex; flex-wrap: wrap; gap: .9rem 1.2rem; }
+  .field { display: flex; flex-direction: column; gap: .25rem; }
+  /* an author display rule beats the UA default for [hidden], so say it again */
+  .field[hidden] { display: none; }
+  .field label { font-size: var(--a-text-xs); color: var(--a-ink-secondary); }
+  .field input, .field select, .field textarea { font: inherit; font-family: var(--a-font-mono); font-size: var(--a-text-sm); color: var(--a-ink); background: var(--a-bg); border: var(--a-border) solid var(--a-line-strong); border-radius: var(--a-radius-sm); padding: .45rem .6rem; width: 9.5rem; }
+  .field textarea { width: 100%; box-sizing: border-box; }
+  .field input:focus-visible, .field select:focus-visible, .field textarea:focus-visible { outline: 2px solid var(--a-focus); outline-offset: 1px; }
+  .field input.bad { border-color: var(--a-critical); }
+  .results { display: grid; grid-template-columns: max-content 1fr; gap: .35rem 1.2rem; margin-top: 1.1rem; font-size: var(--a-text-sm); }
+  .results dt { color: var(--a-ink-secondary); margin: 0; }
+  .results dd { margin: 0; font-family: var(--a-font-mono); }
+  .note { font-size: var(--a-text-xs); color: var(--a-ink-muted); margin-top: .9rem; }
+  .warn { color: var(--a-warning); }
+  .err { color: var(--a-critical); }
+  table.finder { border-collapse: collapse; width: 100%; margin-top: 1.1rem; font-size: var(--a-text-sm); }
+  table.finder th, table.finder td { text-align: left; padding: .4rem .7rem; border-bottom: var(--a-border) solid var(--a-line); font-family: var(--a-font-mono); white-space: nowrap; }
+  table.finder th { font-family: var(--a-font); color: var(--a-ink-secondary); font-weight: 600; }
+  .tablewrap { overflow-x: auto; }
+  button.reset { font: inherit; font-size: var(--a-text-xs); color: var(--a-link); background: none; border: none; cursor: pointer; padding: 0; }
+  button.reset:hover { color: var(--a-link-hover); text-decoration: underline; }
+  .field input.computed { background: var(--a-bg-accent); color: var(--a-ink); border-color: var(--a-link); }
+  .cardfoot { display: flex; align-items: center; gap: 1.1rem; margin-top: 1rem; }
+  .cardfoot button { font: inherit; font-size: var(--a-text-xs); color: var(--a-link); background: none; border: none; cursor: pointer; padding: 0; }
+  .cardfoot button:hover { color: var(--a-link-hover); text-decoration: underline; }
+  .cardfoot button:focus-visible { outline: 2px solid var(--a-focus); outline-offset: 2px; }
+  .cardfoot .copied { color: var(--a-good); text-decoration: none; }
+  /* the explain button sits at the far end of the same row as copy and reset */
+  .cardfoot .explain { margin-left: auto; }
+  dialog.help { width: min(46rem, calc(100% - 2rem)); padding: 0; color: var(--a-ink); background: var(--a-bg-panel); border: var(--a-border) solid var(--a-line); border-radius: var(--a-radius-sm); }
+  dialog.help::backdrop { background: rgb(0 0 0 / .45); }
+  .help-head { display: flex; align-items: baseline; gap: 1rem; padding: 1rem 1.2rem .7rem; border-bottom: var(--a-border) solid var(--a-line); }
+  .help-head h3 { margin: 0; flex: 1 1 auto; font-size: var(--a-text-h3); }
+  .help-head button { font: inherit; font-size: var(--a-text-xs); color: var(--a-link); background: none; border: none; cursor: pointer; padding: 0; }
+  .help-head button:hover { color: var(--a-link-hover); text-decoration: underline; }
+  .help-body { padding: 1rem 1.2rem 1.3rem; max-height: 70vh; overflow-y: auto; font-size: var(--a-text-sm); line-height: 1.65; }
+  .help-body p { margin: 0 0 .85rem; }
+  .help-body ul { margin: 0 0 .85rem; padding-left: 1.15rem; }
+  .help-body li { margin: 0 0 .4rem; }
+  .help-body code { font-family: var(--a-font-mono); font-size: .95em; }
+  .help-body .eq { display: block; margin: .75rem 0; padding: .55rem .75rem; font-family: var(--a-font-mono); font-size: var(--a-text-xs); line-height: 1.9; color: var(--a-ink); background: var(--a-bg-subtle); border-radius: var(--a-radius-sm); overflow-x: auto; }
+  /* a control whose value is shared with its twins on other cards */
+  .field [data-mirror] { border-style: dashed; }
+  .legend { font-size: var(--a-text-xs); color: var(--a-ink-muted); margin: 0 0 .35rem; }
+  .legend b { display: inline-block; background: var(--a-bg-accent); color: var(--a-ink); border: var(--a-border) solid var(--a-link); border-radius: var(--a-radius-sm); padding: 0 .35rem; font-weight: 400; }
+  footer.site { border-top: var(--a-border) solid var(--a-line); color: var(--a-ink-muted); font-size: var(--a-text-xs); padding: 1rem 0 2rem; }
