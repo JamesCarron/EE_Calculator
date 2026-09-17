@@ -76,7 +76,7 @@ Each card names its model and its validity window, and refuses geometry outside 
 
 ## Layout
 
-`src/` builds the page, `test/` checks it, `ext/` holds the openEMS submodule, `tools/` has the setup scripts, `docs/` the design documents, `examples/` the worked examples, and `user_data/` the things that are never committed. The generated `EE_Calculator.html` and its launcher stay at the repo root because they are the product; everything else is how it is made.
+`src/` builds the page, `test/` checks it, `ext/` holds the openEMS submodule, `tools/` has the setup scripts, `docs/` the design documents and the refactor plan, `examples/` the worked examples, and `user_data/` the things that are never committed. The generated `EE_Calculator.html` and its launcher stay at the repo root because they are the product; everything else is how it is made.
 
 The tests live in `test/`, not in `Tools\claude\scratch\` where they started. They are this project's tests rather than general-purpose analysis scripts, so they belong with the project; the scratch folder keeps only what is genuinely reusable elsewhere.
 
@@ -87,14 +87,14 @@ The tests live in `test/`, not in `Tools\claude\scratch\` where they started. Th
 Before committing any change to the page:
 
 ```
-python C:\Auterion\Tools\claude\scratch\eecalc_mkharness.py     # rebuild the node harness
-python C:\Auterion\Tools\claude\scratch\eecalc_load_check.py    # the whole script runs to completion
-python C:\Auterion\Tools\claude\scratch\eecalc_diagram_check.py # diagram geometry lint
-python C:\Auterion\Tools\claude\scratch\eecalc_check_page.py    # structural invariants
+python test/eecalc_mkharness.py       # rebuild the node harness
+python test/eecalc_load_check.py      # the whole script runs to completion
+python test/eecalc_diagram_check.py   # diagram geometry lint
+python test/eecalc_check_page.py      # structural invariants
 ```
 
 **Run the load check on every change.** The node harness stops at the wiring section, so nothing else executes the top-level code that builds the card footers, attaches listeners and restores the last tab — and an error there kills the entire script, not just one card. The specific trap is the temporal dead zone: a top-level `const` declared *below* the code that reads it throws `ReferenceError: Cannot access X before initialization` at load, and the page comes up dead with no visible clue. That has happened once already, with `HELP`. Anything the wiring section reads must be declared above the `/* wiring */` marker.
 
-then run the node suites in `C:\Auterion\Tools\claude\scratch\eecalc_*_tests.js` by concatenating the harness with each suite. The harness stubs the DOM well enough to exercise the real `value` and `classList`; when a suite fails on a missing DOM method, that is a harness gap to fix in `eecalc_mkharness.py`, not a page bug — it has been exactly that four times.
+then run the node suites in `test/eecalc_*_tests.js` by concatenating the harness with each suite. The harness stubs the DOM well enough to exercise the real `value` and `classList`; when a suite fails on a missing DOM method, that is a harness gap to fix in `eecalc_mkharness.py`, not a page bug — it has been exactly that four times.
 
 Three checks per new piece of behaviour: an interior value, a boundary or limit identity, and a sign or monotonicity check. Two of the originally planned tests were tautologies that could never fail, which is why the identity check is on the list.
