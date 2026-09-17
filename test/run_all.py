@@ -14,6 +14,16 @@ import subprocess
 import sys
 from pathlib import Path
 
+# The suites print the page's own units - ohms, micro, degrees - and a failure
+# line carrying one of those killed the runner with a UnicodeEncodeError on a
+# cp1252 console, turning a reportable test failure into a traceback. Force the
+# streams to UTF-8 with a replacement fallback so the report always prints.
+for _s in (sys.stdout, sys.stderr):
+    try:
+        _s.reconfigure(encoding="utf-8", errors="replace")
+    except (AttributeError, ValueError):
+        pass
+
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
 WORK = HERE / ".work"

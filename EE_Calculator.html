@@ -1541,6 +1541,36 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
     <p class="note">Edit either side of a pair; the rest follows. dB assumes 20&middot;log<sub>10</sub> for voltage and 10&middot;log<sub>10</sub> for power.</p>
     <button class="reset" data-reset="cv">Reset</button>
   </div>
+  <div class="card">
+    <h3>dBm and volts</h3>
+    <div class="cardrow">
+    <div class="fields">
+      <div class="field"><label for="dbm-p">Power (dBm)</label><input id="dbm-p" inputmode="decimal" placeholder="e.g. 0"></div>
+      <div class="field"><label for="dbm-w">Power (W)</label><input id="dbm-w" inputmode="decimal" placeholder="e.g. 1m"></div>
+      <div class="field"><label for="dbm-z">Impedance (&Omega;)</label><input id="dbm-z" inputmode="decimal" placeholder="50"></div>
+      <div class="field"><label for="dbm-vrms">V rms</label><input id="dbm-vrms" inputmode="decimal" placeholder="e.g. 223.6m"></div>
+      <div class="field"><label for="dbm-vpk">V peak</label><input id="dbm-vpk" inputmode="decimal" placeholder="e.g. 316.2m"></div>
+      <div class="field"><label for="dbm-vpp">V peak-to-peak</label><input id="dbm-vpp" inputmode="decimal" placeholder="e.g. 632.5m"></div>
+    </div>
+    <div class="diagram">
+      <svg class="schem" width="250" height="150" viewBox="0 0 250 150" role="img" aria-label="A sine wave across a load, with the rms level, the peak and the peak-to-peak swing marked">
+      <path class="wire" d="M18 74 H240"/>
+      <path class="wire" d="M18 74 Q 40 18 62 74 T 106 74 T 150 74 T 194 74"/>
+      <path class="wire opt" d="M18 36 H240"/>
+      <text x="202" y="32">rms</text>
+      <path class="wire" d="M40 20 V74 M34 20 H46 M34 74 H46"/>
+      <text x="26" y="14">peak</text>
+      <path class="wire" d="M84 20 V128 M78 20 H90 M78 128 H90"/>
+      <text x="94" y="144">peak-to-peak</text>
+    </svg>
+      <p class="key">One cycle of a sine across the load. The rms level is the dashed line; peak and peak-to-peak are measured from it and from trough to crest. The sine is where the root-two factors come from &mdash; no other waveform has them.</p>
+      <p class="plate">V<sub>rms</sub> = sqrt(P&middot;Z) &middot; V<sub>pk</sub> = sqrt(2)&middot;V<sub>rms</sub> &middot; V<sub>pp</sub> = 2&middot;V<sub>pk</sub></p>
+    </div>
+    </div>
+    <dl class="results" id="dbm-out"></dl>
+    <p class="note">Type into any one box and the rest follow. dBm is an absolute power, so it only becomes a voltage once the impedance is fixed &mdash; 50 &Omega; unless you say otherwise, 75 &Omega; for video and cable, 600 &Omega; for legacy audio lines. <b>The peak and peak-to-peak figures assume a sine wave.</b> For noise, a modulated carrier or any other waveform the crest factor differs and only the rms figure follows from the power; digital modulation routinely peaks 3 to 10 dB above its average, which is exactly what clips an amplifier that looked fine on paper.</p>
+    <button class="reset" data-reset="dbm">Reset</button>
+  </div>
 <div class="card">
     <h3>Ratio units</h3>
     <div class="fields">
@@ -3885,6 +3915,67 @@ function calcXtal() {
   render("xc-out", rows);
 }
 
+/* ---------- dBm and volts ----------
+
+   dBm is an absolute power referred to a milliwatt, so it is only a voltage
+   once an impedance is named. Everything here goes through watts as the
+   canonical quantity, which keeps one conversion path rather than five.
+
+   The root-two factors are a sine-wave assumption and nothing more. The card
+   says so, because the number that actually clips an amplifier is the peak of
+   whatever waveform you really have, not of the sine it would be if life were
+   simpler. */
+
+function calcDbm() {
+  const IDS = ["dbm-p", "dbm-w", "dbm-vrms", "dbm-vpk", "dbm-vpp"];
+  /* Whatever the user typed wins; anything this card wrote is fair game to
+     overwrite. Read that before clearing, or our own answers look like input. */
+  const typed = IDS.filter(function (id) {
+    const el = document.getElementById(id);
+    return el && el.value.trim() !== "" && !el.classList.contains("computed");
+  });
+  clearComputed(IDS);
+  const z = numOr("dbm-z", 50, 1e-12);
+  if (!isFinite(z)) { render("dbm-out", []); return; }
+  if (!typed.length) { render("dbm-out", []); return; }
+
+  const src = typed[0];
+  const v = val(src);
+  if (!isFinite(v)) { render("dbm-out", []); return; }
+
+  let watts;
+  if (src === "dbm-p") watts = Math.pow(10, v / 10) / 1000;
+  else if (src === "dbm-w") watts = v;
+  else if (src === "dbm-vrms") watts = v * v / z;
+  else if (src === "dbm-vpk") watts = (v / Math.SQRT2) * (v / Math.SQRT2) / z;
+  else watts = (v / (2 * Math.SQRT2)) * (v / (2 * Math.SQRT2)) / z;
+
+  if (!(watts > 0)) {
+    render("dbm-out", [["", "Power must be above zero &mdash; dBm has no value at zero power.", "err"]]);
+    return;
+  }
+
+  const vrms = Math.sqrt(watts * z);
+  const out = { "dbm-p": 10 * Math.log10(watts * 1000), "dbm-w": watts,
+                "dbm-vrms": vrms, "dbm-vpk": vrms * Math.SQRT2,
+                "dbm-vpp": 2 * Math.SQRT2 * vrms };
+  IDS.forEach(function (id) { if (id !== src) setComputed(id, out[id]); });
+
+  const rows = [
+    ["Into", fmt(z, "\u03a9")],
+    ["Power", out["dbm-p"].toFixed(2) + " dBm (" + fmt(watts, "W") + ")"],
+    ["Voltage", fmt(vrms, "V") + " rms \u00b7 " + fmt(out["dbm-vpk"], "V") + " peak \u00b7 " +
+     fmt(out["dbm-vpp"], "V") + " peak-to-peak"],
+    /* dBuV is the EMC unit for the same thing; the offset is 90 + 10log10(Z),
+       which is the familiar +107 at 50 ohms */
+    ["As dB&micro;V", (out["dbm-p"] + 90 + 10 * Math.log10(z)).toPrecision(5) + " dB&micro;V" +
+     (Math.abs(z - 50) < 1e-9 ? " \u2014 dBm + 107 at 50 \u03a9" : "")],
+    ["", "Peak and peak-to-peak assume a sine. For anything else only the rms figure follows from the " +
+     "power, and the real peak depends on the waveform's crest factor.", ""]
+  ];
+  render("dbm-out", rows);
+}
+
 function calcPPM() {
   clearComputed(["pp-ppm","pp-df"]);
   const f = val("pp-f"), ppm = val("pp-ppm"), df = val("pp-df");
@@ -4602,24 +4693,6 @@ function calcBattery() {
   if (haveV) drawBatteryCurve(vfull, vc, vmin, S, chem ? chem.shape : "slope", usable);
 }
 
-/* ---------- dBm chain (disabled: card hidden) ---------- */
-
-function calcDbm() {
-  const lin = val("db-in"), g = val("db-gain"), att = val("db-att");
-  const z = numOr("db-z", 50, 1e-9);
-  if (!isFinite(lin) || !isFinite(z)) { render("db-out", []); return; }
-  const out = lin + (isFinite(g) ? g : 0) - (isFinite(att) ? att : 0);
-  const volts = function (dbm) { return Math.sqrt(Math.pow(10, dbm / 10) * 1e-3 * z); };
-  const watts = function (dbm) { return Math.pow(10, dbm / 10) * 1e-3; };
-  render("db-out", [
-    ["Output level", out.toFixed(2) + " dBm"],
-    ["Net gain", (out - lin >= 0 ? "+" : "") + (out - lin).toFixed(2) + " dB"],
-    ["Input", fmt(volts(lin), "V") + " rms, " + fmt(watts(lin), "W") + " into " + fmt(z, "Ω")],
-    ["Output", fmt(volts(out), "V") + " rms, " + fmt(watts(out), "W") + " into " + fmt(z, "Ω")],
-    ["Peak-to-peak out", fmt(volts(out) * 2 * Math.SQRT2, "V")]
-  ]);
-}
-
 /* One dialog, refilled on each open, so the page carries a single copy of
    the chrome rather than one per card. <dialog> gives the modal behaviour,
    the backdrop and Escape-to-close for free. */
@@ -4733,6 +4806,7 @@ const HELP = {
     "body": "<p>Thermal resistance behaves like Ohm's law with power for current and temperature for voltage:</p><span class=\"eq\">T<sub>j</sub> = T<sub>a</sub> + P · Σθ &nbsp;&nbsp; θ<sub>ja</sub> = θ<sub>jc</sub> + θ<sub>cs</sub> + θ<sub>sa</sub></span><p>The resistances in the path add in series, so the largest one dominates and is the only one worth improving. There is no point fitting a better thermal pad if the heatsink-to-air resistance is ten times larger.</p><p>Rearranged, the same equation gives the two answers you usually want: the maximum power for a temperature limit, and the heatsink you would need for a given power:</p><span class=\"eq\">P<sub>max</sub> = (T<sub>j,max</sub> − T<sub>a</sub>) / θ<sub>ja</sub> &nbsp;&nbsp; θ<sub>sa</sub> = (T<sub>j</sub> − T<sub>a</sub>)/P − θ<sub>jc</sub> − θ<sub>cs</sub></span><p><b>Treat θ<sub>ja</sub> from a datasheet with suspicion.</b> It is measured on a specified test board — often JEDEC 2s2p, a four-layer board with solid planes — and your board is not that board. A SOT-23 quoted at 250 °C/W can be far worse on a two-layer board with a small copper pour. θ<sub>jc</sub> is a property of the package and is far more trustworthy; use it with your own estimate of the rest of the path.</p><p><b>Leave margin.</b> Silicon lifetime falls roughly exponentially with junction temperature — the usual rule of thumb is that every 10 °C halves it. Designing to T<sub>j,max</sub> is designing to the point where the manufacturer stops promising anything at all. Target 20–30 °C below it at the worst-case ambient, and remember that ambient inside a sealed enclosure is not room temperature.</p><p><b>This is a steady-state model.</b> Short power pulses are handled by thermal <i>impedance</i>, not resistance; a device can survive brief peaks well above its steady-state rating because the die's own heat capacity absorbs them.</p>"
   },
   "iec": {"title": "Clearance and creepage (IEC 60664-1)", "body": "<p>IPC-2221 gives one number, a minimum clearance through air by environment. IEC 60664-1 is the standard a mains- or high-voltage-connected product is actually assessed against, and it gives two, because there are two ways for insulation to fail.</p><p><b>Clearance</b> is the shortest path through the air. It has to survive the worst <i>transient</i> the installation can deliver, not the working voltage, so it is derived from the rated impulse withstand voltage:</p><span class=\"eq\">overvoltage category + supply voltage &rarr; impulse kV &rarr; clearance</span><p>The overvoltage category says how far you are from the origin of the installation and therefore how much the wiring in between has damped the surge. II is an appliance plugged into a fixed installation; III is part of that fixed installation; IV is at its origin. For 230 V, category II implies a 2.5 kV impulse and 1.5 mm of clearance at pollution degree 2.</p><p><b>Creepage</b> is the path along the surface, and it is about slow tracking rather than a fast breakdown: contamination plus humidity plus voltage carbonises the surface over months or years. It therefore depends on the working rms voltage, on how dirty the environment gets, and on the material.</p><ul><li><b>Pollution degree</b> 1 is sealed, 2 is normal with occasional condensation, 3 is conductive pollution. Most equipment is 2; anything that can get wet inside is 3.</li><li><b>Material group</b> comes from the laminate's comparative tracking index: I is CTI &ge; 600, II is 400 to 599, IIIa is 175 to 399, IIIb is 100 to 174. <b>Most FR-4 is IIIa</b>, which is worse than people assume and costs real millimetres. The fabricator states it; do not guess.</li></ul><p><b>Reinforced insulation</b> is not simply twice basic. Creepage doubles, but clearance takes the next step <i>up the preferred series</i> of impulse voltages &mdash; 2.5 kV becomes 4 kV, giving 3.0 mm rather than 3.0 mm by doubling. The card shows which step it used.</p><p><b>Altitude</b> thins the air, so clearance is multiplied above 2000 m &mdash; 1.14&times; at 3000 m, 1.48&times; at 5000 m. Creepage is unaffected, being a surface phenomenon. This matters for anything that flies or ships to high-altitude sites.</p><p><b>Grooves.</b> A groove in the surface adds to the creepage path, but only if it is wide enough for contamination to be washed out rather than bridging it. Narrower than the stated minimum and it counts for nothing, which is why the card reports that width.</p><p><b>Creepage is floored at the clearance here</b>, because a path along a surface cannot physically be shorter than the straight line through the air beside it. At low voltages the tables often give a smaller creepage, and the clearance is then what you build to.</p><p><b>Outside the scope of this standard:</b> above 30 kHz (IEC 60664-3), conformal coating or potting (60664-4), pollution degree 4, and insulation through any medium other than air. If your design relies on coating to make the numbers work, this card does not model it.</p>"},
+  "dbm": {"title": "dBm and volts", "body": "<p>dBm is an absolute power referred to one milliwatt, not a ratio:</p><span class=\"eq\">P = 10<sup>(dBm/10)</sup> / 1000 watts</span><p>It becomes a voltage only once you name an impedance, because power and voltage are related through it:</p><span class=\"eq\">V<sub>rms</sub> = sqrt(P &middot; Z) &nbsp;&nbsp; P = V<sub>rms</sub>&sup2; / Z</span><p>50 &Omega; is the default because almost all RF test gear is built to it. 75 &Omega; is video and cable television, 600 &Omega; is legacy audio lines, and getting this wrong shifts every voltage by half the impedance ratio in dB &mdash; 50 to 75 &Omega; is 1.76 dB.</p><p><b>Anchors worth memorising.</b> 0 dBm into 50 &Omega; is 224 mV rms, and +13 dBm is almost exactly 1 V rms into the same. Every 3 dB doubles the power and so multiplies voltage by 1.41; every 6 dB doubles the voltage. A 20 dB step is ten times the voltage and a hundred times the power.</p><p><b>The three voltages.</b> RMS is the one that carries the power and the only one that follows from it directly. The others come from the waveform:</p><span class=\"eq\">V<sub>pk</sub> = sqrt(2) &middot; V<sub>rms</sub> &nbsp;&nbsp; V<sub>pp</sub> = 2 &middot; V<sub>pk</sub> = 2&middot;sqrt(2) &middot; V<sub>rms</sub></span><p><b>Those root-two factors are a sine-wave assumption</b>, and it is the assumption that catches people out. The ratio of peak to rms is the crest factor: 1.41 for a sine, 1.0 for a square wave, about 3 to 4 for Gaussian noise, and anywhere from 3 to 10 dB for digitally modulated carriers. An OFDM signal at +20 dBm average peaks near +30 dBm, so an amplifier sized from the average clips on the peaks and spatters the adjacent channel. When the waveform is not a sine, trust the rms figure and get the peak from the modulation's own crest factor.</p><p><b>dB&micro;V</b> is the same quantity in the units EMC work uses &mdash; 20&middot;log<sub>10</sub> of the rms voltage referred to a microvolt. The offset from dBm is 90 + 10&middot;log<sub>10</sub>(Z), which is the familiar +107 at 50 &Omega;. Emissions limits are quoted in dB&micro;V or dB&micro;V/m, so this is the bridge between a receiver's noise floor in dBm and a limit line on a test report.</p><p><b>What this does not cover.</b> dBm always needs a stated impedance, so a voltage measured across a high-impedance probe is not a dBm figure without knowing what the source actually drives. And a reading in dBm from a spectrum analyser is power in its resolution bandwidth, not total power &mdash; for noise you have to account for the bandwidth before comparing.</p>"},
   "pdn": {
     "title": "PDN target impedance",
     "body": "<p>If a load steps by ΔI and the rail may only move by ΔV, the power distribution network must present no more than their ratio:</p><span class=\"eq\">Z<sub>target</sub> = ΔV / ΔI = (V<sub>rail</sub> · ripple%) / (I<sub>max</sub> · transient%)</span><p>That single number is the design target for the whole network — regulator, bulk capacitance, decoupling, planes and package — <b>across the whole frequency range of interest</b>, not just at DC. The regulator handles up to its loop bandwidth, typically tens of kilohertz; bulk capacitors take over to a few megahertz; ceramics beyond that; and above their self-resonance only the plane capacitance and the package are left.</p><p><b>Which is why the reactance card matters here.</b> Every capacitor is inductive above its self-resonance, so the impedance curve of a real PDN is a series of V shapes. Mixing values does not simply fill the gaps: between two different capacitors' resonances there is an anti-resonant <i>peak</i> where one is inductive and the other still capacitive, and that peak can be higher than either part alone. Many identical parts, or parts with heavy damping, behave better than a decade-spaced spread.</p><p><b>The transient fraction is a guess</b>, and the answer is only as good as it. If you know the actual step profile of your load — an FPGA coming out of clock gating, a radio keying up — use it rather than a percentage.</p><p><b>What this does not do:</b> it does not tell you the inductance of your via and pad layout, which is usually what stops a PDN meeting its target above 100 MHz. Placement beats part count.</p>"
@@ -5867,7 +5941,8 @@ const CALCS = {
   awg: { calc: calcAWG, inputs: ["awg-n","awg-len","awg-return","awg-i","awg-temp","awg-vsupply"] },
   nb:  { calc: function () { render("nb-out", []); }, inputs: ["nb-dec","nb-hex","nb-bin","nb-oct"] },
   rt:  { calc: function () {}, inputs: ["rt-pct","rt-ppm","rt-ppb","rt-ratio"] },
-  cv:  { calc: function () {}, inputs: ["cv-mm","cv-mil","cv-c","cv-f","cv-db","cv-vr","cv-pr","cv-re","cv-im","cv-mag","cv-ang","cv-deg","cv-rad"] }
+  cv:  { calc: function () {}, inputs: ["cv-mm","cv-mil","cv-c","cv-f","cv-db","cv-vr","cv-pr","cv-re","cv-im","cv-mag","cv-ang","cv-deg","cv-rad"] },
+  dbm: { calc: calcDbm, inputs: ["dbm-p","dbm-w","dbm-z","dbm-vrms","dbm-vpk","dbm-vpp"] }
 };
 
 /* Typing in a field makes it an input again: the `computed` tag comes off

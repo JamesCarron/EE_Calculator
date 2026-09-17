@@ -67,12 +67,44 @@ has("percentage of supply","awg-out",/1\.1[0-9] %/);
 document.getElementById("awg-return").value="1"; calcAWG();
 has("one-way halves it","awg-out",/One-way/);
 
-console.log("\n== dBm chain ==");
-clearAll(["db-in","db-gain","db-att","db-z"]);
-set("db-in","-60"); set("db-gain","23"); set("db-att","10"); calcDbm();
-has("output -47 dBm","db-out",/-47\.00 dBm/);
-has("net gain +13","db-out",/\+13\.00 dB/);
-has("output 998.8 uV rms","db-out",/998.[0-9] µV rms/);
+console.log("\n== dBm and volts ==");
+const DBM = ["dbm-p","dbm-w","dbm-z","dbm-vrms","dbm-vpk","dbm-vpp"];
+/* interior value: 0 dBm is 1 mW, and into 50 ohms that is 223.6 mV rms */
+clearAll(DBM); set("dbm-p","0"); calcDbm();
+has("0 dBm is 1 mW","dbm-out",/1 mW/);
+has("223.6 mV rms into 50 ohms","dbm-out",/223\.[56] mV rms/);
+has("peak is root two above rms","dbm-out",/316\.[12] mV peak/);
+has("peak-to-peak is twice the peak","dbm-out",/632\.[45] mV peak-to-peak/);
+has("and 106.99 dBuV, the 50 ohm offset quoted as 107","dbm-out",/106\.99 dB&micro;V/);
+eq("V rms is written back into its box",
+   /223\.[56]/.test(document.getElementById("dbm-vrms").value), true);
+
+/* identity: feed the computed voltage back in and the power comes back out */
+clearAll(DBM); set("dbm-vrms","0.2236"); calcDbm();
+has("223.6 mV rms round-trips to 0 dBm","dbm-out",/-?0\.00 dBm/);
+clearAll(DBM); set("dbm-vpp","0.6325"); calcDbm();
+has("so does the peak-to-peak figure","dbm-out",/-?0\.00 dBm/);
+
+/* the impedance is a real parameter, not decoration */
+clearAll(DBM); set("dbm-p","0"); set("dbm-z","75"); calcDbm();
+has("0 dBm into 75 ohms is a higher voltage","dbm-out",/273\.[89] mV rms/);
+has("and the dBuV offset moves with it","dbm-out",/108\.7[0-9]* dB&micro;V/);
+
+/* monotonic in power, by the right factor: +20 dB is ten times the voltage */
+/* val(), not parseFloat: the box holds engineering notation ("223.61m"), and
+   parseFloat reads that as 223.61 without a murmur */
+clearAll(DBM); set("dbm-p","20"); calcDbm();
+const v20 = val("dbm-vrms");
+clearAll(DBM); set("dbm-p","0"); calcDbm();
+const v0 = val("dbm-vrms");
+/* the boxes carry display precision, not full precision, so compare loosely */
+eq("+20 dB is ten times the voltage", Math.abs(v20 / v0 - 10) < 1e-3, true);
+
+/* zero power has no dBm, and an empty card says nothing rather than NaN */
+clearAll(DBM); set("dbm-w","0"); calcDbm();
+has("zero power is refused, not reported as -Infinity","dbm-out",/above zero/);
+clearAll(DBM); calcDbm();
+eq("an untouched card is blank", document.getElementById("dbm-out").innerHTML, "");
 
 console.log("\n== Rect/polar and deg/rad are wired ==");
 eq("cv-re exists", hasField("cv-re"), true);
