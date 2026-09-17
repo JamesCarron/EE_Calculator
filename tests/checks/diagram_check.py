@@ -17,7 +17,7 @@ the SVG that the switching draw* functions produce for every mode:
 Verified by deliberately moving a label outside the viewBox and off another
 label, and confirming each check fails.
 
-Usage: python eecalc_diagram_check.py
+Usage: python diagram_check.py
 """
 
 import json
@@ -26,8 +26,10 @@ import subprocess
 import sys
 from pathlib import Path
 
-HTML = Path(r"C:\Auterion\Tools\EE_Calculator\EE_Calculator.html")
-SCRATCH = Path(r"C:\Auterion\Tools\EE_Calculator\test\.work")
+REPO = Path(__file__).resolve().parents[2]
+
+HTML = REPO / "EE_Calculator.html"
+SCRATCH = REPO / "tests" / ".work"
 HARNESS = SCRATCH / "harness.js"
 
 # the switching drawings, and the substring each mode must carry

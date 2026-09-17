@@ -17,7 +17,10 @@ src/                   everything that builds the page
   theme/                 stylesheet and woff2 fonts
   em/model.py            openEMS model generation for pad capacitance
 ext/openEMS-Project/   the solver, pinned as a git submodule
-test/                  every suite and structural checker; `pixi run test`
+tests/                 every suite and structural checker; `pixi run test`
+  js/                  node suites against the page's own JavaScript
+  checks/              Python structural checkers and the harness generator
+  run_all.py           the one runner
 tools/setup_openems.py fetches the solver runtime into user_data/
 docs/                  design documents and the reference screenshots
 examples/              worked examples that generate solver models
@@ -86,4 +89,4 @@ Everything the build needs is in this folder; `theme/` holds the stylesheet and 
 
 ## Tests
 
-The verification harness lives in `C:\Auterion\Tools\claude\scratch\`: `eecalc_mkharness.py` extracts the page's JavaScript and wraps it in a DOM stub whose `value` and `classList` are real, and the `eecalc_*_tests.js` files run against it under node. Roughly 165 assertions cover every calculator, including limit identities and sign checks rather than only worked values. `eecalc_formula_check.py` and `eecalc_hj_kj_check.py` verify the formulas themselves against published reference values.
+The verification harness lives in `tests/`: `tests/checks/mkharness.py` extracts the page's JavaScript and wraps it in a DOM stub whose `value` and `classList` are real, and the suites in `tests/js/` run against it under node. Roughly 165 assertions cover every calculator, including limit identities and sign checks rather than only worked values. `tests/checks/formula_check.py` and `tests/checks/hj_kj_check.py` verify the formulas themselves against published reference values.

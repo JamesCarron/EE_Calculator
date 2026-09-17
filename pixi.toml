@@ -7,7 +7,7 @@ version = "0.1.0"
 
 [tasks]
 build = "python src/build_page.py"
-test = "python test/run_all.py"
+test = "python tests/run_all.py"
 setup-em = "python tools/setup_openems.py"
 
 [dependencies]

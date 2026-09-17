@@ -12,16 +12,18 @@ so the translation is token-for-token and preserves the control flow exactly -
 including the cumulative pollution-degree blocks, where a PD1 lookup that runs
 past its voltage range falls through into the PD2 block and onwards.
 
-Verified by round-tripping every table row: see eecalc_iec_tests.js.
+Verified by round-tripping every table row: see iec_tests.js.
 
-Usage: python eecalc_iec60664_transcribe.py  (prints the JS to stdout)
+Usage: python iec60664_transcribe.py  (prints the JS to stdout)
 """
 
 import re
 import sys
 from pathlib import Path
 
-SRC = Path(r"C:\Auterion\Tools\EE_Calculator\test\.work\iec60664.cpp")
+REPO = Path(__file__).resolve().parents[2]
+
+SRC = REPO / "tests" / ".work" / "iec60664.cpp"
 
 # the functions Compute() actually needs, and the JS name each becomes
 WANTED = [
@@ -101,7 +103,7 @@ def main():
    peak voltage, and basic creepage by pollution degree and material group.
    They were transcribed mechanically from KiCad's implementation rather than
    retyped, because a typo in a safety table is not something a unit test
-   would catch. See eecalc_iec60664_transcribe.py.
+   would catch. See iec60664_transcribe.py.
 
    The pollution-degree blocks are cumulative on purpose: a PD1 lookup whose
    voltage runs past the PD1 rows falls through into PD2 and onwards, which is

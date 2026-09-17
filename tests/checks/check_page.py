@@ -2,7 +2,9 @@
 import re
 from pathlib import Path
 
-html = Path(r"C:\Auterion\Tools\EE_Calculator\EE_Calculator.html").read_text(encoding="utf-8")
+REPO = Path(__file__).resolve().parents[2]
+
+html = (REPO / "EE_Calculator.html").read_text(encoding="utf-8")
 js = re.search(r"<script>\n(.*?)</script>", html, re.S).group(1)
 
 ids = set(re.findall(r'id="([^"]+)"', html))
@@ -41,7 +43,8 @@ print("page bytes:", len(html))
 
 # ---- every card that reads a shared value must also SHOW that control ----
 import re as _re
-src = Path(r"C:/Auterion/Tools/EE_Calculator/src/build_page.py").read_text(encoding="utf-8")
+
+src = (REPO / "src" / "build_page.py").read_text(encoding="utf-8")
 _js = src[src.index("/* ---------- value parsing"):]
 _funcs = {}
 for _m in _re.finditer(r"function (calc\w+)\(\) \{", _js):

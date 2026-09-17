@@ -15,7 +15,7 @@ the point is to reach the end of the file, not to model a browser.
 
 Verified by moving a `const` below its first use and confirming the failure.
 
-Usage: python eecalc_load_check.py
+Usage: python load_check.py
 """
 
 import re
@@ -23,8 +23,10 @@ import subprocess
 import sys
 from pathlib import Path
 
-HTML = Path(r"C:\Auterion\Tools\EE_Calculator\EE_Calculator.html")
-OUT = Path(r"C:\Auterion\Tools\EE_Calculator\test\.work\load_check.js")
+REPO = Path(__file__).resolve().parents[2]
+
+HTML = REPO / "EE_Calculator.html"
+OUT = REPO / "tests" / ".work" / "load_check.js"
 
 STUB = r"""
 'use strict';

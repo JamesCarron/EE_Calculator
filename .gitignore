@@ -9,5 +9,5 @@ __pycache__/
 *.pyc
 
 # harness and solver scratch
-/test/.work/
+/tests/.work/
 __pycache__/

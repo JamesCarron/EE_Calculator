@@ -9,15 +9,17 @@ less than one cell across a 100 um dielectric and returns a confident wrong
 capacitance, which is exactly the failure a test has to prevent because the
 number looks perfectly reasonable.
 
-Usage: python eecalc_em_model_tests.py
+Usage: python em_model_tests.py
 """
 
 import ast
 import sys
 from pathlib import Path
 
-sys.path.insert(0, r"C:\Auterion\Tools\EE_Calculator\src")
+REPO = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(REPO / "src"))
 from em.model import PadModel, Plane, build_script, EPS0  # noqa: E402
+
 
 fails = []
 passes = []

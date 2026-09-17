@@ -3,7 +3,9 @@ exercise the computed-field mechanics (value + classList are real)."""
 import re
 from pathlib import Path
 
-html = Path(r"C:\Auterion\Tools\EE_Calculator\EE_Calculator.html").read_text(encoding="utf-8")
+REPO = Path(__file__).resolve().parents[2]
+
+html = (REPO / "EE_Calculator.html").read_text(encoding="utf-8")
 js = re.search(r"<script>\n(.*?)</script>", html, re.S).group(1)
 core = js.split("/* ---------- wiring ---------- */")[0]
 
@@ -92,6 +94,6 @@ function show(t, id) { console.log(t, JSON.stringify(rows(id))); }
     "defaults": "{" + ",".join('"%s":"%s"' % (k, v) for k, v in defaults.items()) + "}",
 }
 
-out = Path(r"C:\Auterion\Tools\EE_Calculator\test\.work\harness.js")
+out = REPO / "tests" / ".work" / "harness.js"
 out.write_text(stub + "\n" + core, encoding="utf-8")
 print("harness written:", out, len(stub) + len(core), "chars")

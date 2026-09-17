@@ -2,12 +2,12 @@
 node suite and every structural checker.
 
 Written 2026-09-15 for C:\\Auterion\\Tools\\EE_Calculator, when the project moved
-onto a src/test/docs layout. Before this the suite was a shell loop that had to
+onto a src/test/docs layout, and reorganised 2026-09-17 onto tests/js + tests/checks. Before this the suite was a shell loop that had to
 be retyped from memory each time, which meant it was easy to run some of it and
 believe you had run all of it.
 
-Usage: pixi run test        (or: python test/run_all.py)
-       python test/run_all.py -k atten     to run matching suites only
+Usage: pixi run test        (or: python tests/run_all.py)
+       python tests/run_all.py -k atten     to run matching suites only
 """
 
 import subprocess
@@ -26,22 +26,24 @@ for _s in (sys.stdout, sys.stderr):
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
+JS = HERE / "js"
+CHECKS = HERE / "checks"
 WORK = HERE / ".work"
 
 # structural checkers, in the order that fails most informatively: a page that
 # does not load makes every other failure noise
 CHECKERS = [
     ("page builds", [sys.executable, str(ROOT / "src" / "build_page.py")]),
-    ("harness", [sys.executable, str(HERE / "eecalc_mkharness.py")]),
-    ("script loads", [sys.executable, str(HERE / "eecalc_load_check.py")]),
-    ("diagram geometry", [sys.executable, str(HERE / "eecalc_diagram_check.py")]),
-    ("page structure", [sys.executable, str(HERE / "eecalc_check_page.py")]),
-    ("EM model", [sys.executable, str(HERE / "eecalc_em_model_tests.py")]),
+    ("harness", [sys.executable, str(CHECKS / "mkharness.py")]),
+    ("script loads", [sys.executable, str(CHECKS / "load_check.py")]),
+    ("diagram geometry", [sys.executable, str(CHECKS / "diagram_check.py")]),
+    ("page structure", [sys.executable, str(CHECKS / "check_page.py")]),
+    ("EM model", [sys.executable, str(CHECKS / "em_model_tests.py")]),
 ]
 
 
 def node_suites():
-    return sorted(p for p in HERE.glob("eecalc_*.js"))
+    return sorted(JS.glob("*.js"))
 
 
 def main():
@@ -78,7 +80,7 @@ def main():
         r = subprocess.run(["node", str(run_js)], capture_output=True, text=True,
                            encoding="utf-8")
         tail = (r.stdout or r.stderr or "").strip().splitlines()
-        print("%-22s %s" % (suite.stem.replace("eecalc_", ""),
+        print("%-22s %s" % (suite.stem,
                             tail[-1] if tail else "(no output)"))
         if r.returncode:
             failures.append(suite.name)

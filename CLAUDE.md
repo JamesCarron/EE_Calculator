@@ -24,7 +24,7 @@ The rest, following the `dataviz` skill:
 
 ## Card explanations
 
-Every card carries an **Explain** button in its footer, right-justified on the same row as Copy results and Reset, opening a `<dialog>` with the equations behind that card. The content lives in one `HELP` object keyed by the card's reset id, and `eecalc_check_page.py` fails if a card has no entry, an entry has no card, an entry is under 400 characters, or its markup is unbalanced — so a new card cannot ship without one.
+Every card carries an **Explain** button in its footer, right-justified on the same row as Copy results and Reset, opening a `<dialog>` with the equations behind that card. The content lives in one `HELP` object keyed by the card's reset id, and `tests/checks/check_page.py` fails if a card has no entry, an entry has no card, an entry is under 400 characters, or its markup is unbalanced — so a new card cannot ship without one.
 
 Pitch it at an engineer who knows the theory but has not memorised these particular formulas. Give the governing equation, define every symbol, say where the model comes from, and — the part that earns its place — name the assumption that will catch them out. The IPC ampacity constant halving for internal layers, a class 2 ceramic's temperature spec being a bound over its whole rated range rather than a slope, DC bias dwarfing every other term in a capacitor budget, ε_eff differing between microstrip and stripline so length matching by physical length alone leaves skew: those are the lines worth writing. Avoid restating the card's own note, and avoid padding.
 
@@ -33,7 +33,7 @@ Pitch it at an engineer who knows the theory but has not memorised these particu
 Cards carry an inline SVG labelling the very parameters their fields ask for. Where a selector changes the geometry, the drawing is a function called from the top of that card's `calc*`, so the picture and the answer cannot disagree — `drawZ`, `drawDiff`, `drawTrace`, `drawVia`, `drawSP`, `drawPad`, `drawTopology`.
 
 - Cross-sections share one convention: **filled is copper, an outline is dielectric, a heavy line is a reference plane, dashed is optional**. The `.key` paragraph under a drawing states it.
-- **Prose never goes inside an SVG.** `<text>` cannot wrap, so anything longer than a symbol goes in a `.key` paragraph underneath. `eecalc_diagram_check.py` enforces this by catching labels that run past the viewBox.
+- **Prose never goes inside an SVG.** `<text>` cannot wrap, so anything longer than a symbol goes in a `.key` paragraph underneath. `tests/checks/diagram_check.py` enforces this by catching labels that run past the viewBox.
 - Copper is drawn rectangular because the formulas assume a rectangle. Etch factor is not modelled, and drawing the etched trapezoid would claim an accuracy the maths does not have; the trace cards say so instead.
 - No photographs or 3D renders. Saturn has four and they label nothing.
 - **Never write a radical.** The mono face draws U+221A without its overbar, so `√(L/C)` in a plate, an equation block or an SVG label reads as an integral sign. `build_page.py` rewrites every radical to `sqrt(...)` as a build step and asserts none survive; keep it that way rather than reintroducing the glyph.
@@ -42,7 +42,7 @@ Cards carry an inline SVG labelling the very parameters their fields ask for. Wh
 
 ## What the lint cannot see
 
-`eecalc_diagram_check.py` checks coordinates against the viewBox, label against label, and now label against line. It still cannot see three things, and only the browser can:
+`tests/checks/diagram_check.py` checks coordinates against the viewBox, label against label, and now label against line. It still cannot see three things, and only the browser can:
 
 - **A glyph that renders wrongly.** The radical above is the example; the lint counted it as one character in the right place.
 - **Two things that are merely too close.** Adjacent labels that read as one sentence, or a label a pixel from a dimension line, pass every numeric check.
@@ -54,7 +54,7 @@ So run the browser pass on every change that touches a drawing. Serve the folder
 
 **A field with a default uses that default in the calculation from the start, until the user overwrites it.** A blank box showing `4.3` as its placeholder is not waiting for input — `numOr(id, dflt, lo, hi)` already computes with 4.3, and typing replaces it. Never make a card refuse to compute over a field that has a sensible default.
 
-`eecalc_defaults_tests.js` enforces this behaviourally: for every field whose placeholder is a number, leaving the box blank must give byte-identical results to typing that number in. Add a case there whenever a new defaulted field appears.
+`tests/js/defaults_tests.js` enforces this behaviourally: for every field whose placeholder is a number, leaving the box blank must give byte-identical results to typing that number in. Add a case there whenever a new defaulted field appears.
 
 Where a card *derives* a value that the user may then override, write it into the box with `setComputed`, which highlights it. Typing over a highlighted box makes it an input again and whatever is now missing gets solved instead. `clearComputed` at the top of a `calc*` clears only the boxes the calculator itself filled, so a user's own entry survives.
 
@@ -64,7 +64,7 @@ Shared board settings (copper weight, temp rise, ambient, E-series) are discover
 
 ## Standards tables
 
-Where a card implements a published standard, **transcribe the tables mechanically, never by hand**. A typo in an IEC clearance table produces a plausible number that no unit test catches and that a reviewer will not spot. `eecalc_iec60664_transcribe.py` translates KiCad's C++ ladders into JavaScript token for token and is re-runnable; do the same for any future table.
+Where a card implements a published standard, **transcribe the tables mechanically, never by hand**. A typo in an IEC clearance table produces a plausible number that no unit test catches and that a reviewer will not spot. `tests/checks/iec60664_transcribe.py` translates KiCad's C++ ladders into JavaScript token for token and is re-runnable; do the same for any future table.
 
 Then check the result against values published *independently* of the source you transcribed from. For IEC 60664-1 those are the ones every safety design note quotes — 2.5 kV impulse and 1.5 mm clearance at 230 V category II pollution degree 2, 3.0 mm reinforced, 1.0 mm creepage on a board at 250 V pollution degree 2 material group II — plus the monotonicity properties, since a worse pollution degree or material group can never require *less* creepage.
 
@@ -76,9 +76,9 @@ Each card names its model and its validity window, and refuses geometry outside 
 
 ## Layout
 
-`src/` builds the page, `test/` checks it, `ext/` holds the openEMS submodule, `tools/` has the setup scripts, `docs/` the design documents and the refactor plan, `examples/` the worked examples, and `user_data/` the things that are never committed. The generated `EE_Calculator.html` and its launcher stay at the repo root because they are the product; everything else is how it is made.
+`src/` builds the page, `tests/` checks it — `tests/js/` for the node suites, `tests/checks/` for the Python structural checkers, `tests/run_all.py` as the one runner — `ext/` holds the openEMS submodule, `tools/` has the setup scripts, `docs/` the design documents and the refactor plan, `examples/` the worked examples, and `user_data/` the things that are never committed. The generated `EE_Calculator.html` and its launcher stay at the repo root because they are the product; everything else is how it is made.
 
-The tests live in `test/`, not in `Tools\claude\scratch\` where they started. They are this project's tests rather than general-purpose analysis scripts, so they belong with the project; the scratch folder keeps only what is genuinely reusable elsewhere.
+The tests live in `tests/`, not in `Tools\claude\scratch\` where they started. Suites are named after what they test, never after the sprint that produced them: the four `s2` to `s5` suites became `thermal_rf`, `passives_conversions`, `impedance` and `trace_width` on 2026-09-17. They are this project's tests rather than general-purpose analysis scripts, so they belong with the project; the scratch folder keeps only what is genuinely reusable elsewhere.
 
 ## Testing
 
@@ -87,14 +87,14 @@ The tests live in `test/`, not in `Tools\claude\scratch\` where they started. Th
 Before committing any change to the page:
 
 ```
-python test/eecalc_mkharness.py       # rebuild the node harness
-python test/eecalc_load_check.py      # the whole script runs to completion
-python test/eecalc_diagram_check.py   # diagram geometry lint
-python test/eecalc_check_page.py      # structural invariants
+python tests/checks/mkharness.py      # rebuild the node harness
+python tests/checks/load_check.py     # the whole script runs to completion
+python tests/checks/diagram_check.py  # diagram geometry lint
+python tests/checks/check_page.py     # structural invariants
 ```
 
 **Run the load check on every change.** The node harness stops at the wiring section, so nothing else executes the top-level code that builds the card footers, attaches listeners and restores the last tab — and an error there kills the entire script, not just one card. The specific trap is the temporal dead zone: a top-level `const` declared *below* the code that reads it throws `ReferenceError: Cannot access X before initialization` at load, and the page comes up dead with no visible clue. That has happened once already, with `HELP`. Anything the wiring section reads must be declared above the `/* wiring */` marker.
 
-then run the node suites in `test/eecalc_*_tests.js` by concatenating the harness with each suite. The harness stubs the DOM well enough to exercise the real `value` and `classList`; when a suite fails on a missing DOM method, that is a harness gap to fix in `eecalc_mkharness.py`, not a page bug — it has been exactly that four times.
+then run the node suites in `tests/js/*.js` by concatenating the harness with each suite. The harness stubs the DOM well enough to exercise the real `value` and `classList`; when a suite fails on a missing DOM method, that is a harness gap to fix in `tests/checks/mkharness.py`, not a page bug — it has been exactly that four times.
 
 Three checks per new piece of behaviour: an interior value, a boundary or limit identity, and a sign or monotonicity check. Two of the originally planned tests were tautologies that could never fail, which is why the identity check is on the list.
