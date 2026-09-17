@@ -16,11 +16,12 @@ needs the runtime: pixi run setup-em.
 
 from pathlib import Path
 
+from eecalc import paths
 from eecalc.em.model import PadModel, Plane, build_script
 
 ROOT = Path(__file__).resolve().parent.parent
 
-OUT = ROOT / "user_data" / "em_models"
+OUT = paths.documents_dir() / "em_models"
 
 CASES = {
     "01_full_plane": PadModel(

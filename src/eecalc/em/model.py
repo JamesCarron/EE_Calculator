@@ -27,7 +27,7 @@ testable without the solver installed - which is the whole point, because the
 solver is a 48 MB native dependency and the model is the part with the physics
 in it.
 
-Verified by eecalc_em_model_tests.py.
+Verified by tests/checks/em_model_tests.py.
 """
 
 from __future__ import annotations
@@ -37,8 +37,10 @@ import math
 from dataclasses import dataclass, field, asdict
 from pathlib import Path
 
-# where `pixi run setup-em` puts the Windows runtime
-DEFAULT_RUNTIME = str(Path(__file__).resolve().parents[3] / "user_data" / "openems" / "openEMS")
+from eecalc import paths
+
+# where `pixi run setup-em` puts the Windows runtime; paths.py owns the location
+DEFAULT_RUNTIME = str(paths.cache_dir() / "openems" / "openEMS")
 
 C0 = 299792458.0
 EPS0 = 8.8541878128e-12

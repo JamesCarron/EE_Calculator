@@ -17,18 +17,30 @@ src/eecalc/            the package; everything that builds the page
   em/model.py            openEMS model generation for pad capacitance
   vendor/theme_inline.py inlines the stylesheet and fonts as base64
   vendor/theme/          stylesheet and woff2 fonts, copied from Tools\brand
-ext/openEMS-Project/   the solver, pinned as a git submodule
 tests/                 every suite and structural checker; `pixi run test`
   js/                  node suites against the page's own JavaScript
   checks/              Python structural checkers and the harness generator
   run_all.py           the one runner
-scripts/                 setup_openems.py fetches the solver runtime; where.py prints the data locations
+scripts/               setup_openems.py fetches the solver runtime; where.py prints the data locations; migrate.py moves an old user_data/
 docs/                  design documents and the reference screenshots
 examples/              worked examples that generate solver models
-user_data/             never committed; solver runtime and generated models
 ```
 
-Run `pixi run build` to regenerate the page and `pixi run test` for the lot: twenty-three node suites plus the structural checks, in one command.
+Run `pixi run build` to regenerate the page and `pixi run test` for the lot: twenty node suites plus the structural checks, in one command.
+
+## Where your data lives
+
+Nothing the user owns is kept inside the checkout, so a re-clone or a `git clean` cannot lose anything and none of it is uploaded by the Google Drive sync that covers `C:\Auterion`. `pixi run where` prints the resolved paths.
+
+| What | Where |
+|---|---|
+| The openEMS runtime that `pixi run setup-em` downloads | `%LOCALAPPDATA%\Auterion\EE Calculator\Cache\openems\` — safe to delete; re-download with `pixi run setup-em` |
+| Generated EM models and their solver output | `~\Documents\Auterion\EE Calculator\em_models\` |
+| Settings | `%LOCALAPPDATA%\Auterion\EE Calculator\settings.json` |
+
+Set `EE_CALCULATOR_HOME` to redirect the state and cache roots together, for portable or test use. A clone that predates 2026-09-17 still has a `user_data/` folder: `pixi run migrate` moves its contents to the locations above and deletes it.
+
+The openEMS *source* is not vendored and is no longer a submodule; the runtime is the pinned release `v0.0.36`, built from commit `04e054d8c91e1d31e14161b3ac20cc6f3c32d50d` of <https://github.com/thliebig/openEMS-Project>, recorded in `scripts/setup_openems.py`.
 
 ## Tabs
 
@@ -78,15 +90,14 @@ Deep links open a tab directly: `#copper`, `#signal`, `#res-acc`, `#pwr`.
 pixi run build
 ```
 
-Everything the build needs is in this folder; `theme/` holds the stylesheet and its two webfonts, inlined at build time by `theme_inline.py`.
+Everything the build needs is in this folder; `src/eecalc/vendor/theme/` holds the stylesheet and its two webfonts, inlined at build time by `vendor/theme_inline.py`. Both are copies of `C:\Auterion\Toolsrand`; `vendor/VENDORED.md` says where they came from and how to refresh them.
 
 ## Layout
 
-- `build_page.py` — page generator; the HTML/CSS/JS template lives here.
-- `theme_inline.py`, `theme/` — stylesheet and webfonts.
+- `src/eecalc/build_page.py` — page generator; the HTML/CSS/JS template lives here.
+- `src/eecalc/vendor/` — stylesheet and webfonts, with `VENDORED.md`.
 - `EE_Calculator.html` — generated output, committed so the tool works without pixi.
-- `Implementation_Plan.md`, `Implementation_Checklist.md`, `Saturn_Feature_Comparison.md`, `SaturnPCB/` — the design record.
-- `user_data/` — local files; never committed.
+- `docs/` — the design record, including `Refactor_Plan.md`.
 
 ## Tests
 

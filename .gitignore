@@ -1,5 +1,6 @@
-# User project data never leaves the machine and is never committed
-/user_data/
+# No user data in the checkout at all: state and cache live under
+# %LOCALAPPDATA%\Auterion\EE Calculator\ and outputs under
+# ~\Documents\Auterion\EE Calculator\. `pixi run where` prints them.
 
 # pixi environment
 /.pixi/

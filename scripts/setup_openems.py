@@ -1,20 +1,22 @@
-"""Fetch the openEMS runtime into user_data/openems.
+"""Fetch the openEMS runtime into the cache folder.
 
 Written 2026-09-15 for C:\\Auterion\\Tools\\EE_Calculator.
 
 Why a download rather than a build: openEMS needs CMake, a C++ toolchain, VTK,
 CGAL, Boost and HDF5 to compile, and conda-forge has no package, so building
-the submodule on a Windows workstation is a long and fragile detour. The
-submodule at ext/openEMS-Project pins the *source* for provenance and gives us
-the Python interface to write against; this script gets the matching runtime.
+the submodule on a Windows workstation is a long and fragile detour. The source is
+pinned by PINNED_SOURCE_COMMIT below rather than by a git submodule - 1017 files
+that nothing imports is not how provenance is recorded; this script gets the
+matching runtime.
 
 The version is pinned deliberately. v0.0.36 is the current stable release and
 its Windows wheels are built for Python 3.10 and 3.11, which is why pixi.toml
 pins 3.11 - the newer v0.37.0-rc2 wheels are 3.13/3.14 and it is a release
 candidate.
 
-Everything lands in user_data/, which is gitignored, so no 48 MB of binaries
-enter the repository's history.
+Everything lands in %LOCALAPPDATA%\\Auterion\\EE Calculator\\Cache\\openems, outside
+the repository and outside the Drive-synced tree, so no 48 MB of binaries enter
+the history and no download is uploaded to Drive. `pixi run where` prints it.
 
 Usage: pixi run setup-em
 """
@@ -27,10 +29,14 @@ import urllib.request
 import zipfile
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
-DEST = ROOT / "user_data" / "openems"
+from eecalc import paths
+
+DEST = paths.cache_dir() / "openems"
 RELEASE_API = "https://api.github.com/repos/thliebig/openEMS-Project/releases/tags/v0.0.36"
 PINNED_TAG = "v0.0.36"
+# The source tree the runtime was built from, kept for provenance now that the
+# ext/openEMS-Project submodule is gone: https://github.com/thliebig/openEMS-Project
+PINNED_SOURCE_COMMIT = "04e054d8c91e1d31e14161b3ac20cc6f3c32d50d"
 
 
 def find_asset():
@@ -82,7 +88,7 @@ def main():
     if wheels:
         print("\nInstall the ones matching this environment's Python with:")
         print("  pixi run python -m pip install <wheel>")
-    print("\nThe backend finds the runtime by looking in user_data/openems.")
+    print("\nThe backend finds the runtime by looking in %s." % DEST)
     return 0
 
 
