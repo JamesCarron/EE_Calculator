@@ -14,7 +14,7 @@ its Windows wheels are built for Python 3.10 and 3.11, which is why pixi.toml
 pins 3.11 - the newer v0.37.0-rc2 wheels are 3.13/3.14 and it is a release
 candidate.
 
-Everything lands in %LOCALAPPDATA%\\Auterion\\EE Calculator\\Cache\\openems, outside
+Everything lands in %LOCALAPPDATA%\\Auterion\\EE_Calculator\\Cache\\openems, outside
 the repository and outside the Drive-synced tree, so no 48 MB of binaries enter
 the history and no download is uploaded to Drive. `pixi run where` prints it.
 

@@ -37,9 +37,9 @@ Nothing the user owns is kept inside the checkout, so a re-clone or a `git clean
 
 | What | Where |
 |---|---|
-| The openEMS runtime that `pixi run setup-em` downloads | `%LOCALAPPDATA%\Auterion\EE Calculator\Cache\openems\` — safe to delete; re-download with `pixi run setup-em` |
-| Generated EM models and their solver output | `~\Documents\Auterion\EE Calculator\em_models\` |
-| Settings | `%LOCALAPPDATA%\Auterion\EE Calculator\settings.json` |
+| The openEMS runtime that `pixi run setup-em` downloads | `%LOCALAPPDATA%\Auterion\EE_Calculator\Cache\openems\` — safe to delete; re-download with `pixi run setup-em` |
+| Generated EM models and their solver output | `~\Documents\Auterion\EE_Calculator\em_models\` |
+| Settings | `%LOCALAPPDATA%\Auterion\EE_Calculator\settings.json` |
 
 Set `EE_CALCULATOR_HOME` to redirect the state and cache roots together, for portable or test use. A clone that predates 2026-09-17 still has a `user_data/` folder: `pixi run migrate` moves its contents to the locations above and deletes it.
 

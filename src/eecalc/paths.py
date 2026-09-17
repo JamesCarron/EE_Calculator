@@ -3,9 +3,9 @@
 Scaffolded by the `new-project` skill to the house layout (Tools/Project_Folder_Structure.md).
 Nothing else in the package hard-codes a path; everything calls one of these.
 
-* ``state_dir()``      %LOCALAPPDATA%\\Auterion\\EE Calculator\\        settings, ledgers, run logs
-* ``cache_dir()``      %LOCALAPPDATA%\\Auterion\\EE Calculator\\Cache\\ downloaded runtimes and models; safe to delete
-* ``documents_dir()``  ~\\Documents\\Auterion\\EE Calculator\\           the user's outputs; changeable in the UI
+* ``state_dir()``      %LOCALAPPDATA%\\Auterion\\EE_Calculator\\        settings, ledgers, run logs
+* ``cache_dir()``      %LOCALAPPDATA%\\Auterion\\EE_Calculator\\Cache\\ downloaded runtimes and models; safe to delete
+* ``documents_dir()``  ~\\Documents\\Auterion\\EE_Calculator\\           the user's outputs; changeable in the UI
 * ``settings_path()``  state_dir()/settings.json
 
 Every accessor creates its folder on first use, so there is no install step. The
@@ -22,7 +22,7 @@ from pathlib import Path
 
 import platformdirs
 
-APP = "EE Calculator"
+APP = "EE_Calculator"
 AUTHOR = "Auterion"
 ENV_HOME = "EE_CALCULATOR_HOME"
 

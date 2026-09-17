@@ -1,6 +1,6 @@
 # No user data in the checkout at all: state and cache live under
-# %LOCALAPPDATA%\Auterion\EE Calculator\ and outputs under
-# ~\Documents\Auterion\EE Calculator\. `pixi run where` prints them.
+# %LOCALAPPDATA%\Auterion\EE_Calculator\ and outputs under
+# ~\Documents\Auterion\EE_Calculator\. `pixi run where` prints them.
 
 # pixi environment
 /.pixi/
