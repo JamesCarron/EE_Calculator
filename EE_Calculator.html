@@ -1116,6 +1116,7 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
     <button role="tab" data-sub="wl" aria-selected="false">Wavelength</button>
     <button role="tab" data-sub="vs" aria-selected="false">Via Shielding</button>
     <button role="tab" data-sub="hx" aria-selected="false">Flex Hatching</button>
+    <button role="tab" data-sub="s11" aria-selected="false">S11 to Z</button>
   </nav>
 <div class="subpanel active" id="sub-z">
   <h2>Impedance</h2>
@@ -1350,6 +1351,44 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
     <dl class="results" id="hx-out"></dl>
     <p class="note">Geometry only: this is the pattern you would draw, not a prediction of the impedance it produces. A hatched plane raises the impedance of a trace above it, because the return path is longer and the coupling weaker, and no closed form covers that &mdash; a field solver with the real stack-up does. What the geometry does settle is the copper fraction, the opening size, the return resistance and whether the pattern respects the published guidelines.</p>
     <button class="reset" data-reset="hx">Reset</button>
+  </div>
+</div>
+
+<div class="subpanel" id="sub-s11">
+  <h2>S11 to Z</h2>
+  <p class="hint">Turns a one-port reflection measurement into the impedance that produced it. Give the magnitude alone and you get the standing-wave figures and the range the load must lie in; give the phase as well and the impedance is determined exactly.</p>
+  <div class="card">
+    <h3>Reflection to impedance</h3>
+    <div class="cardrow">
+    <div class="fields">
+      <div class="field"><label for="s11-z0">Reference Z<sub>0</sub> (&Omega;)</label><input id="s11-z0" inputmode="decimal" placeholder="50"></div>
+      <div class="field"><label for="s11-db">|S11| (dB)</label><input id="s11-db" inputmode="decimal" placeholder="e.g. -20"></div>
+      <div class="field"><label for="s11-lin">|S11| (linear)</label><input id="s11-lin" inputmode="decimal" placeholder="e.g. 0.1"></div>
+      <div class="field"><label for="s11-ph">&ang;S11 (&deg;, optional)</label><input id="s11-ph" inputmode="decimal" placeholder="e.g. -35"></div>
+      <div class="field"><label for="s11-f">Frequency (Hz, optional)</label><input id="s11-f" inputmode="decimal" placeholder="e.g. 2.4G"></div>
+    </div>
+    <div class="diagram">
+      <svg class="schem" width="230" height="150" viewBox="0 0 230 150" role="img" aria-label="A source port feeding a transmission line into a load, with the incident and reflected waves marked and the reflection coefficient defined at the load plane">
+      <circle class="wire" cx="28" cy="64" r="3"/>
+      <circle class="wire" cx="28" cy="104" r="3"/>
+      <path class="wire" d="M31 64 H182 M31 104 H182"/>
+      <path class="wire" d="M182 64 H210 V104 H182 Z"/>
+      <text x="188" y="88">ZL</text>
+      <text x="95" y="90">Z0</text>
+      <path class="wire opt" d="M172 44 V124"/>
+      <text x="176" y="38">&Gamma;</text>
+      <path class="wire" d="M60 44 H110 M104 40 L110 44 L104 48"/>
+      <text x="82" y="38">a</text>
+      <path class="wire" d="M110 124 H60 M66 120 L60 124 L66 128"/>
+      <text x="82" y="140">b</text>
+    </svg>
+      <p class="plate">&Gamma; = b/a = S11 &middot; Z = Z<sub>0</sub>(1+&Gamma;)/(1&minus;&Gamma;)</p>
+      <p class="key">A wave of amplitude a leaves the port, and b comes back. Their ratio at the load plane is the reflection coefficient, which is what a one-port S11 measurement reports. It is a complex number: the magnitude says how much came back, the phase says where the load sits around the Smith chart. The dashed line is the reference plane &mdash; move it and the phase rotates, so de-embed to the plane you actually care about before reading an impedance off this.</p>
+    </div>
+    </div>
+    <dl class="results" id="s11-out"></dl>
+    <p class="note">Magnitude alone does not determine an impedance. Every load on a circle of constant |S11| gives the same return loss and the same VSWR, so without the phase the honest answer is the circle, not a number &mdash; the card reports its extremes. A calculator that returns a single resistance from |S11| is quietly picking the point where that circle crosses the real axis, and the point diametrically opposite fits the measurement just as well.</p>
+    <button class="reset" data-reset="s11">Reset</button>
   </div>
 </div>
 </section>
@@ -1673,6 +1712,24 @@ function parseVal(s) {
   if (!m) return NaN;
   const v = parseFloat(m[1]);
   return m[2] ? v * MULT[m[2]] : v;
+}
+
+/* A complex impedance written the way it is written on paper: one unit, and
+   the j in front of the reactance rather than trailing the whole expression.
+   Both parts share a prefix chosen from the larger, so 58.5 - j6.779 Ohm reads
+   as one quantity instead of two unrelated ones. */
+function fmtZ(re, im) {
+  if (!isFinite(re) || !isFinite(im)) return "\u2014";
+  const m = Math.max(Math.abs(re), Math.abs(im));
+  const PRE = [[1e9, "G"], [1e6, "M"], [1e3, "k"], [1, ""], [1e-3, "m"], [1e-6, "\u00b5"]];
+  let f = 1, pre = "";
+  for (const [fac, pfx] of PRE) { if (m >= fac * 0.9999995) { f = fac; pre = pfx; break; } }
+  const part = function (v) {
+    let str = (v / f).toPrecision(4);
+    if (str.indexOf("e") === -1 && str.indexOf(".") !== -1) str = str.replace(/\.?0+$/, "");
+    return str;
+  };
+  return part(re) + (im < 0 ? " \u2212 j" : " + j") + part(Math.abs(im)) + " " + pre + "\u03a9";
 }
 
 function fmt(v, unit) {
@@ -4167,6 +4224,128 @@ function calcHatch() {
   render("hx-out", rows);
 }
 
+/* ---------- S11 to impedance ----------
+
+   A one-port reflection measurement gives the complex ratio of the returning
+   wave to the outgoing one at some reference plane. The bilinear map back to
+   impedance is exact:
+
+       Z = Z0 (1 + G) / (1 - G)
+
+   The thing worth being careful about is what happens when only |S11| is
+   known. Magnitude alone does NOT determine Z. Every load on the circle of
+   constant |G| produces the same return loss, the same VSWR and the same
+   mismatch loss, so the honest answer is that circle. Mapped into the Z plane
+   it stays a circle, centred on the real axis at
+
+       centre = Z0 (1 + p^2) / (1 - p^2),   radius = Z0 * 2p / (1 - p^2)
+
+   which is where the R span and the greatest possible |X| in the output come
+   from. A calculator that returns one resistance from |S11| is silently
+   choosing the point where that circle crosses the real axis on the high side;
+   the low-side crossing fits the same measurement exactly as well. */
+
+function calcS11() {
+  const IDS = ["s11-db", "s11-lin"];
+  /* Whichever of the pair the user typed is the source; the other is ours to
+     overwrite. Read that before clearing or our own answer looks like input. */
+  const typed = IDS.filter(function (id) {
+    const el = document.getElementById(id);
+    return el && el.value.trim() !== "" && !el.classList.contains("computed");
+  });
+  clearComputed(IDS);
+
+  const z0 = numOr("s11-z0", 50, 1e-12);
+  if (!isFinite(z0)) { render("s11-out", []); return; }
+  if (!typed.length) { render("s11-out", []); return; }
+
+  const src = typed[0];
+  const v = val(src);
+  if (!isFinite(v)) { render("s11-out", []); return; }
+
+  let rho;
+  if (src === "s11-db") rho = Math.pow(10, v / 20);
+  else rho = Math.abs(v);
+  if (!(rho >= 0)) { render("s11-out", []); return; }
+
+  const rows = [];
+  if (rho === 0) {
+    setComputed(src === "s11-db" ? "s11-lin" : "s11-db", src === "s11-db" ? 0 : -Infinity);
+    rows.push(["Match", "Perfect &mdash; nothing reflected, so the load is exactly Z<sub>0</sub> = " + fmt(z0, "\u03a9")]);
+    rows.push(["VSWR", "1.000 : 1"]);
+    render("s11-out", rows);
+    return;
+  }
+  if (src === "s11-db") setComputed("s11-lin", +rho.toPrecision(5));
+  else setComputed("s11-db", +(20 * Math.log10(rho)).toPrecision(5));
+
+  const dB = 20 * Math.log10(rho);
+  rows.push(["Reflection coefficient", "|\u0393| = " + rho.toPrecision(4) + " = " + dB.toFixed(2) + " dB"]);
+
+  if (rho >= 1) {
+    /* More came back than went out. Passive loads cannot do this, so it is a
+       calibration fault, an oscillating active device, or a genuine negative
+       resistance. Say which rather than returning a negative resistance with
+       no comment. */
+    rows.push(["Not passive", rho > 1
+      ? "More power returns than was sent. A passive load cannot do that &mdash; suspect the calibration, or an active device with negative resistance."
+      : "All of the power returns: an ideal open, short or pure reactance. The impedance is on the edge of the Smith chart.",
+      "warn"]);
+    if (rho > 1) { render("s11-out", rows); return; }
+  } else {
+    rows.push(["Return loss", (-dB).toFixed(2) + " dB"]);
+    rows.push(["VSWR", ((1 + rho) / (1 - rho)).toFixed(4) + " : 1"]);
+    rows.push(["Power reflected", (rho * rho * 100).toPrecision(3) + " % &mdash; mismatch loss "
+      + (-10 * Math.log10(1 - rho * rho)).toFixed(3) + " dB"]);
+  }
+
+  const phDeg = val("s11-ph");
+  if (isFinite(phDeg)) {
+    /* Phase known: the impedance is determined. */
+    const ph = phDeg * Math.PI / 180;
+    const gr = rho * Math.cos(ph), gi = rho * Math.sin(ph);
+    const dr = 1 - gr, di = -gi;
+    const den = dr * dr + di * di;
+    if (den < 1e-18) {
+      rows.push(["Impedance", "\u0393 = 1 exactly, which is an ideal open circuit &mdash; the impedance is unbounded.", "warn"]);
+      render("s11-out", rows);
+      return;
+    }
+    const nr = 1 + gr, ni = gi;
+    const R = z0 * (nr * dr + ni * di) / den;
+    const X = z0 * (ni * dr - nr * di) / den;
+    rows.push(["\u0393 rectangular", gr.toPrecision(4) + (gi < 0 ? " - " : " + ") + Math.abs(gi).toPrecision(4) + "j"]);
+    rows.push(["Impedance", fmtZ(R, X), "good"]);
+    rows.push(["In polar form", fmt(Math.sqrt(R * R + X * X), "\u03a9") + " \u2220 "
+      + (Math.atan2(X, R) * 180 / Math.PI).toFixed(2) + "&deg;"]);
+    if (R < 0) {
+      rows.push(["Negative resistance", "The real part is below zero, which no passive load has. Check the calibration and the reference plane.", "warn"]);
+    }
+    /* The reactance as a part you could actually fit. */
+    const f = val("s11-f");
+    if (isFinite(f) && f > 0 && Math.abs(X) > 1e-12) {
+      rows.push(["Series equivalent at " + fmt(f, "Hz"), X > 0
+        ? fmt(X / (2 * Math.PI * f), "H") + " in series with " + fmt(R, "\u03a9")
+        : fmt(1 / (2 * Math.PI * f * Math.abs(X)), "F") + " in series with " + fmt(R, "\u03a9")]);
+    } else if (Math.abs(X) > 1e-12) {
+      rows.push(["", "Give a frequency and the reactance is reported as the inductance or capacitance it corresponds to.", ""]);
+    }
+  } else if (rho < 1) {
+    /* Phase unknown: report the circle, not a point. */
+    const c = z0 * (1 + rho * rho) / (1 - rho * rho);
+    const r = z0 * 2 * rho / (1 - rho * rho);
+    rows.push(["Impedance", "Not determined by the magnitude alone &mdash; add the phase.", "warn"]);
+    rows.push(["The load lies on", "a circle centred at " + fmt(c, "\u03a9") + " of radius " + fmt(r, "\u03a9")]);
+    rows.push(["Purely resistive cases", fmt(z0 * (1 - rho) / (1 + rho), "\u03a9") + " or " + fmt(z0 * (1 + rho) / (1 - rho), "\u03a9")
+      + " &mdash; the two points where that circle meets the real axis"]);
+    rows.push(["Reactance could be", "anything up to \u00b1" + fmt(r, "\u03a9") + " at the extremes of the circle"]);
+    rows.push(["", "Return loss, VSWR and mismatch loss are all fixed by the magnitude, so those figures above are exact. The impedance is not.", ""]);
+  }
+  rows.push(["Model", "Exact for a linear one-port at the reference plane the measurement was calibrated to. "
+    + "Moving the plane rotates the phase without changing the magnitude, so de-embed first."]);
+  render("s11-out", rows);
+}
+
 function calcPPM() {
   clearComputed(["pp-ppm","pp-df"]);
   const f = val("pp-f"), ppm = val("pp-ppm"), df = val("pp-df");
@@ -4916,6 +5095,10 @@ function showHelp(help) {
    the governing equation, what each symbol is, where the model comes
    from, and the assumption that will catch them out. */
 const HELP = {
+  "s11": {
+    "title": "S11 to impedance",
+    "body": "<p>A one-port measurement sends a wave at the device and reports what comes back, as a complex ratio at the reference plane the calibration established:</p><span class=\"eq\">S11 = &Gamma; = b / a</span><p>The map from that ratio to impedance is a bilinear transform, and it is exact rather than approximate:</p><span class=\"eq\">Z = Z<sub>0</sub> (1 + &Gamma;) / (1 &minus; &Gamma;) &nbsp;&nbsp; &Gamma; = (Z &minus; Z<sub>0</sub>) / (Z + Z<sub>0</sub>)</span><p>&Gamma; = 0 is a perfect match, &Gamma; = +1 an open, &Gamma; = &minus;1 a short, and |&Gamma;| = 1 at any phase is a pure reactance. The whole right half of the impedance plane maps inside the unit circle, which is what a Smith chart is.</p><p><b>Why the phase is not optional, whatever a magnitude-only calculator implies.</b> |S11| fixes how much came back but says nothing about where the load sits around the chart. Every impedance on the circle of constant |&Gamma;| gives an identical return loss, VSWR and mismatch loss. Mapped into the Z plane that circle is centred on the real axis at</p><span class=\"eq\">centre = Z<sub>0</sub>(1 + &rho;&sup2;)/(1 &minus; &rho;&sup2;) &nbsp;&nbsp; radius = 2 Z<sub>0</sub> &rho; / (1 &minus; &rho;&sup2;)</span><p>At &minus;20 dB into 50 &Omega; that is a circle centred on 51.0 &Omega; of radius 10.1 &Omega;. So the load could be 61.1 &Omega;, or 40.9 &Omega;, or 49.0 + 9.9j &Omega;, or anything else on that circle. A tool that hands back &ldquo;61 &Omega;&rdquo; has chosen the high-side real-axis crossing and not told you. This card gives you the circle until you supply a phase.</p><p><b>The scalar figures, which the magnitude does fix.</b></p><span class=\"eq\">VSWR = (1 + &rho;)/(1 &minus; &rho;) &nbsp;&nbsp; return loss = &minus;20&middot;log<sub>10</sub>&rho; &nbsp;&nbsp; mismatch loss = &minus;10&middot;log<sub>10</sub>(1 &minus; &rho;&sup2;)</span><p>Return loss is quoted as a positive number by convention while S11 in dB is negative; they are the same measurement with opposite signs, and mixing them up is the most common slip in a link budget. Mismatch loss is the part that matters for power transfer: at &minus;10 dB return loss you are still delivering 90 % of the power, which is why chasing &minus;20 dB on an antenna rarely repays the effort the last few dB cost.</p><p><b>The reference plane is part of the measurement.</b> Moving it along a line rotates &Gamma; around the chart at two degrees per degree of electrical length, leaving |&Gamma;| untouched. So the magnitude, and therefore VSWR and return loss, are the same anywhere along a lossless line, while the impedance is completely different. If the calibration plane is at the connector and the part is 10 mm further on, the impedance this card reports is the impedance at the connector, not at the part. De-embed first, or calibrate to the plane you care about.</p><p><b>What a negative resistance means.</b> If the computed R comes out below zero, or |S11| exceeds 1, more power returned than was sent. No passive load does that. In practice it is a stale calibration, a cable moved since calibration, or an amplifier on the edge of oscillating &mdash; in which case the negative resistance is real and is telling you something important.</p>"
+  },
   "hx": {
     "title": "Flex hatched plane",
     "body": "<p>A flex circuit that folds cannot carry a solid return plane. Copper work-hardens where it bends, and a continuous sheet on the outside of a bend is the first thing to crack. Removing most of the copper in a regular lattice leaves the plane flexible, and leaves you with a return path that is worse than solid in every respect except the one that matters.</p><p><b>The pattern.</b> Two families of parallel tracks, width w, spaced p apart measured <i>perpendicular to the tracks</i>, crossing at some angle. The card takes that angle as φ, the tilt of each family away from the signal direction, so φ = 45° is the ordinary diamond and a smaller φ is a diamond stretched along the signal.</p><p><b>Fill factor.</b> Each opening is bounded by the inner edges of four tracks, so the open fraction is the product of the two gap ratios:</p><span class=\"eq\">open = (1 − w/p)² &nbsp;&nbsp; fill = 1 − (1 − w/p)²</span><p>Notice what is <i>not</i> in that expression: the angle. Skewing the lattice shears the unit cell and the opening inside it by the same factor, so the ratio survives untouched. Fill depends on w/p alone. Setting it to ½ gives w/p = 1 − 1/sqrt(2) = 0.293, which is where the 29.3 % figure quoted in fabricator notes comes from.</p><p><b>The pitch trap.</b> CAD tools specify a hatch by its <i>grid</i>, which is the lattice period measured along a board axis, not the spacing between tracks. For a 45° hatch the two differ by sqrt(2), and the grid is the larger of the pair. Feed a 0.5 mm grid into the formula as if it were the perpendicular pitch, with a 0.15 mm track, and you compute 51 % fill for a pattern that actually has 67 % — the error understates the copper, and it understates the bend relief with it. The card has a selector for which one you typed; set it honestly.</p><p><b>Return resistance, and why it is worse than it looks.</b> Only the tracks running along the current carry it — the transverse family sits at right angles to the flow and contributes nothing. Summing the two families as rank-one conductance tensors and inverting along the signal axis gives</p><span class=\"eq\">R<sub>s,eff</sub> / R<sub>s,solid</sub> = (p/w) / (2·cos²φ)</span><p>which is simply p/w at 45°. So a plane at 50 % fill does not have twice the sheet resistance — it has 3.4 times, because half the remaining copper is pointing the wrong way. That matters for a return path shared with power, and it is the usual reason a hatched flex measures a worse drop than the designer expected.</p><p><b>What the geometry cannot tell you.</b> The impedance of a trace over a hatched plane. It is always higher than over solid copper, because the return current detours around the openings, which lengthens the loop and lowers the coupling. There is no closed form for it: the structure is periodic rather than uniform, so strictly it is not a transmission line at all, and a field solver with the real stack-up is the only honest route. Treat any calculator that hands you a hatched-plane impedance from a formula with suspicion.</p><p><b>The published guidelines</b> the card checks come from Gisin and Moghe's IPC APEX 2018 study of cross-hatched return planes. Keep the longest repeat at or under 1.27 mm (50 mil), because the periodic structure resonates at a frequency inversely proportional to the hole size. Keep the short axis at or under half the long one, and put the long axis parallel to the signal, so the return current runs more nearly alongside the trace instead of zig-zagging. Stay at or above 50 % fill for RF. And keep hatched runs short: the paper found lengths under about 2.5 cm behave far better than those over 8 to 12 cm.</p><p><b>Two things the card does not model but you still have to do.</b> Register single-ended traces between hatch intersections and differential pairs straddling them — misregistration between the trace and the lattice makes the two halves of a pair see different amounts of copper, which shows up as skew. And never hatch a plane that is doing duty as part of the power distribution network as well as a signal return.</p>"
@@ -6131,6 +6314,7 @@ const CALCS = {
   z:   { calc: calcZ, inputs: ["z-struct","z-w","z-h","z-er","z-ermask","z-c","z-s","z-f","z-tand","z-rough","z-oz"] },
   vs:  { calc: calcViaShield, inputs: ["vs-f","vs-tr","vs-er","vs-frac","vs-pitch","vs-len","vs-d"] },
   hx:  { calc: calcHatch, inputs: ["hx-w","hx-p","hx-pmode","hx-f","hx-ang","hx-cu"] },
+  s11: { calc: calcS11, inputs: ["s11-z0","s11-db","s11-lin","s11-ph","s11-f"] },
   wl:  { calc: calcWave, inputs: ["wl-f","wl-tr","wl-eeff","wl-period","wl-div"] },
   xc:  { calc: calcXtal, inputs: ["xc-cl","xc-c1","xc-c2","xc-cs"] },
   pp:  { calc: calcPPM, inputs: ["pp-f","pp-ppm","pp-df"] },

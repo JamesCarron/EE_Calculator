@@ -653,6 +653,7 @@
     <button role="tab" data-sub="wl" aria-selected="false">Wavelength</button>
     <button role="tab" data-sub="vs" aria-selected="false">Via Shielding</button>
     <button role="tab" data-sub="hx" aria-selected="false">Flex Hatching</button>
+    <button role="tab" data-sub="s11" aria-selected="false">S11 to Z</button>
   </nav>
 <div class="subpanel active" id="sub-z">
   <h2>Impedance</h2>
@@ -887,6 +888,44 @@
     <dl class="results" id="hx-out"></dl>
     <p class="note">Geometry only: this is the pattern you would draw, not a prediction of the impedance it produces. A hatched plane raises the impedance of a trace above it, because the return path is longer and the coupling weaker, and no closed form covers that &mdash; a field solver with the real stack-up does. What the geometry does settle is the copper fraction, the opening size, the return resistance and whether the pattern respects the published guidelines.</p>
     <button class="reset" data-reset="hx">Reset</button>
+  </div>
+</div>
+
+<div class="subpanel" id="sub-s11">
+  <h2>S11 to Z</h2>
+  <p class="hint">Turns a one-port reflection measurement into the impedance that produced it. Give the magnitude alone and you get the standing-wave figures and the range the load must lie in; give the phase as well and the impedance is determined exactly.</p>
+  <div class="card">
+    <h3>Reflection to impedance</h3>
+    <div class="cardrow">
+    <div class="fields">
+      <div class="field"><label for="s11-z0">Reference Z<sub>0</sub> (&Omega;)</label><input id="s11-z0" inputmode="decimal" placeholder="50"></div>
+      <div class="field"><label for="s11-db">|S11| (dB)</label><input id="s11-db" inputmode="decimal" placeholder="e.g. -20"></div>
+      <div class="field"><label for="s11-lin">|S11| (linear)</label><input id="s11-lin" inputmode="decimal" placeholder="e.g. 0.1"></div>
+      <div class="field"><label for="s11-ph">&ang;S11 (&deg;, optional)</label><input id="s11-ph" inputmode="decimal" placeholder="e.g. -35"></div>
+      <div class="field"><label for="s11-f">Frequency (Hz, optional)</label><input id="s11-f" inputmode="decimal" placeholder="e.g. 2.4G"></div>
+    </div>
+    <div class="diagram">
+      <svg class="schem" width="230" height="150" viewBox="0 0 230 150" role="img" aria-label="A source port feeding a transmission line into a load, with the incident and reflected waves marked and the reflection coefficient defined at the load plane">
+      <circle class="wire" cx="28" cy="64" r="3"/>
+      <circle class="wire" cx="28" cy="104" r="3"/>
+      <path class="wire" d="M31 64 H182 M31 104 H182"/>
+      <path class="wire" d="M182 64 H210 V104 H182 Z"/>
+      <text x="188" y="88">ZL</text>
+      <text x="95" y="90">Z0</text>
+      <path class="wire opt" d="M172 44 V124"/>
+      <text x="176" y="38">&Gamma;</text>
+      <path class="wire" d="M60 44 H110 M104 40 L110 44 L104 48"/>
+      <text x="82" y="38">a</text>
+      <path class="wire" d="M110 124 H60 M66 120 L60 124 L66 128"/>
+      <text x="82" y="140">b</text>
+    </svg>
+      <p class="plate">&Gamma; = b/a = S11 &middot; Z = Z<sub>0</sub>(1+&Gamma;)/(1&minus;&Gamma;)</p>
+      <p class="key">A wave of amplitude a leaves the port, and b comes back. Their ratio at the load plane is the reflection coefficient, which is what a one-port S11 measurement reports. It is a complex number: the magnitude says how much came back, the phase says where the load sits around the Smith chart. The dashed line is the reference plane &mdash; move it and the phase rotates, so de-embed to the plane you actually care about before reading an impedance off this.</p>
+    </div>
+    </div>
+    <dl class="results" id="s11-out"></dl>
+    <p class="note">Magnitude alone does not determine an impedance. Every load on a circle of constant |S11| gives the same return loss and the same VSWR, so without the phase the honest answer is the circle, not a number &mdash; the card reports its extremes. A calculator that returns a single resistance from |S11| is quietly picking the point where that circle crosses the real axis, and the point diametrically opposite fits the measurement just as well.</p>
+    <button class="reset" data-reset="s11">Reset</button>
   </div>
 </div>
 </section>
