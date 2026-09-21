@@ -1,0 +1,48 @@
+# =====================================================================
+# Build and push on push to main.
+#
+# Builds the image and pushes ghcr.io/JamesCarron/eecalculator:<sha>. It
+# deliberately does NOT call infra's reusable build-and-deploy.yml (unlike
+# CTC_bot/tri): that step needs an INFRA_REPO_TOKEN fine-grained PAT with
+# contents:write on the infra repo, which doesn't exist yet for this repo.
+#
+# Redeploy is therefore two steps rather than one: push here, then update
+# the image tag in infra/apps/eecalculator/compose.yml by hand (or ask
+# Claude to do it over SSH) and push that. Arcane's git-watch only
+# reconciles from the infra repo, so nothing happens here automatically
+# until that second push lands.
+# =====================================================================
+name: Build and push
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          # Hardcoded lowercase, not ${{ github.repository_owner }}: that
+          # resolves to the account's display case ("JamesCarron"), and
+          # Docker registry references must be all-lowercase — the image
+          # tag ref is rejected before a build is even attempted.
+          tags: ghcr.io/jamescarron/eecalculator:${{ github.sha }}
