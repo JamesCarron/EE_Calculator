@@ -652,6 +652,7 @@
     <button role="tab" data-sub="ee" aria-selected="false">Effective &epsilon;<sub>r</sub></button>
     <button role="tab" data-sub="wl" aria-selected="false">Wavelength</button>
     <button role="tab" data-sub="vs" aria-selected="false">Via Shielding</button>
+    <button role="tab" data-sub="hx" aria-selected="false">Flex Hatching</button>
   </nav>
 <div class="subpanel active" id="sub-z">
   <h2>Impedance</h2>
@@ -842,6 +843,50 @@
     <dl class="results" id="vs-out"></dl>
     <p class="note">A via fence is a waveguide wall made of holes. It leaks through the gaps once the pitch approaches a half wavelength, so the working rule keeps the pitch an order of magnitude below that. Setback from the trace matters too: too close and the fence loads the line and shifts its impedance, so keep it beyond roughly three trace widths unless you have solved the geometry.</p>
     <button class="reset" data-reset="vs">Reset</button>
+  </div>
+</div>
+
+<div class="subpanel" id="sub-hx">
+  <h2>Flex Hatching</h2>
+  <p class="hint">A flex circuit that has to fold cannot carry a solid return plane: the copper work-hardens and cracks at the bend. The plane is cross-hatched instead, which trades some of the return path away for bend life. This card sizes that trade from the geometry alone &mdash; track width, pitch and hatch angle in, copper fraction, opening size and return resistance out.</p>
+  <div class="card">
+    <h3>Hatched plane geometry</h3>
+    <div class="cardrow">
+    <div class="fields">
+      <div class="field"><label for="hx-w">Hatch track width</label><input id="hx-w" inputmode="decimal" placeholder="e.g. 0.1 or 4mil"></div>
+      <div class="field"><label for="hx-p">Hatch pitch</label><input id="hx-p" inputmode="decimal" placeholder="e.g. 0.35 or 14mil"></div>
+      <div class="field"><label for="hx-pmode">Pitch is measured</label>
+        <select id="hx-pmode">
+          <option value="perp" selected>perpendicular to the tracks</option>
+          <option value="axis">along the board axis (CAD grid)</option>
+        </select>
+      </div>
+      <div class="field"><label for="hx-f">Target copper fill (%)</label><input id="hx-f" inputmode="decimal" placeholder="solves w or pitch"></div>
+      <div class="field"><label for="hx-ang">Track angle from the signal (&deg;)</label><input id="hx-ang" inputmode="decimal" placeholder="45"></div>
+      <div class="field"><label for="hx-cu">Copper weight (oz, optional)</label><input id="hx-cu" inputmode="decimal" placeholder="e.g. 0.5"></div>
+    </div>
+    <div class="diagram">
+      <svg class="schem" width="270" height="220" viewBox="0 0 270 220" role="img" aria-label="A diamond cross-hatched plane with a signal trace running between two rows of intersections, and below it a section through two hatch tracks marking the track width, the gap and the pitch">
+      <path class="wire" style="stroke-width:5" d="M40 42 L58 60 L40 78 L22 60 Z M76 42 L94 60 L76 78 L58 60 Z M112 42 L130 60 L112 78 L94 60 Z M148 42 L166 60 L148 78 L130 60 Z M184 42 L202 60 L184 78 L166 60 Z M40 78 L58 96 L40 114 L22 96 Z M76 78 L94 96 L76 114 L58 96 Z M112 78 L130 96 L112 114 L94 96 Z M148 78 L166 96 L148 114 L130 96 Z M184 78 L202 96 L184 114 L166 96 Z M40 114 L58 132 L40 150 L22 132 Z M76 114 L94 132 L76 150 L58 132 Z M112 114 L130 132 L112 150 L94 132 Z M148 114 L166 132 L148 150 L130 132 Z M184 114 L202 132 L184 150 L166 132 Z M58 60 L76 78 L58 96 L40 78 Z M94 60 L112 78 L94 96 L76 78 Z M130 60 L148 78 L130 96 L112 78 Z M166 60 L184 78 L166 96 L148 78 Z M58 96 L76 114 L58 132 L40 114 Z M94 96 L112 114 L94 132 L76 114 Z M130 96 L148 114 L130 132 L112 114 Z M166 96 L184 114 L166 132 L148 114 Z"/>
+      <path class="dot over" d="M22 83 H202 V91 H22 Z"/>
+      <text x="208" y="60">plane</text>
+      <text x="208" y="91">trace</text>
+      <path class="dot" d="M40 170 H54 V186 H40 Z"/>
+      <path class="dot" d="M90 170 H104 V186 H90 Z"/>
+      <path class="wire" d="M54 178 H90 M54 174 V182 M90 174 V182"/>
+      <text x="110" y="182">g</text>
+      <path class="wire" d="M40 196 H54 M40 192 V200 M54 192 V200"/>
+      <text x="60" y="200">w</text>
+      <path class="wire" d="M47 210 H97 M47 206 V214 M97 206 V214"/>
+      <text x="104" y="214">p</text>
+    </svg>
+      <p class="plate">fill = 1 &minus; (1 &minus; w/p)<sup>2</sup> &middot; g = p &minus; w</p>
+      <p class="key">Filled is copper. Above, the hatch as drawn, with a trace running between two rows of intersections rather than over them &mdash; where a single-ended trace belongs. Below, a section cut perpendicular to one family of tracks: copper of width w, a pitch p apart centre to centre, leaving a gap g. Fill depends only on w/p, never on the angle; the angle changes the shape of the opening and the length of the return path, not how much copper is left.</p>
+    </div>
+    </div>
+    <dl class="results" id="hx-out"></dl>
+    <p class="note">Geometry only: this is the pattern you would draw, not a prediction of the impedance it produces. A hatched plane raises the impedance of a trace above it, because the return path is longer and the coupling weaker, and no closed form covers that &mdash; a field solver with the real stack-up does. What the geometry does settle is the copper fraction, the opening size, the return resistance and whether the pattern respects the published guidelines.</p>
+    <button class="reset" data-reset="hx">Reset</button>
   </div>
 </div>
 </section>

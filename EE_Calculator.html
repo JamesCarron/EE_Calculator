@@ -416,6 +416,7 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
   svg.schem .wire { fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
   svg.schem .dot { fill: currentColor; stroke: none; }
   svg.schem .opt { stroke-dasharray: 4 3; }
+  svg.schem .over { stroke: var(--a-bg-panel); stroke-width: 5; paint-order: stroke; }
   /* the governing equation, beside the drawing rather than buried in a note */
   .plate { margin: .5rem 0 0; padding: .4rem .6rem; max-width: 16rem; background: var(--a-bg-subtle); border: var(--a-border) solid var(--a-line); border-radius: var(--a-radius-sm); font-family: var(--a-font-mono); font-size: var(--a-text-xs); color: var(--a-ink-secondary); }
   /* a cross-section is monochrome, so the key maps line style to material */
@@ -1114,6 +1115,7 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
     <button role="tab" data-sub="ee" aria-selected="false">Effective &epsilon;<sub>r</sub></button>
     <button role="tab" data-sub="wl" aria-selected="false">Wavelength</button>
     <button role="tab" data-sub="vs" aria-selected="false">Via Shielding</button>
+    <button role="tab" data-sub="hx" aria-selected="false">Flex Hatching</button>
   </nav>
 <div class="subpanel active" id="sub-z">
   <h2>Impedance</h2>
@@ -1304,6 +1306,50 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
     <dl class="results" id="vs-out"></dl>
     <p class="note">A via fence is a waveguide wall made of holes. It leaks through the gaps once the pitch approaches a half wavelength, so the working rule keeps the pitch an order of magnitude below that. Setback from the trace matters too: too close and the fence loads the line and shifts its impedance, so keep it beyond roughly three trace widths unless you have solved the geometry.</p>
     <button class="reset" data-reset="vs">Reset</button>
+  </div>
+</div>
+
+<div class="subpanel" id="sub-hx">
+  <h2>Flex Hatching</h2>
+  <p class="hint">A flex circuit that has to fold cannot carry a solid return plane: the copper work-hardens and cracks at the bend. The plane is cross-hatched instead, which trades some of the return path away for bend life. This card sizes that trade from the geometry alone &mdash; track width, pitch and hatch angle in, copper fraction, opening size and return resistance out.</p>
+  <div class="card">
+    <h3>Hatched plane geometry</h3>
+    <div class="cardrow">
+    <div class="fields">
+      <div class="field"><label for="hx-w">Hatch track width</label><input id="hx-w" inputmode="decimal" placeholder="e.g. 0.1 or 4mil"></div>
+      <div class="field"><label for="hx-p">Hatch pitch</label><input id="hx-p" inputmode="decimal" placeholder="e.g. 0.35 or 14mil"></div>
+      <div class="field"><label for="hx-pmode">Pitch is measured</label>
+        <select id="hx-pmode">
+          <option value="perp" selected>perpendicular to the tracks</option>
+          <option value="axis">along the board axis (CAD grid)</option>
+        </select>
+      </div>
+      <div class="field"><label for="hx-f">Target copper fill (%)</label><input id="hx-f" inputmode="decimal" placeholder="solves w or pitch"></div>
+      <div class="field"><label for="hx-ang">Track angle from the signal (&deg;)</label><input id="hx-ang" inputmode="decimal" placeholder="45"></div>
+      <div class="field"><label for="hx-cu">Copper weight (oz, optional)</label><input id="hx-cu" inputmode="decimal" placeholder="e.g. 0.5"></div>
+    </div>
+    <div class="diagram">
+      <svg class="schem" width="270" height="220" viewBox="0 0 270 220" role="img" aria-label="A diamond cross-hatched plane with a signal trace running between two rows of intersections, and below it a section through two hatch tracks marking the track width, the gap and the pitch">
+      <path class="wire" style="stroke-width:5" d="M40 42 L58 60 L40 78 L22 60 Z M76 42 L94 60 L76 78 L58 60 Z M112 42 L130 60 L112 78 L94 60 Z M148 42 L166 60 L148 78 L130 60 Z M184 42 L202 60 L184 78 L166 60 Z M40 78 L58 96 L40 114 L22 96 Z M76 78 L94 96 L76 114 L58 96 Z M112 78 L130 96 L112 114 L94 96 Z M148 78 L166 96 L148 114 L130 96 Z M184 78 L202 96 L184 114 L166 96 Z M40 114 L58 132 L40 150 L22 132 Z M76 114 L94 132 L76 150 L58 132 Z M112 114 L130 132 L112 150 L94 132 Z M148 114 L166 132 L148 150 L130 132 Z M184 114 L202 132 L184 150 L166 132 Z M58 60 L76 78 L58 96 L40 78 Z M94 60 L112 78 L94 96 L76 78 Z M130 60 L148 78 L130 96 L112 78 Z M166 60 L184 78 L166 96 L148 78 Z M58 96 L76 114 L58 132 L40 114 Z M94 96 L112 114 L94 132 L76 114 Z M130 96 L148 114 L130 132 L112 114 Z M166 96 L184 114 L166 132 L148 114 Z"/>
+      <path class="dot over" d="M22 83 H202 V91 H22 Z"/>
+      <text x="208" y="60">plane</text>
+      <text x="208" y="91">trace</text>
+      <path class="dot" d="M40 170 H54 V186 H40 Z"/>
+      <path class="dot" d="M90 170 H104 V186 H90 Z"/>
+      <path class="wire" d="M54 178 H90 M54 174 V182 M90 174 V182"/>
+      <text x="110" y="182">g</text>
+      <path class="wire" d="M40 196 H54 M40 192 V200 M54 192 V200"/>
+      <text x="60" y="200">w</text>
+      <path class="wire" d="M47 210 H97 M47 206 V214 M97 206 V214"/>
+      <text x="104" y="214">p</text>
+    </svg>
+      <p class="plate">fill = 1 &minus; (1 &minus; w/p)<sup>2</sup> &middot; g = p &minus; w</p>
+      <p class="key">Filled is copper. Above, the hatch as drawn, with a trace running between two rows of intersections rather than over them &mdash; where a single-ended trace belongs. Below, a section cut perpendicular to one family of tracks: copper of width w, a pitch p apart centre to centre, leaving a gap g. Fill depends only on w/p, never on the angle; the angle changes the shape of the opening and the length of the return path, not how much copper is left.</p>
+    </div>
+    </div>
+    <dl class="results" id="hx-out"></dl>
+    <p class="note">Geometry only: this is the pattern you would draw, not a prediction of the impedance it produces. A hatched plane raises the impedance of a trace above it, because the return path is longer and the coupling weaker, and no closed form covers that &mdash; a field solver with the real stack-up does. What the geometry does settle is the copper fraction, the opening size, the return resistance and whether the pattern respects the published guidelines.</p>
+    <button class="reset" data-reset="hx">Reset</button>
   </div>
 </div>
 </section>
@@ -3976,6 +4022,151 @@ function calcDbm() {
   render("dbm-out", rows);
 }
 
+/* ---------- flex hatched plane ----------
+
+   A folding flex cannot carry a solid return plane, so the plane is cross
+   hatched. Everything below follows from the pattern itself; nothing here
+   predicts impedance, which needs the stack-up and a field solver.
+
+   Model: two families of parallel tracks of width w, each family spaced p
+   apart measured perpendicular to the tracks, set at +/-phi to the signal
+   direction. That covers the ordinary 45 degree diamond and the elongated
+   diamonds the IPC APEX 2018 work recommends, and it is the parameterisation
+   the fill-factor algebra is actually written in.
+
+   Fill factor. The opening is bounded by the inner edges of four tracks, so
+   the open fraction is the product of the two independent gap ratios:
+
+       open = (1 - w/p1)(1 - w/p2),   fill = 1 - open
+
+   For a symmetric hatch that is 1 - (1 - w/p)^2. Note what is absent: the
+   angle. Skewing the lattice shears the unit cell and the opening by the same
+   factor, so the ratio is untouched. Fill is a function of w/p alone, which is
+   why w/p = 0.293 gives 50 % copper at any hatch angle.
+
+   Sheet resistance. Each family conducts only along its own axis, so in the
+   homogenised limit the sheet conductance is the sum of two rank-one tensors,
+   sigma*t*(w/p) along each track direction. Along the signal axis that gives
+
+       Rs_eff / Rs_solid = (p/w) / (2 cos^2 phi)
+
+   which is p/w at 45 degrees. Worth stating plainly because it is widely got
+   wrong: a 50 % fill does NOT double the return resistance. At w/p = 0.293 the
+   factor is 3.4, because the transverse family carries no net current along
+   the signal and so contributes none of its copper to the return path. */
+
+const HATCH_RULES = {
+  /* IPC APEX 2018, Gisin/Moghe, "Minimizing Signal Degradation in Flexible PCB
+     Microstrip and Stripline Transmission Lines That Use Cross-Hatched Return
+     Planes", design guidelines B, C and the >50 % fill finding. */
+  longest_mm: 1.27,
+  aspect: 0.5,
+  minFill: 0.5
+};
+
+function calcHatch() {
+  clearComputed(["hx-w", "hx-p"]);
+  const phiDeg = numOr("hx-ang", 45, 1, 89);
+  const mode = document.getElementById("hx-pmode").value;
+  const cu = val("hx-cu");
+  let w = valDim("hx-w"), p = valDim("hx-p");
+  const fPct = val("hx-f");
+
+  if (!isFinite(phiDeg)) { render("hx-out", []); return; }
+  const phi = phiDeg * Math.PI / 180, sp = Math.sin(phi), cp = Math.cos(phi);
+
+  /* The CAD grid is the lattice period along the board axis, not the spacing
+     between tracks, and it is the larger of the two: p = grid * sin(phi), so
+     root two smaller at 45 degrees. Mixing them up is quiet rather than loud -
+     a 0.15 mm track on a 0.5 mm grid reads as 51 % fill when it is really 67 %
+     - so the card asks which one was typed instead of guessing. */
+  const perpToAxis = function (v) { return v / sp; };
+  if (isFinite(p) && mode === "axis") p = p * sp;
+
+  const rows = [];
+  const F = isFinite(fPct) ? fPct / 100 : NaN;
+  if (isFinite(F) && !(F > 0 && F < 1)) {
+    render("hx-out", [["", "Fill has to sit between 0 and 100 % &mdash; at 100 % the plane is solid and needs no hatch.", "err"]]);
+    return;
+  }
+
+  /* Solve for whichever of the three was left out. */
+  let solved = null;
+  if (isFinite(w) && isFinite(p)) {
+    /* both given; any fill figure is an output, not a constraint */
+  } else if (isFinite(F) && isFinite(p)) {
+    w = p * (1 - Math.sqrt(1 - F)); solved = "hx-w";
+  } else if (isFinite(F) && isFinite(w)) {
+    p = w / (1 - Math.sqrt(1 - F)); solved = "hx-p";
+  } else {
+    render("hx-out", [["", "Give a track width and a pitch, or a target fill and one of them.", ""]]);
+    return;
+  }
+  if (!(w > 0) || !(p > 0)) { render("hx-out", []); return; }
+  if (w >= p) {
+    render("hx-out", [["", "The track is at least as wide as the pitch, so the tracks merge and the plane is solid. Reduce the width or open the pitch.", "err"]]);
+    return;
+  }
+  if (solved === "hx-w") setComputed("hx-w", +w.toPrecision(4));
+  if (solved === "hx-p") setComputed("hx-p", +(mode === "axis" ? perpToAxis(p) : p).toPrecision(4));
+
+  const r = w / p, g = p - w;
+  const fill = 1 - (1 - r) * (1 - r);
+
+  /* Extents of one repeat and of one opening, resolved along and across the
+     signal. For phi below 45 the cell is longer along the signal, which is the
+     orientation the paper asks for. */
+  const cellAlong = p / sp, cellAcross = p / cp;
+  const openAlong = g / sp, openAcross = g / cp;
+  const longest = Math.max(cellAlong, cellAcross);
+  const shortest = Math.min(cellAlong, cellAcross);
+
+  rows.push(["Copper fill", (fill * 100).toFixed(1) + " % &mdash; " + (100 - fill * 100).toFixed(1) + " % of the plane etched away"]);
+  rows.push(["Width / pitch", r.toFixed(3) + (Math.abs(r - 0.29289) < 0.002 ? " &mdash; the 50 % landmark" : "")]);
+  rows.push(["Track and gap", w.toPrecision(3) + " mm track, " + g.toPrecision(3) + " mm gap, " + p.toPrecision(3) + " mm pitch"]);
+  rows.push(["As a CAD grid", perpToAxis(p).toPrecision(3) + " mm along the signal axis, " + (p / cp).toPrecision(3) + " mm across"]);
+  rows.push(["Opening", openAlong.toPrecision(3) + " mm along the signal &times; " + openAcross.toPrecision(3) + " mm across"]);
+  rows.push(["Repeat", cellAlong.toPrecision(3) + " mm along the signal &times; " + cellAcross.toPrecision(3) + " mm across"]);
+
+  /* Return resistance. The transverse family does not help, which is the
+     whole reason the penalty is so much worse than 1/fill suggests. */
+  const rsRatio = (p / w) / (2 * cp * cp);
+  const rsAcross = (p / w) / (2 * sp * sp);
+  let rsRow = rsRatio.toPrecision(3) + "&times; solid along the signal, " + rsAcross.toPrecision(3) + "&times; across";
+  if (isFinite(cu) && cu > 0) {
+    /* 1 oz is 34.79 um of copper; 1.724e-8 ohm m at 20 C */
+    const t = cu * 34.79e-6;
+    const rsSolid = 1.724e-8 / t;
+    rsRow += " — " + fmt(rsSolid * rsRatio, "\u03a9/sq") + " on " + cu + " oz copper";
+  }
+  rows.push(["Sheet resistance", rsRow]);
+  rows.push(["", "A hatch costs more return resistance than its fill suggests: only the tracks that run along the current carry it, so the penalty is p/w scaled by the angle, not 1/fill.", ""]);
+
+  /* The published geometric guidelines, checked rather than recited. */
+  const okFill = fill >= HATCH_RULES.minFill;
+  rows.push(["Fill guideline", okFill
+    ? "at or above the 50 % that the RF work recommends"
+    : "below 50 % &mdash; usable for low speed, but the RF studies stop recommending it here",
+    okFill ? "good" : "warn"]);
+
+  const okLong = longest <= HATCH_RULES.longest_mm;
+  rows.push(["Repeat size guideline", "longest repeat " + longest.toPrecision(3) + " mm, "
+    + (okLong ? "within" : "above") + " the 1.27 mm (50 mil) limit",
+    okLong ? "good" : "warn"]);
+
+  const aspect = shortest / longest;
+  const okAsp = aspect <= HATCH_RULES.aspect;
+  rows.push(["Elongation guideline", "short/long = " + aspect.toFixed(2) + " at " + phiDeg.toFixed(0) + "&deg;, "
+    + (okAsp ? "meeting" : "missing") + " the &le; 0.5 the paper asks for"
+    + (okAsp ? "" : " &mdash; needs " + (Math.atan(0.5) * 180 / Math.PI).toFixed(1) + "&deg; or shallower"),
+    okAsp ? "good" : "warn"]);
+  if (Math.abs(phiDeg - 45) < 0.5) {
+    rows.push(["", "At 45&deg; the pattern is a square rotated, so it is equally long in both directions. The paper prefers a diamond stretched along the signal, which means a shallower angle.", ""]);
+  }
+  rows.push(["Model", "Pattern geometry only. Fill, openings and sheet resistance are exact for this lattice; the impedance of a trace over it is not a closed form and needs a solver."]);
+  render("hx-out", rows);
+}
+
 function calcPPM() {
   clearComputed(["pp-ppm","pp-df"]);
   const f = val("pp-f"), ppm = val("pp-ppm"), df = val("pp-df");
@@ -4725,6 +4916,10 @@ function showHelp(help) {
    the governing equation, what each symbol is, where the model comes
    from, and the assumption that will catch them out. */
 const HELP = {
+  "hx": {
+    "title": "Flex hatched plane",
+    "body": "<p>A flex circuit that folds cannot carry a solid return plane. Copper work-hardens where it bends, and a continuous sheet on the outside of a bend is the first thing to crack. Removing most of the copper in a regular lattice leaves the plane flexible, and leaves you with a return path that is worse than solid in every respect except the one that matters.</p><p><b>The pattern.</b> Two families of parallel tracks, width w, spaced p apart measured <i>perpendicular to the tracks</i>, crossing at some angle. The card takes that angle as φ, the tilt of each family away from the signal direction, so φ = 45° is the ordinary diamond and a smaller φ is a diamond stretched along the signal.</p><p><b>Fill factor.</b> Each opening is bounded by the inner edges of four tracks, so the open fraction is the product of the two gap ratios:</p><span class=\"eq\">open = (1 − w/p)² &nbsp;&nbsp; fill = 1 − (1 − w/p)²</span><p>Notice what is <i>not</i> in that expression: the angle. Skewing the lattice shears the unit cell and the opening inside it by the same factor, so the ratio survives untouched. Fill depends on w/p alone. Setting it to ½ gives w/p = 1 − 1/sqrt(2) = 0.293, which is where the 29.3 % figure quoted in fabricator notes comes from.</p><p><b>The pitch trap.</b> CAD tools specify a hatch by its <i>grid</i>, which is the lattice period measured along a board axis, not the spacing between tracks. For a 45° hatch the two differ by sqrt(2), and the grid is the larger of the pair. Feed a 0.5 mm grid into the formula as if it were the perpendicular pitch, with a 0.15 mm track, and you compute 51 % fill for a pattern that actually has 67 % — the error understates the copper, and it understates the bend relief with it. The card has a selector for which one you typed; set it honestly.</p><p><b>Return resistance, and why it is worse than it looks.</b> Only the tracks running along the current carry it — the transverse family sits at right angles to the flow and contributes nothing. Summing the two families as rank-one conductance tensors and inverting along the signal axis gives</p><span class=\"eq\">R<sub>s,eff</sub> / R<sub>s,solid</sub> = (p/w) / (2·cos²φ)</span><p>which is simply p/w at 45°. So a plane at 50 % fill does not have twice the sheet resistance — it has 3.4 times, because half the remaining copper is pointing the wrong way. That matters for a return path shared with power, and it is the usual reason a hatched flex measures a worse drop than the designer expected.</p><p><b>What the geometry cannot tell you.</b> The impedance of a trace over a hatched plane. It is always higher than over solid copper, because the return current detours around the openings, which lengthens the loop and lowers the coupling. There is no closed form for it: the structure is periodic rather than uniform, so strictly it is not a transmission line at all, and a field solver with the real stack-up is the only honest route. Treat any calculator that hands you a hatched-plane impedance from a formula with suspicion.</p><p><b>The published guidelines</b> the card checks come from Gisin and Moghe's IPC APEX 2018 study of cross-hatched return planes. Keep the longest repeat at or under 1.27 mm (50 mil), because the periodic structure resonates at a frequency inversely proportional to the hole size. Keep the short axis at or under half the long one, and put the long axis parallel to the signal, so the return current runs more nearly alongside the trace instead of zig-zagging. Stay at or above 50 % fill for RF. And keep hatched runs short: the paper found lengths under about 2.5 cm behave far better than those over 8 to 12 cm.</p><p><b>Two things the card does not model but you still have to do.</b> Register single-ended traces between hatch intersections and differential pairs straddling them — misregistration between the trace and the lattice makes the two halves of a pair see different amounts of copper, which shows up as skew. And never hatch a plane that is doing duty as part of the power distribution network as well as a signal return.</p>"
+  },
   "ohm": {
     "title": "Ohm's law and power",
     "body": "<p>Two independent relations tie the four quantities together, so any two of them fix the other two.</p><span class=\"eq\">V = I·R &nbsp;&nbsp; P = V·I = I²·R = V²/R</span><p>The card solves whichever pair you give it. The forms of P are the same equation with V or I substituted out; pick whichever avoids the quantity you are least sure of.</p><p><b>What it assumes.</b> That R is a constant. A real resistor's value moves with temperature (its TCR, typically 50–200 ppm/°C for thin film) and, at high voltage, slightly with applied voltage. Neither matters for a rough sizing; both matter in a divider that sets a reference, which is what the Tolerance tab is for.</p><p><b>The number that bites.</b> P is the one people skip. A 0603 resistor is good for about 100 mW, an 0805 for 125 mW, and the derating curve starts falling from around 70 °C ambient. Work out the dissipation before choosing the package, not after the board comes back warm.</p>"
@@ -5935,6 +6130,7 @@ const CALCS = {
   iec: { calc: calcIEC, inputs: ["iec-ins","iec-vrms","iec-vpeak","iec-ovc","iec-vmains","iec-pd","iec-mg","iec-pcb","iec-field","iec-alt"] },
   z:   { calc: calcZ, inputs: ["z-struct","z-w","z-h","z-er","z-ermask","z-c","z-s","z-f","z-tand","z-rough","z-oz"] },
   vs:  { calc: calcViaShield, inputs: ["vs-f","vs-tr","vs-er","vs-frac","vs-pitch","vs-len","vs-d"] },
+  hx:  { calc: calcHatch, inputs: ["hx-w","hx-p","hx-pmode","hx-f","hx-ang","hx-cu"] },
   wl:  { calc: calcWave, inputs: ["wl-f","wl-tr","wl-eeff","wl-period","wl-div"] },
   xc:  { calc: calcXtal, inputs: ["xc-cl","xc-c1","xc-c2","xc-cs"] },
   pp:  { calc: calcPPM, inputs: ["pp-f","pp-ppm","pp-df"] },

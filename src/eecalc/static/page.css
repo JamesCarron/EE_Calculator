@@ -53,6 +53,7 @@
   svg.schem .wire { fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
   svg.schem .dot { fill: currentColor; stroke: none; }
   svg.schem .opt { stroke-dasharray: 4 3; }
+  svg.schem .over { stroke: var(--a-bg-panel); stroke-width: 5; paint-order: stroke; }
   /* the governing equation, beside the drawing rather than buried in a note */
   .plate { margin: .5rem 0 0; padding: .4rem .6rem; max-width: 16rem; background: var(--a-bg-subtle); border: var(--a-border) solid var(--a-line); border-radius: var(--a-radius-sm); font-family: var(--a-font-mono); font-size: var(--a-text-xs); color: var(--a-ink-secondary); }
   /* a cross-section is monochrome, so the key maps line style to material */

@@ -8,6 +8,14 @@ Conventions for this tool specifically. The user-level and `C:\Auterion` instruc
 
 Edit `page.html`, `page.css` and `page.js` with ordinary editor tooling — that is what the split bought, and it is why the template left `build_page.py`. Patch `build_page.py` itself with a script written to the scratchpad, not with a shell heredoc. While the template was a raw Python string, backslash escapes silently corrupted anchors several times — `\b` became a backspace inside a regex, `\n` became a real newline inside a JS string literal. The page files also contain literal Unicode (Ω, ±, —, ε), not `\u` escapes, so match those characters literally.
 
+## Launch it when the work is done
+
+**Every prompt that ends with the page changed ends by launching it.** Run `EE_Calculator.bat` — it rebuilds through pixi and opens the result — and say in the reply that it is open, naming the tab or card to look at. Do not finish by describing a change and leaving the owner to open the page themselves; the point of a single self-contained page is that looking at it costs nothing.
+
+This is not the same as the browser verification pass. Verification is for you, it needs a served copy because the Chrome extension refuses `file://`, and it happens before you report anything. The launch is for the owner, it opens the real file from disk, and it happens last. A change that only touched tests, docs or scratch scripts leaves the page untouched and needs no launch.
+
+Relaunching is free here. There is no server to kill, no port to hand over and no in-page state worth preserving: the page keeps its last tab in storage and every field is re-entered in seconds. So launch without asking, and mention that any tab already open is now stale.
+
 ## Graphs
 
 The page has two plotting paths: `drawGraph` for the filter response, and `miniPlot` for everything else. Both follow the same rules.
