@@ -25,7 +25,7 @@ tests/                 every suite and structural checker; `pixi run test`
   checks/              Python structural checkers and the harness generator
   run_all.py           the one runner
 scripts/               setup_openems.py fetches the solver runtime; where.py prints the data locations; migrate.py moves an old user_data/
-docs/                  design documents and the reference screenshots
+docs/private/          plans, specs and task summaries - gitignored, a junction to C:\Auterion\Tools\project-context\EE_Calculator\
 examples/              worked examples that generate solver models
 ```
 
@@ -100,7 +100,7 @@ Everything the build needs is in this folder; `src/eecalc/vendor/theme/` holds t
 - `src/eecalc/build_page.py` — assembles `templates/page.html` with `static/page.css` and `static/page.js` into the single output file.
 - `src/eecalc/vendor/` — stylesheet and webfonts, with `VENDORED.md`.
 - `EE_Calculator.html` — generated output, committed so the tool works without pixi.
-- `docs/` — the design record, including `Refactor_Plan.md`.
+- `docs/private/` — plans, specs and task summaries, including `Refactor_Plan.md`; gitignored, a directory junction to `C:\Auterion\Tools\project-context\EE_Calculator\` (see `C:\Auterion\Tools\Private_Context_Junctions.md`).
 
 ## Tests
 

@@ -1,6 +1,6 @@
 """One-off: move a pre-2026-09-17 clone's user_data/ to its new homes. `pixi run migrate`.
 
-Written 2026-09-17 for the house-layout refactor (docs/Refactor_Plan.md). Until that
+Written 2026-09-17 for the house-layout refactor (docs/private/Refactor_Plan.md). Until that
 refactor the openEMS runtime and the generated EM models lived in user_data/ inside the
 repository, which is Google-Drive synced; they now live under %LOCALAPPDATA% and Documents.
 This script does the move for any other clone and then deletes the folder. It is safe to
