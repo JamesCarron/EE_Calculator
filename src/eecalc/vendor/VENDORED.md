@@ -1,12 +1,12 @@
 # Vendored files
 
-`theme/` and `theme_inline.py` are copies of the Auterion house brand material, taken so this repo builds a fully self-contained page on a machine that does not have the `Tools` tree.
+`theme/` and `theme_inline.py` are copies of the house brand material, taken so this repo builds a fully self-contained page on a machine that does not have the `Tools` tree.
 
 | File | Source | Copied |
 |---|---|---|
-| `theme/theme.css` | `C:\Auterion\Tools\brand\auterion.css` | 2026-09-10 |
-| `theme/Inter.woff2`, `theme/InterTight.woff2` | `C:\Auterion\Tools\brand\` | 2026-08-14 |
-| `theme_inline.py` | `C:\Auterion\Tools\brand\auterion_inline.py` | 2026-08-26 |
+| `theme/theme.css` | `C:\Tools\brand\auterion.css` | 2026-09-10 |
+| `theme/Inter.woff2`, `theme/InterTight.woff2` | `C:\Tools\brand\` | 2026-08-14 |
+| `theme_inline.py` | `C:\Tools\brand\auterion_inline.py` | 2026-08-26 |
 
 The copy has drifted: `theme.css` is 13.6 KB against 21 KB upstream, so brand fixes made since 2026-09-10 are not in this page. That is the cost of vendoring and the reason this file exists.
 

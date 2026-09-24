@@ -3,7 +3,7 @@
 // Written 2026-09-10 alongside Implementation_Plan.md, BEFORE the features
 // exist, so implementation can be verified the moment it lands. Every expected
 // value here was produced and reference-checked by
-// C:\Auterion\Tools\claude\scratch\eecalc_formula_check.py.
+// C:\Tools\claude\scratch\eecalc_formula_check.py.
 //
 // Usage: concatenate the generated harness (eecalc_mkharness.py) with this file
 // and run under node. Anything not yet built SKIPS rather than fails, so this

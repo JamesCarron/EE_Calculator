@@ -1,6 +1,6 @@
 """Execute the page's ENTIRE script, wiring included, and fail on any error.
 
-Written 2026-09-10 for C:\\Auterion\\Tools\\EE_Calculator. It exists because the
+Written 2026-09-10 for C:\\Tools\\EE_Calculator. It exists because the
 node test harness deliberately stops at the wiring section, so nothing was
 executing the top-level code that builds the card footers, attaches listeners
 and restores the last tab. A `const` declared after the code that reads it is

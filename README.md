@@ -33,13 +33,13 @@ Run `pixi run build` to regenerate the page and `pixi run test` for the lot: twe
 
 ## Where your data lives
 
-Nothing the user owns is kept inside the checkout, so a re-clone or a `git clean` cannot lose anything and none of it is uploaded by the Google Drive sync that covers `C:\Auterion`. `pixi run where` prints the resolved paths.
+Nothing the user owns is kept inside the checkout, so a re-clone or a `git clean` cannot lose anything. `pixi run where` prints the resolved paths.
 
 | What | Where |
 |---|---|
-| The openEMS runtime that `pixi run setup-em` downloads | `%LOCALAPPDATA%\Auterion\EE_Calculator\Cache\openems\` — safe to delete; re-download with `pixi run setup-em` |
-| Generated EM models and their solver output | `~\Documents\Auterion\EE_Calculator\em_models\` |
-| Settings | `%LOCALAPPDATA%\Auterion\EE_Calculator\settings.json` |
+| The openEMS runtime that `pixi run setup-em` downloads | `%LOCALAPPDATA%\Tools\EE_Calculator\Cache\openems\` — safe to delete; re-download with `pixi run setup-em` |
+| Generated EM models and their solver output | `~\Documents\Tools\EE_Calculator\em_models\` |
+| Settings | `%LOCALAPPDATA%\Tools\EE_Calculator\settings.json` |
 
 Set `EE_CALCULATOR_HOME` to redirect the state and cache roots together, for portable or test use. A clone that predates 2026-09-17 still has a `user_data/` folder: `pixi run migrate` moves its contents to the locations above and deletes it.
 
@@ -93,7 +93,7 @@ Deep links open a tab directly: `#copper`, `#signal`, `#res-acc`, `#pwr`.
 pixi run build
 ```
 
-Everything the build needs is in this folder; `src/eecalc/vendor/theme/` holds the stylesheet and its two webfonts, inlined at build time by `vendor/theme_inline.py`. Both are copies of `C:\Auterion\Toolsrand`; `vendor/VENDORED.md` says where they came from and how to refresh them.
+Everything the build needs is in this folder; `src/eecalc/vendor/theme/` holds the stylesheet and its two webfonts, inlined at build time by `vendor/theme_inline.py`. Both are copies of `C:\Toolsrand`; `vendor/VENDORED.md` says where they came from and how to refresh them.
 
 ## Layout
 

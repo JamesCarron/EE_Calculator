@@ -3,9 +3,9 @@
 Scaffolded by the `new-project` skill to the house layout (Tools/Project_Folder_Structure.md).
 Nothing else in the package hard-codes a path; everything calls one of these.
 
-* ``state_dir()``      %LOCALAPPDATA%\\Auterion\\EE_Calculator\\        settings, ledgers, run logs
-* ``cache_dir()``      %LOCALAPPDATA%\\Auterion\\EE_Calculator\\Cache\\ downloaded runtimes and models; safe to delete
-* ``documents_dir()``  ~\\Documents\\Auterion\\EE_Calculator\\           the user's outputs; changeable in the UI
+* ``state_dir()``      %LOCALAPPDATA%\\Tools\\EE_Calculator\\        settings, ledgers, run logs
+* ``cache_dir()``      %LOCALAPPDATA%\\Tools\\EE_Calculator\\Cache\\ downloaded runtimes and models; safe to delete
+* ``documents_dir()``  ~\\Documents\\Tools\\EE_Calculator\\           the user's outputs; changeable in the UI
 * ``settings_path()``  state_dir()/settings.json
 
 Every accessor creates its folder on first use, so there is no install step. The
@@ -23,7 +23,7 @@ from pathlib import Path
 import platformdirs
 
 APP = "EE_Calculator"
-AUTHOR = "Auterion"
+AUTHOR = "Tools"
 ENV_HOME = "EE_CALCULATOR_HOME"
 
 REPO: Path = Path(__file__).resolve().parents[2]
@@ -68,7 +68,7 @@ def save_settings(settings: dict) -> None:
 
 
 def documents_dir() -> Path:
-    """Default ~/Documents/Auterion/<Title>; overridden by the ``output_dir`` setting."""
+    """Default ~/Documents/Tools/<Title>; overridden by the ``output_dir`` setting."""
     custom = load_settings().get("output_dir")
     if custom:
         return _ensure(Path(custom))

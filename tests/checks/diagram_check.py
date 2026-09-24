@@ -1,6 +1,6 @@
 """Geometry lint for every diagram in the EE Calculator page.
 
-Written 2026-09-10 for C:\\Auterion\\Tools\\EE_Calculator while adding Saturn-style
+Written 2026-09-10 for C:\\Tools\\EE_Calculator while adding Saturn-style
 parameter diagrams. It exists because the drawings are hand-placed SVG: nothing
 throws when a label lands outside the viewBox or on top of another one, so the
 only other way to catch it is to open the page and look, which does not survive

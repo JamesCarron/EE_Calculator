@@ -1,6 +1,6 @@
 """Build an openEMS model for a pad over one or more reference planes.
 
-Written 2026-09-15 for C:\\Auterion\\Tools\\EE_Calculator.
+Written 2026-09-15 for C:\\Tools\\EE_Calculator.
 
 The question this answers is the one no closed form covers: what is a pad's
 capacitance to each reference plane below it, and how much does voiding a plane

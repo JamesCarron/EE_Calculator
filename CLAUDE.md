@@ -1,6 +1,6 @@
 # CLAUDE.md — EE Calculator
 
-Conventions for this tool specifically. The user-level and `C:\Auterion` instructions still apply on top of these.
+Conventions for this tool specifically. The user-level instructions still apply on top of these.
 
 ## What this is
 

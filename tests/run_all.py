@@ -1,7 +1,7 @@
 """Run everything: rebuild the page, regenerate the node harness, then every
 node suite and every structural checker.
 
-Written 2026-09-15 for C:\\Auterion\\Tools\\EE_Calculator, when the project moved
+Written 2026-09-15 for C:\\Tools\\EE_Calculator, when the project moved
 onto a src/test/docs layout, and reorganised 2026-09-17 onto tests/js + tests/checks. Before this the suite was a shell loop that had to
 be retyped from memory each time, which meant it was easy to run some of it and
 believe you had run all of it.

@@ -1,6 +1,6 @@
 """Tests for the openEMS pad-capacitance model generator.
 
-Written 2026-09-15 for C:\\Auterion\\Tools\\EE_Calculator. The model generator is
+Written 2026-09-15 for C:\\Tools\\EE_Calculator. The model generator is
 deliberately separate from the solver so it can be tested without a 48 MB
 native dependency installed - the physics decisions live here, not in openEMS.
 

@@ -1,6 +1,6 @@
 """Transcribe KiCad's IEC 60664-1 lookup tables into JavaScript.
 
-Written 2026-09-15 for C:\\Auterion\\Tools\\EE_Calculator. The tables in
+Written 2026-09-15 for C:\\Tools\\EE_Calculator. The tables in
 IEC 60664-1:2020-05 are the substance of a clearance/creepage calculator, and
 they run to several hundred rows. Retyping them by hand would introduce errors
 that no test could catch, so they are translated mechanically from KiCad's
