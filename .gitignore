@@ -13,7 +13,7 @@ __pycache__/
 /tests/.work/
 __pycache__/
 
-# Planning material, task summaries and mockups: not in the repo. Per the decision in
-# C:\Auterion\Tools\Private_Context_Junctions.md, docs/private is a directory junction to
-# C:\Auterion\Tools\project-context\EE_Calculator\ (a plain synced folder, not a git repo).
+# Planning material, task summaries and mockups: not in the repo. docs/private is a
+# directory junction to a private context folder held outside the checkout, so it is
+# never part of a clone. The target path is recorded in the maintainer's own notes.
 /docs/private/
