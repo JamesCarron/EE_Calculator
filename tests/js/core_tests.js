@@ -172,6 +172,38 @@ set("div-vfbtol","0.1"); calcDivider();
 eq("a precision reference hands dominance back to the divider",
    /the divider/.test(regRow("Dominant term")[1]), true);
 
+/* A tolerance on the source feeding the divider passes straight through to the
+   midpoint. 12 V ±5 % through 10k/4k7 with 1 % 100 ppm parts over -40..85 C:
+   ratio 2.2583 % worst case, so 7.2583 % combined, 3.5636..4.1195 V. */
+clearAll(DIVREG); clearAll(["div-vintol"]);
+set("div-vin","12"); set("div-r1","10k"); set("div-r2","4k7"); calcDivider();
+const noSrc = regRow("Vout worst-case window")[1];
+eq("with no source tolerance the window is the ratio alone",
+   /3\.75\d* V … 3\.92\d* V/.test(noSrc), true);
+eq("and no source breakdown row is shown", regRow("Vout error — worst case"), undefined);
+
+set("div-vintol","5"); calcDivider();
+eq("the source tolerance adds to the ratio error",
+   /7\.26/.test(regRow("Vout error — worst case")[1]), true);
+eq("RSS combines them in quadrature", /5\.13/.test(regRow("Vout error — RSS")[1]), true);
+/* fmt trims trailing zeros, so 4.1195 prints as 4.12 rather than 4.120 */
+eq("and the window widens to match",
+   /3\.56\d* V … 4\.12/.test(regRow("Vout worst-case window")[1]), true);
+
+/* It must not leak into the regulator block, where the divider's top IS the
+   computed output and adding the same spread again would count it twice.
+   3.3 V from 0.8 V on 31.25k/10k is ±2.52 % ratio, so ±3.52 % with a 1 %
+   reference - and must stay ±3.52 % however large the source figure is. */
+clearAll(DIVREG); clearAll(["div-vintol"]);
+set("div-vin","3.3"); set("div-vout","0.8"); set("div-r1","31.25k"); set("div-r2","10k");
+set("div-vintol","5"); calcDivider();
+const regWcRow = regRow("Regulator output error — worst case")[1];
+eq("the regulator rows ignore it", /±3\.52/.test(regWcRow), true);
+eq("rather than adding it on top", /±8\.5/.test(regWcRow), false);
+/* rows() strips markup, so the note reads Vin rather than V<sub>in</sub> */
+eq("and the card says why rather than leaving it to be guessed",
+   rows("div-tol-out").some(function (r) { return /ignore the Vin tolerance/.test(r[1]); }), true);
+
 console.log("\n== number bases ==");
 showBases(parseInt_("4096", 10), "nb-dec");
 eq("hex", get("nb-hex"), "0x1000"); eq("bin", get("nb-bin"), "0b1000000000000"); eq("oct", get("nb-oct"), "0o10000");

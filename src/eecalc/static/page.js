@@ -1779,9 +1779,21 @@ function calcAccuracy() {
   if (age > 0) rows.push(["Ageing contribution", "±" + pc((1 - k) * 2 * age) + " worst case"]);
   rows.push(["Total ratio error — worst case", "±" + pc(wc) + " (±" + pm(wc) + ")"]);
   rows.push(["Total ratio error — RSS", "±" + pc(rss) + " (±" + pm(rss) + ")"]);
+  /* A tolerance on the voltage feeding the top of the divider. It passes
+     straight through, because the midpoint is just Vin scaled by k, so the
+     relative errors add. Defaults to zero: a source with no stated spread
+     contributes none, and silently widening the window would be worse than
+     saying nothing. */
+  const vinTol = num("div-vintol", 0) / 100;
   if (isFinite(vin) && vin > 0) {
     rows.push(["V<sub>out</sub> nominal", fmt(vin * k, "V")]);
-    rows.push(["V<sub>out</sub> worst-case window", fmt(vin * kLo, "V") + " … " + fmt(vin * kHi, "V")]);
+    if (vinTol > 0) {
+      rows.push(["V<sub>out</sub> error — worst case",
+                 "±" + pc(wc + vinTol) + " — ratio ±" + pc(wc) + " plus source ±" + pc(vinTol)]);
+      rows.push(["V<sub>out</sub> error — RSS", "±" + pc(Math.sqrt(rss * rss + vinTol * vinTol))]);
+    }
+    rows.push(["V<sub>out</sub> worst-case window",
+               fmt(vin * (1 - vinTol) * kLo, "V") + " … " + fmt(vin * (1 + vinTol) * kHi, "V")]);
   }
   rows.push(["Effective bits", "ratio resolved to " + Math.max(0, Math.log2(1 / (2 * wc))).toFixed(1) + " bits worst case"]);
   rows.push(["R1 spread", fmt(r1 * (1 - d1), "Ω") + " … " + fmt(r1 * (1 + d1), "Ω")]);
@@ -1813,6 +1825,16 @@ function calcAccuracy() {
     rows.push(["Dominant term", vref >= wc
       ? "the reference, at ±" + pc(vref) + " against the divider's ±" + pc(wc)
       : "the divider, at ±" + pc(wc) + " against the reference's ±" + pc(vref)]);
+    /* The two readings are alternatives, not layers. In a feedback network the
+       top of the divider is the regulator's output, so its spread is what the
+       block above computes; a figure typed into the Vin tolerance box is a
+       separate scenario and adding the two together counts it twice. */
+    if (vinTol > 0) {
+      rows.push(["", "These regulator rows ignore the V<sub>in</sub> tolerance on purpose. In a feedback "
+        + "network the top of the divider <em>is</em> the regulator output, so its spread is the "
+        + "±" + pc(regWc) + " computed here rather than something to add on top. The V<sub>out</sub> rows "
+        + "above are the other reading: a fixed source of that tolerance divided down.", ""]);
+    }
   }
   render("div-tol-out", rows);
 }
@@ -4652,7 +4674,7 @@ const CALCS = {
      end, after any leg it solved has been written back. */
   div: { calc: calcDivider, inputs: ["div-vin","div-vout","div-r1","div-r2","div-rtot","div-iload","div-series",
                                      "div-tol1","div-tol2","div-tcr1","div-tcr2","div-tmin","div-tmax","div-tnom","div-age",
-                                     "div-vfbtol"] },
+                                     "div-vintol","div-vfbtol"] },
   sp:  { calc: calcSP, inputs: ["sp-list","sp-type","sp-v"] },
   led: { calc: calcLED, inputs: ["led-vs","led-vf","led-if","led-r","led-series"] },
   ec:  { calc: calcTolerance, inputs: ["ec-type","ec-val","ec-diel","ec-code","ec-tol","ec-tc","ec-tmin","ec-tmax","ec-tnom","ec-age","ec-life","ec-bias","ec-hyst"] },
