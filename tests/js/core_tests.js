@@ -93,23 +93,84 @@ clearAll(["tw-i","tw-w","tw-len"]); set("tw-w","1"); calcTrace();
 near("current", parseVal(get("tw-i")), 2.392, 1);
 
 console.log("\n== accuracy ==");
-const AC = ["ac-r1","ac-r2","ac-vin","ac-tol1","ac-tol2","ac-tcr1","ac-tcr2","ac-tmin","ac-tmax","ac-tnom","ac-age"];
+const AC = ["div-r1","div-r2","div-vin","div-tol1","div-tol2","div-tcr1","div-tcr2","div-tmin","div-tmax","div-tnom","div-age"];
 clearAll(AC);
-set("ac-r1","10k"); set("ac-r2","10k"); set("ac-tol1","1"); set("ac-tol2","1");
-set("ac-tcr1","0"); set("ac-tcr2","0"); set("ac-vin","10");
+set("div-r1","10k"); set("div-r2","10k"); set("div-tol1","1"); set("div-tol2","1");
+set("div-tcr1","0"); set("div-tcr2","0"); set("div-vin","10");
 calcAccuracy();
-console.log("  " + JSON.stringify(rows("ac-out")));
+console.log("  " + JSON.stringify(rows("div-tol-out")));
 // k = 0.5, worst case ratio error = (1-k)*(t1+t2) = 0.5*2% = 1% to first order
-const wc = rows("ac-out").filter(function (r) { return r[0].indexOf("worst case") >= 0 && r[0].indexOf("Total") === 0; })[0];
+const wc = rows("div-tol-out").filter(function (r) { return r[0].indexOf("worst case") >= 0 && r[0].indexOf("Total") === 0; })[0];
 console.log("  worst-case row:", JSON.stringify(wc));
 // matched TCR must cancel
 clearAll(AC);
-set("ac-r1","10k"); set("ac-r2","10k"); set("ac-tol1","0"); set("ac-tol2","0");
-set("ac-tcr1","100"); set("ac-tcr2","100"); set("ac-tmin","-40"); set("ac-tmax","85");
+set("div-r1","10k"); set("div-r2","10k"); set("div-tol1","0"); set("div-tol2","0");
+set("div-tcr1","100"); set("div-tcr2","100"); set("div-tmin","-40"); set("div-tmax","85");
 calcAccuracy();
-const tcrRow = rows("ac-out").filter(function (r) { return r[0].indexOf("TCR contribution") === 0; })[0];
+const tcrRow = rows("div-tol-out").filter(function (r) { return r[0].indexOf("TCR contribution") === 0; })[0];
 console.log("  TCR row:", JSON.stringify(tcrRow));
 eq("matched TCR cancels", tcrRow[1].indexOf("0 % if the parts truly track") >= 0, true);
+
+/* The tolerance fold lives inside the divider card and has no R1/R2/Vin of its
+   own. These three cover what the merge actually bought, and what it risks. */
+console.log("\n== tolerance fold inside the divider card ==");
+const DIVALL = ["div-vin","div-vout","div-r1","div-r2","div-rtot","div-iload",
+                "div-tol1","div-tol2","div-tcr1","div-tcr2","div-tmin","div-tmax","div-tnom","div-age"];
+
+/* interior value: one calcDivider call fills both the solver and the fold */
+clearAll(DIVALL);
+set("div-vin","10"); set("div-r1","10k"); set("div-r2","10k"); calcDivider();
+eq("solving also drives the fold", rows("div-tol-out").length > 0, true);
+eq("the fold reads the divider's own legs",
+   rows("div-tol-out").filter(function (r) { return r[0] === "Nominal ratio"; })[0][1].indexOf("0.5") === 0, true);
+/* rows() strips markup, so the label reads Vout rather than V<sub>out</sub> */
+eq("and picks up Vin from the divider",
+   rows("div-tol-out").some(function (r) { return r[0] === "Vout nominal"; }), true);
+
+/* the identity that made the merge worth doing: a leg the SOLVER worked out is
+   costed without being retyped, because the fold reads the computed box */
+clearAll(DIVALL);
+set("div-vin","10"); set("div-vout","5"); set("div-r1","10k"); calcDivider();
+eq("the solver filled R2", val("div-r2") > 0, true);
+eq("a solved leg is costed without retyping it",
+   rows("div-tol-out").filter(function (r) { return r[0] === "Nominal ratio"; })[0][1].indexOf("0.5") === 0, true);
+
+/* and the fold must not survive its inputs: an incomplete divider clears it
+   rather than leaving the previous answer on screen */
+clearAll(DIVALL);
+set("div-vin","10"); calcDivider();
+eq("an incomplete divider leaves no stale error figures", rows("div-tol-out").length, 0);
+
+/* Read as a regulator feedback network: Vin is the regulator output, Vout the
+   feedback pin. 3.3 V from a 0.8 V reference on 31.25k/10k, 1 % 100 ppm parts
+   over -40..85 C, gives a ratio error of 2.5214 % worst case; a 1 % reference
+   adds directly, so the output is 3.5214 % worst case and 3.1838..3.4162 V. */
+const DIVREG = ["div-vin","div-vout","div-r1","div-r2","div-rtot","div-iload",
+                "div-tol1","div-tol2","div-tcr1","div-tcr2","div-tmin","div-tmax","div-tnom","div-age","div-vfbtol"];
+function regRow(label) {
+  return rows("div-tol-out").filter(function (r) { return r[0].indexOf(label) === 0; })[0];
+}
+clearAll(DIVREG);
+set("div-vin","3.3"); set("div-vout","0.8"); set("div-r1","31.25k"); set("div-r2","10k");
+calcDivider();
+/* the reference lands on the output one for one, so worst case simply adds */
+eq("reference tolerance adds to the ratio error",
+   /3\.52/.test(regRow("Regulator output error — worst case")[1]), true);
+eq("RSS combines them in quadrature, not linearly",
+   /1\.62/.test(regRow("Regulator output error — RSS")[1]), true);
+eq("the output window is reported in volts",
+   /3\.18\d* V … 3\.41\d* V/.test(regRow("Regulator output window")[1]), true);
+
+/* sign check: a worse reference can only widen the output error, and once it
+   passes the divider it becomes the term that decides the answer */
+const wcOf = function () { return parseFloat(regRow("Regulator output error — worst case")[1].replace(/[^0-9.]/g, "")); };
+const onePct = wcOf();
+set("div-vfbtol","3"); calcDivider();
+eq("a worse reference widens the output error", wcOf() > onePct, true);
+eq("and becomes the dominant term", /the reference/.test(regRow("Dominant term")[1]), true);
+set("div-vfbtol","0.1"); calcDivider();
+eq("a precision reference hands dominance back to the divider",
+   /the divider/.test(regRow("Dominant term")[1]), true);
 
 console.log("\n== number bases ==");
 showBases(parseInt_("4096", 10), "nb-dec");

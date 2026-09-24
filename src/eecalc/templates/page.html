@@ -149,6 +149,26 @@
     </table></div>
     <p class="note" id="div-note"></p>
     <p class="note">Fill in any three of V<sub>in</sub>, V<sub>out</sub>, R1 and R2 &mdash; the fourth is calculated as soon as enough is entered, and a solved resistor gets a nearest-standard-value suggestion. With only V<sub>in</sub> and V<sub>out</sub>, the best standard-value pairs are searched instead (total R, if given, sets the exact solution and steers the search; with one leg known it stands in for the other). The load is a constant current drawn out of the midpoint, so R1 carries the R2 current plus the load; leave it empty for an unloaded divider.</p>
+    <details class="foldout">
+      <summary>Tolerance and drift &mdash; what the ratio actually settles to</summary>
+      <div class="foldbody">
+        <div class="fields">
+          <div class="field"><label for="div-tol1">R1 tolerance (%)</label><input id="div-tol1" inputmode="decimal" placeholder="1"></div>
+          <div class="field"><label for="div-tol2">R2 tolerance (%)</label><input id="div-tol2" inputmode="decimal" placeholder="1"></div>
+          <div class="field"><label for="div-tcr1">R1 TCR (ppm/&deg;C)</label><input id="div-tcr1" inputmode="decimal" placeholder="100"></div>
+          <div class="field"><label for="div-tcr2">R2 TCR (ppm/&deg;C)</label><input id="div-tcr2" inputmode="decimal" placeholder="100"></div>
+          <div class="field"><label for="div-tmin">T min (&deg;C)</label><input id="div-tmin" inputmode="decimal" placeholder="-40"></div>
+          <div class="field"><label for="div-tmax">T max (&deg;C)</label><input id="div-tmax" inputmode="decimal" placeholder="85"></div>
+          <div class="field"><label for="div-tnom">T nominal (&deg;C)</label><input id="div-tnom" inputmode="decimal" placeholder="25"></div>
+          <div class="field"><label for="div-age">Ageing / drift (ppm, optional)</label><input id="div-age" inputmode="decimal" placeholder="e.g. 500"></div>
+          <div class="field"><label for="div-vfbtol">Regulator V<sub>fb</sub> tolerance (%)</label><input id="div-vfbtol" inputmode="decimal" placeholder="1"></div>
+        </div>
+        <div id="div-tol-graph" class="chart" tabindex="0" role="img" aria-label="Ratio error across temperature"></div>
+        <dl class="results" id="div-tol-out"></dl>
+        <p class="note">R1, R2 and the two voltages come from the divider above, including values the solver filled in &mdash; so a pair chosen up there is costed down here without retyping it. Worst case is exact, both legs pushed to opposing extremes; RSS treats the contributions as independent random variables, which is the realistic production spread but assumes the two TCRs are uncorrelated. Blank fields default to 1 %, 100 ppm/&deg;C, &minus;40/+85/25 &deg;C and a 1 % reference, and are used at those values whether this section is open or closed.</p>
+        <p class="note"><b>Read as a regulator feedback network</b>, V<sub>in</sub> above is the regulator&rsquo;s output and V<sub>out</sub> is the feedback pin, so V<sub>out(reg)</sub> = V<sub>fb</sub> &middot; (R1 + R2) / R2. The reference tolerance lands on the output directly and is usually the largest single term &mdash; a 1 % reference puts a floor of 1 % under the output no matter how good the divider is, which is why a 0.1 % divider on a 2 % reference buys nothing.</p>
+      </div>
+    </details>
     <button class="reset" data-reset="div">Reset</button>
   </div>
 <div class="card">
@@ -246,44 +266,6 @@
     <dl class="results" id="ec-out"></dl>
     <p class="note">Worst case adds every contribution at its limit, which is what a screened build must survive. RSS treats them as independent random variables, which is the realistic spread across a production run &mdash; but it assumes independence, and a reel of parts from one lot is <em>not</em> independent, so RSS understates lot-to-lot risk. Class 2 ceramics are the awkward case: their temperature figure is a bound over the dielectric&rsquo;s whole rated range and the curve is not linear, so it cannot be scaled to a narrower range, and DC bias commonly costs more than every other contribution combined.</p>
     <button class="reset" data-reset="ec">Reset</button>
-  </div>
-  <div class="card">
-    <h3>Divider ratio error</h3>
-    <div class="cardrow">
-    <div class="fields">
-      <div class="field"><label for="ac-r1">R1 &mdash; top (&Omega;)</label><input id="ac-r1" inputmode="decimal" placeholder="e.g. 10k"></div>
-      <div class="field"><label for="ac-r2">R2 &mdash; bottom (&Omega;)</label><input id="ac-r2" inputmode="decimal" placeholder="e.g. 4k7"></div>
-      <div class="field"><label for="ac-vin">V<sub>in</sub> (V, optional)</label><input id="ac-vin" inputmode="decimal" placeholder="e.g. 12"></div>
-      <div class="field"><label for="ac-tol1">R1 tolerance (%)</label><input id="ac-tol1" inputmode="decimal" placeholder="1"></div>
-      <div class="field"><label for="ac-tol2">R2 tolerance (%)</label><input id="ac-tol2" inputmode="decimal" placeholder="1"></div>
-      <div class="field"><label for="ac-tcr1">R1 TCR (ppm/&deg;C)</label><input id="ac-tcr1" inputmode="decimal" placeholder="100"></div>
-      <div class="field"><label for="ac-tcr2">R2 TCR (ppm/&deg;C)</label><input id="ac-tcr2" inputmode="decimal" placeholder="100"></div>
-      <div class="field"><label for="ac-tmin">T min (&deg;C)</label><input id="ac-tmin" inputmode="decimal" placeholder="-40"></div>
-      <div class="field"><label for="ac-tmax">T max (&deg;C)</label><input id="ac-tmax" inputmode="decimal" placeholder="85"></div>
-      <div class="field"><label for="ac-tnom">T nominal (&deg;C)</label><input id="ac-tnom" inputmode="decimal" placeholder="25"></div>
-      <div class="field"><label for="ac-age">Ageing / drift (ppm, optional)</label><input id="ac-age" inputmode="decimal" placeholder="e.g. 500"></div>
-    </div>
-    <svg class="schem" width="150" height="180" viewBox="0 0 150 180" role="img" aria-label="Divider with tolerance bands on each leg">
-      <circle class="wire" cx="55" cy="14" r="3.5"/>
-      <text x="66" y="18">Vin</text>
-      <path class="wire" d="M55 17.5 V38"/>
-      <rect class="wire" x="44" y="38" width="22" height="40"/>
-      <text x="74" y="56">R1 &plusmn;</text>
-      <path class="wire" d="M55 78 V100"/>
-      <circle class="dot" cx="55" cy="100" r="3"/>
-      <path class="wire" d="M55 100 H100"/>
-      <circle class="wire" cx="103.5" cy="100" r="3.5"/>
-      <text x="112" y="104">out</text>
-      <path class="wire" d="M55 100 V116"/>
-      <rect class="wire" x="44" y="116" width="22" height="40"/>
-      <text x="74" y="140">R2 &plusmn;</text>
-      <path class="wire" d="M55 156 V166 M41 166 H69 M46 172 H64 M51 178 H59"/>
-    </svg>
-    </div>
-    <div id="ac-graph" class="chart" tabindex="0" role="img" aria-label="Ratio error across temperature"></div>
-    <dl class="results" id="ac-out"></dl>
-    <p class="note">Worst case is exact (both legs at their opposing extremes); RSS treats the contributions as independent random variables, which is the realistic figure for a production run but assumes the two TCRs are uncorrelated. Blank fields default to 1 %, 100 ppm/&deg;C, and &minus;40/+85/25 &deg;C.</p>
-    <button class="reset" data-reset="ac">Reset</button>
   </div>
 </section>
 

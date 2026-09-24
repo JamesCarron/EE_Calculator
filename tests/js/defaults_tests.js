@@ -12,11 +12,12 @@ function eq(l, g, w) {
 // card, its calculator, the inputs the card needs before it will say anything,
 // the results list, and the defaulted fields with the value each claims
 const CASES = [
-  { name: "error budget", calc: function () { calcAccuracy(); }, out: "ac-out",
-    seed: { "ac-r1": "10k", "ac-r2": "10k" },
-    fields: { "ac-tol1": "1", "ac-tol2": "1", "ac-tcr1": "100", "ac-tcr2": "100",
-              "ac-tmin": "-40", "ac-tmax": "85", "ac-tnom": "25" },
-    all: ["ac-r1", "ac-r2", "ac-vin", "ac-tol1", "ac-tol2", "ac-tcr1", "ac-tcr2", "ac-tmin", "ac-tmax", "ac-tnom", "ac-age"] },
+  { name: "error budget", calc: function () { calcAccuracy(); }, out: "div-tol-out",
+    seed: { "div-r1": "10k", "div-r2": "10k" },
+    fields: { "div-tol1": "1", "div-tol2": "1", "div-tcr1": "100", "div-tcr2": "100",
+              "div-tmin": "-40", "div-tmax": "85", "div-tnom": "25", "div-vfbtol": "1" },
+    all: ["div-r1", "div-r2", "div-vin", "div-vout", "div-tol1", "div-tol2", "div-tcr1", "div-tcr2",
+          "div-tmin", "div-tmax", "div-tnom", "div-age", "div-vfbtol"] },
 
   { name: "trace current", calc: function () { calcTrace(); }, out: "tw-out",
     seed: { "tw-i": "3" }, fields: { "tw-dt": "10", "tw-ta": "25" },

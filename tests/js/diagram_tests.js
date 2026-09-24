@@ -37,13 +37,13 @@ eq("your chosen fault is marked", shows("fu-graph", /your fault/), true);
 eq("the adiabatic limit is marked", shows("fu-graph", /adiabatic model ends/), true);
 
 console.log("\n== divider error band ==");
-clearAll(["ac-r1", "ac-r2", "ac-tol1", "ac-tol2", "ac-tcr1", "ac-tcr2", "ac-tmin", "ac-tmax", "ac-tnom", "ac-age"]);
+clearAll(["div-r1", "div-r2", "div-tol1", "div-tol2", "div-tcr1", "div-tcr2", "div-tmin", "div-tmax", "div-tnom", "div-age"]);
 calcAccuracy();
-eq("no divider, no band", drawn("ac-graph"), false);
-set("ac-r1", "10k"); set("ac-r2", "10k"); calcAccuracy();
-eq("a divider gets a band", drawn("ac-graph"), true);
-eq("both estimates are labelled", shows("ac-graph", /worst case/) && shows("ac-graph", /RSS/), true);
-eq("the band is drawn, not implied", shows("ac-graph", /class="band"/), true);
+eq("no divider, no band", drawn("div-tol-graph"), false);
+set("div-r1", "10k"); set("div-r2", "10k"); calcAccuracy();
+eq("a divider gets a band", drawn("div-tol-graph"), true);
+eq("both estimates are labelled", shows("div-tol-graph", /worst case/) && shows("div-tol-graph", /RSS/), true);
+eq("the band is drawn, not implied", shows("div-tol-graph", /class="band"/), true);
 
 console.log("\n== plates state the model ==");
 [calcZ, calcDiff, calcTrace, calcVia, calcSP, calcPad].forEach(function (c) { c(); });
