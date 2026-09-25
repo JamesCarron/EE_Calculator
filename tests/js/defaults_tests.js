@@ -13,11 +13,14 @@ function eq(l, g, w) {
 // the results list, and the defaulted fields with the value each claims
 const CASES = [
   { name: "error budget", calc: function () { calcAccuracy(); }, out: "div-tol-out",
-    seed: { "div-r1": "10k", "div-r2": "10k" },
+    // resistor drift is off by default, so the TCR defaults are only
+    // meaningfully exercised with the switch seeded on
+    seed: { "div-r1": "10k", "div-r2": "10k", "div-rtemp": "on", "div-regtemp": "on" },
     fields: { "div-tol1": "1", "div-tol2": "1", "div-tcr1": "100", "div-tcr2": "100",
-              "div-tmin": "-40", "div-tmax": "85", "div-tnom": "25", "div-vfbtol": "1" },
+              "div-tmin": "-40", "div-tmax": "85", "div-tnom": "25", "div-vfbtol": "1",
+              "div-vfbtc": "50" },
     all: ["div-r1", "div-r2", "div-vin", "div-vout", "div-tol1", "div-tol2", "div-tcr1", "div-tcr2",
-          "div-tmin", "div-tmax", "div-tnom", "div-age", "div-vfbtol"] },
+          "div-tmin", "div-tmax", "div-tnom", "div-age", "div-vfbtol", "div-vfbtc"] },
 
   { name: "trace current", calc: function () { calcTrace(); }, out: "tw-out",
     seed: { "tw-i": "3" }, fields: { "tw-dt": "10", "tw-ta": "25" },

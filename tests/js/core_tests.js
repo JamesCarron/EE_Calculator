@@ -102,8 +102,9 @@ console.log("  " + JSON.stringify(rows("div-tol-out")));
 // k = 0.5, worst case ratio error = (1-k)*(t1+t2) = 0.5*2% = 1% to first order
 const wc = rows("div-tol-out").filter(function (r) { return r[0].indexOf("worst case") >= 0 && r[0].indexOf("Total") === 0; })[0];
 console.log("  worst-case row:", JSON.stringify(wc));
-// matched TCR must cancel
+// matched TCR must cancel - resistor drift is off by default, so switch it on
 clearAll(AC);
+set("div-rtemp","on");
 set("div-r1","10k"); set("div-r2","10k"); set("div-tol1","0"); set("div-tol2","0");
 set("div-tcr1","100"); set("div-tcr2","100"); set("div-tmin","-40"); set("div-tmax","85");
 calcAccuracy();
@@ -151,6 +152,9 @@ function regRow(label) {
   return rows("div-tol-out").filter(function (r) { return r[0].indexOf(label) === 0; })[0];
 }
 clearAll(DIVREG);
+/* state both switches rather than leaning on the defaults: these figures are
+   resistor drift included, reference drift excluded */
+set("div-rtemp","on"); set("div-regtemp","off");
 set("div-vin","3.3"); set("div-vout","0.8"); set("div-r1","31.25k"); set("div-r2","10k");
 calcDivider();
 /* the reference lands on the output one for one, so worst case simply adds */
@@ -176,6 +180,7 @@ eq("a precision reference hands dominance back to the divider",
    midpoint. 12 V ±5 % through 10k/4k7 with 1 % 100 ppm parts over -40..85 C:
    ratio 2.2583 % worst case, so 7.2583 % combined, 3.5636..4.1195 V. */
 clearAll(DIVREG); clearAll(["div-vintol"]);
+set("div-rtemp","on"); set("div-regtemp","off");
 set("div-vin","12"); set("div-r1","10k"); set("div-r2","4k7"); calcDivider();
 const noSrc = regRow("Vout worst-case window")[1];
 eq("with no source tolerance the window is the ratio alone",
@@ -195,6 +200,7 @@ eq("and the window widens to match",
    3.3 V from 0.8 V on 31.25k/10k is ±2.52 % ratio, so ±3.52 % with a 1 %
    reference - and must stay ±3.52 % however large the source figure is. */
 clearAll(DIVREG); clearAll(["div-vintol"]);
+set("div-rtemp","on"); set("div-regtemp","off");
 set("div-vin","3.3"); set("div-vout","0.8"); set("div-r1","31.25k"); set("div-r2","10k");
 set("div-vintol","5"); calcDivider();
 const regWcRow = regRow("Regulator output error — worst case")[1];
@@ -203,6 +209,43 @@ eq("rather than adding it on top", /±8\.5/.test(regWcRow), false);
 /* rows() strips markup, so the note reads Vin rather than V<sub>in</sub> */
 eq("and the card says why rather than leaving it to be guessed",
    rows("div-tol-out").some(function (r) { return /ignore the Vin tolerance/.test(r[1]); }), true);
+
+/* The two temperature effects switch independently. On 31.25k/10k with 1 %
+   parts, ratio worst case is 1.5230 % with resistor drift off and 2.5214 %
+   with it on at 100 ppm; a 50 ppm/C reference over dT 65 adds 0.3250 %. So
+   the regulator worst case walks 2.5230 -> 2.8480 -> 3.8464 %. */
+console.log("\n== temperature can be switched off per source ==");
+const TSW = DIVREG.concat(["div-vfbtc"]);
+function setSw(r, g) { set("div-rtemp", r); set("div-regtemp", g); calcDivider(); }
+clearAll(TSW); clearAll(["div-vintol"]);
+set("div-vin","3.3"); set("div-vout","0.8"); set("div-r1","31.25k"); set("div-r2","10k");
+
+setSw("off", "off");
+eq("resistor drift off by default is the shipped state",
+   document.getElementById("div-rtemp").value, "off");
+eq("both off is tolerance only", /±2\.52/.test(regRow("Regulator output error — worst case")[1]), true);
+eq("and the excluded resistor term is stated, not dropped",
+   /excluded/.test(regRow("Resistor TCR")[1]), true);
+eq("as is the excluded reference term", /excluded/.test(regRow("Reference drift")[1]), true);
+
+setSw("off", "on");
+eq("the reference drift alone adds 0.325 %", /±2\.85/.test(regRow("Regulator output error — worst case")[1]), true);
+eq("and is reported against its initial tolerance",
+   /0\.325 % on top of its ±1\.00 %/.test(regRow("Reference drift over")[1]), true);
+
+setSw("on", "on");
+eq("both on gives the full figure", /±3\.85/.test(regRow("Regulator output error — worst case")[1]), true);
+
+setSw("on", "off");
+eq("resistor drift alone", /±3\.52/.test(regRow("Regulator output error — worst case")[1]), true);
+
+/* monotonic: switching either effect on can only widen the budget */
+const wcFor = function (r, g) {
+  setSw(r, g);
+  return parseFloat(regRow("Regulator output error — worst case")[1].replace(/[^0-9.]/g, ""));
+};
+eq("neither switch can narrow the budget",
+   wcFor("off","off") <= wcFor("off","on") && wcFor("off","on") <= wcFor("on","on"), true);
 
 console.log("\n== number bases ==");
 showBases(parseInt_("4096", 10), "nb-dec");

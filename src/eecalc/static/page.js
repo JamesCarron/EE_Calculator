@@ -1751,7 +1751,24 @@ function calcAccuracy() {
   const age = num("div-age", 0) * 1e-6;
   if (tmax < tmin) { render("div-tol-out", [["", "T max must be at or above T min.", "err"]]); return; }
   const dT = Math.max(Math.abs(tmax - tnom), Math.abs(tmin - tnom));
-  const drift1 = Math.abs(tcr1) * 1e-6 * dT, drift2 = Math.abs(tcr2) * 1e-6 * dT;
+  /* Either temperature effect can be switched off, because the two come from
+     different places: the resistor figure is a choice of part, the reference
+     figure is a property of the regulator you have already chosen. Resistor
+     drift is off by default - a divider is usually specified on tolerance
+     alone first, and switching it on is the deliberate second question. */
+  const rTemp = document.getElementById("div-rtemp").value === "on";
+  const regTemp = document.getElementById("div-regtemp").value === "on";
+  /* Never show a field the maths is currently ignoring. The temperature span
+     is shared, so it survives as long as either effect is switched on. */
+  const show = function (id, on) { const e = document.getElementById(id); if (e) e.hidden = !on; };
+  show("div-f-tcr1", rTemp);
+  show("div-f-tcr2", rTemp);
+  show("div-f-vfbtc", regTemp);
+  show("div-f-tmin", rTemp || regTemp);
+  show("div-f-tmax", rTemp || regTemp);
+  show("div-f-tnom", rTemp || regTemp);
+  const drift1 = rTemp ? Math.abs(tcr1) * 1e-6 * dT : 0;
+  const drift2 = rTemp ? Math.abs(tcr2) * 1e-6 * dT : 0;
   const d1 = tol1 + drift1 + age, d2 = tol2 + drift2 + age;   // worst-case relative spread per leg
   const k = r2 / (r1 + r2);
 
@@ -1765,17 +1782,27 @@ function calcAccuracy() {
   const s2 = Math.sqrt(tol2 * tol2 + drift2 * drift2 + age * age);
   const rss = (1 - k) * Math.sqrt(s1 * s1 + s2 * s2);
 
-  drawErrorBand(k, tol1, tol2, tcr1, tcr2, age, tmin, tmax, tnom);
+  /* The band plots ratio error against temperature, and the ratio only moves
+     with temperature through the resistors. With their drift switched off the
+     curve is a flat pair of lines saying nothing the results do not, so the
+     chart is cleared rather than drawn. */
+  if (rTemp) drawErrorBand(k, tol1, tol2, tcr1, tcr2, age, tmin, tmax, tnom);
 
   const pc = function (x) { return (x * 100).toPrecision(3) + " %"; };
   const pm = function (x) { return (x * 1e6).toFixed(0) + " ppm"; };
   const rows = [
     ["Nominal ratio", k.toPrecision(5) + " (" + pc(k) + " of V<sub>in</sub>)"],
-    ["Tolerance contribution", "±" + pc((1 - k) * (tol1 + tol2)) + " worst case"],
-    ["TCR contribution over ΔT " + dT.toFixed(0) + " °C",
-     "±" + pc((1 - k) * (drift1 + drift2)) + " worst case, " +
-     (tcr1 === tcr2 ? "0 % if the parts truly track" : "±" + pc((1 - k) * Math.abs(tcr2 - tcr1) * 1e-6 * dT) + " if they track")]
+    ["Tolerance contribution", "±" + pc((1 - k) * (tol1 + tol2)) + " worst case"]
   ];
+  /* An excluded term is stated rather than silently dropped: a results list
+     that is quietly missing a contribution is how a budget gets believed. */
+  if (rTemp) {
+    rows.push(["TCR contribution over ΔT " + dT.toFixed(0) + " °C",
+      "±" + pc((1 - k) * (drift1 + drift2)) + " worst case, " +
+      (tcr1 === tcr2 ? "0 % if the parts truly track" : "±" + pc((1 - k) * Math.abs(tcr2 - tcr1) * 1e-6 * dT) + " if they track")]);
+  } else {
+    rows.push(["Resistor TCR", "excluded — the figures below are at one temperature only"]);
+  }
   if (age > 0) rows.push(["Ageing contribution", "±" + pc((1 - k) * 2 * age) + " worst case"]);
   rows.push(["Total ratio error — worst case", "±" + pc(wc) + " (±" + pm(wc) + ")"]);
   rows.push(["Total ratio error — RSS", "±" + pc(rss) + " (±" + pm(rss) + ")"]);
@@ -1809,10 +1836,23 @@ function calcAccuracy() {
      A 1 % reference puts a 1 % floor under the output however good the divider
      is, and no amount of 0.1 % resistor buys past it. */
   const vref = num("div-vfbtol", 1) / 100;
-  const regWc = wc + vref;
-  const regRss = Math.sqrt(rss * rss + vref * vref);
+  /* The reference drifts with temperature too, over the same span the
+     resistors see. Datasheets split into two styles: a tempco in ppm/degC,
+     which is this field, or a single feedback-voltage tolerance already taken
+     over the whole range - for that one, put the figure in the tolerance box
+     and switch this off, or it is counted twice. */
+  const refDrift = regTemp ? Math.abs(num("div-vfbtc", 50)) * 1e-6 * dT : 0;
+  const vrefTot = vref + refDrift;
+  const regWc = wc + vrefTot;
+  const regRss = Math.sqrt(rss * rss + vref * vref + refDrift * refDrift);
+  if (regTemp) {
+    rows.push(["Reference drift over ΔT " + dT.toFixed(0) + " °C",
+               "±" + pc(refDrift) + " on top of its ±" + pc(vref) + " initial tolerance"]);
+  } else {
+    rows.push(["Reference drift", "excluded — the ±" + pc(vref) + " tolerance is taken as covering temperature"]);
+  }
   rows.push(["Regulator output error — worst case",
-             "±" + pc(regWc) + " (±" + pm(regWc) + ") — reference ±" + pc(vref) + " plus ratio ±" + pc(wc)]);
+             "±" + pc(regWc) + " (±" + pm(regWc) + ") — reference ±" + pc(vrefTot) + " plus ratio ±" + pc(wc)]);
   rows.push(["Regulator output error — RSS", "±" + pc(regRss) + " (±" + pm(regRss) + ")"]);
   /* vin is the regulator output and vout the feedback pin; either one plus the
      ratio fixes the other, so take whichever the solver has. */
@@ -1822,9 +1862,9 @@ function calcAccuracy() {
     rows.push(["Regulator output window",
                fmt(vreg * (1 - regWc), "V") + " … " + fmt(vreg * (1 + regWc), "V") +
                " around " + fmt(vreg, "V") + " worst case"]);
-    rows.push(["Dominant term", vref >= wc
-      ? "the reference, at ±" + pc(vref) + " against the divider's ±" + pc(wc)
-      : "the divider, at ±" + pc(wc) + " against the reference's ±" + pc(vref)]);
+    rows.push(["Dominant term", vrefTot >= wc
+      ? "the reference, at ±" + pc(vrefTot) + " against the divider's ±" + pc(wc)
+      : "the divider, at ±" + pc(wc) + " against the reference's ±" + pc(vrefTot)]);
     /* The two readings are alternatives, not layers. In a feedback network the
        top of the divider is the regulator's output, so its spread is what the
        block above computes; a figure typed into the Vin tolerance box is a
@@ -4674,7 +4714,7 @@ const CALCS = {
      end, after any leg it solved has been written back. */
   div: { calc: calcDivider, inputs: ["div-vin","div-vout","div-r1","div-r2","div-rtot","div-iload","div-series",
                                      "div-tol1","div-tol2","div-tcr1","div-tcr2","div-tmin","div-tmax","div-tnom","div-age",
-                                     "div-vintol","div-vfbtol"] },
+                                     "div-vintol","div-vfbtol","div-vfbtc","div-rtemp","div-regtemp"] },
   sp:  { calc: calcSP, inputs: ["sp-list","sp-type","sp-v"] },
   led: { calc: calcLED, inputs: ["led-vs","led-vf","led-if","led-r","led-series"] },
   ec:  { calc: calcTolerance, inputs: ["ec-type","ec-val","ec-diel","ec-code","ec-tol","ec-tc","ec-tmin","ec-tmax","ec-tnom","ec-age","ec-life","ec-bias","ec-hyst"] },

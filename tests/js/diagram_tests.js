@@ -38,12 +38,17 @@ eq("the adiabatic limit is marked", shows("fu-graph", /adiabatic model ends/), t
 
 console.log("\n== divider error band ==");
 clearAll(["div-r1", "div-r2", "div-tol1", "div-tol2", "div-tcr1", "div-tcr2", "div-tmin", "div-tmax", "div-tnom", "div-age"]);
+set("div-rtemp", "on");
 calcAccuracy();
 eq("no divider, no band", drawn("div-tol-graph"), false);
 set("div-r1", "10k"); set("div-r2", "10k"); calcAccuracy();
 eq("a divider gets a band", drawn("div-tol-graph"), true);
 eq("both estimates are labelled", shows("div-tol-graph", /worst case/) && shows("div-tol-graph", /RSS/), true);
 eq("the band is drawn, not implied", shows("div-tol-graph", /class="band"/), true);
+/* the band plots ratio against temperature, so with resistor drift switched
+   off there is nothing for it to plot and it must not be left on screen */
+set("div-rtemp", "off"); calcAccuracy();
+eq("no resistor drift, no band", drawn("div-tol-graph"), false);
 
 console.log("\n== plates state the model ==");
 [calcZ, calcDiff, calcTrace, calcVia, calcSP, calcPad].forEach(function (c) { c(); });
