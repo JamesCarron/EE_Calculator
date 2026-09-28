@@ -1740,6 +1740,112 @@ function band(plus, minus) {
    divider itself rather than asking for them again, so a pair the solver chose
    is costed without being retyped - which is the whole reason the two cards
    were merged. Everything else it needs is its own. */
+/* ---------- the error distribution ----------
+
+   Answers "how likely is that", which the results list cannot: it reports a
+   bound without saying how far into the tail it sits.
+
+   The whole thing rests on one assumption, which is why it is an input rather
+   than a constant: that a +/-tolerance is a k-sigma bound, k defaulting to 3.
+   No resistor maker states a sigma, a distribution shape or a Cpk. The 3-sigma
+   reading comes from tolerance-stack and simulator tooling - imposed by users
+   of components, not by the people who make them. Vishay's own stability note
+   defines tolerance as a deviation of a fresh part, combines parameters
+   additively rather than in quadrature, and screens parts to the limit. So the
+   bound is real and attainable; only its rarity within the bound is modelled.
+
+   Capped at three sigma and nothing beyond it is drawn or named. The worst
+   case lands outside that - 4.26 sigma for the ratio alone, 5.16 with the
+   reference - and pointing at it from inside the plot only invited the reader
+   to compare two things drawn at different scales. The results list carries
+   the worst case in full.
+
+   One curve, always the current settings. An overlaid comparison made the
+   reader work out which curve they were looking at before they could read
+   anything off it. */
+
+/* ML holds the widest row name, which is "regulator V out" at about 98 px;
+   at 92 it was clipped to "egulator V out". */
+const DIST_W = 560, DIST_H = 262, DIST_ML = 106, DIST_MR = 26, DIST_MT = 16;
+const DIST_ROW = 22, DIST_AXES = 4;
+const DIST_MB = 14 + DIST_ROW * DIST_AXES;
+const DIST_PW = DIST_W - DIST_ML - DIST_MR, DIST_PH = DIST_H - DIST_MT - DIST_MB;
+const DIST_X = 3;
+
+/* the share of a normal distribution beyond n sigma, both tails. Abramowitz
+   and Stegun 7.1.26 on erfc, which is ample for a chart and for the figures
+   printed beside it. */
+function normOutside(n) {
+  const z = Math.abs(n) / Math.SQRT2;
+  const t = 1 / (1 + 0.3275911 * z);
+  const y = 1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - 0.284496736) * t
+                 + 0.254829592) * t * Math.exp(-z * z);
+  return 1 - y;
+}
+
+/* spec: { sigma, mid, vlabel, elabel, aria } */
+function drawDistribution(hostId, spec) {
+  const host = document.getElementById(hostId);
+  if (!host) return;
+  const yMax = 1.12;
+  const X = function (s) { return DIST_ML + (s + DIST_X) / (2 * DIST_X) * DIST_PW; };
+  const Y = function (v) { return DIST_MT + (1 - v / yMax) * DIST_PH; };
+  const dens = function (s) { return Math.exp(-0.5 * s * s); };
+
+  let d = "";
+  for (let i = 0; i <= 160; i++) {
+    const s = -DIST_X + 2 * DIST_X * i / 160;
+    d += (i ? "L" : "M") + X(s).toFixed(1) + " " + Y(dens(s)).toFixed(1);
+  }
+  const shell = function (lo, hi) {
+    let p = "";
+    [[lo, hi], [-hi, -lo]].forEach(function (q) {
+      p += "M" + X(q[0]).toFixed(1) + " " + Y(0).toFixed(1);
+      for (let i = 0; i <= 32; i++) {
+        const s = q[0] + (q[1] - q[0]) * i / 32;
+        p += "L" + X(s).toFixed(1) + " " + Y(dens(s)).toFixed(1);
+      }
+      p += "L" + X(q[1]).toFixed(1) + " " + Y(0).toFixed(1) + "Z";
+    });
+    return p;
+  };
+  /* No labels sit inside the plot any more - the cumulative figures moved to
+     their own axis row - so there is nothing left to plate behind. */
+
+  const out = ['<svg width="' + DIST_W + '" height="' + DIST_H + '" viewBox="0 0 ' + DIST_W + " " + DIST_H + '">'];
+  out.push('<path class="band b3" d="' + shell(2, 3) + '"/>');
+  out.push('<path class="band b2" d="' + shell(1, 2) + '"/>');
+  out.push('<path class="band b1" d="' + shell(0, 1) + '"/>');
+  out.push('<path class="curve" d="' + d + '"/>');
+
+  const rows = [
+    [spec.elabel, function (s) { return s ? (s > 0 ? "+" : "") + (s * spec.sigma * 100).toFixed(2) + "%" : "0"; }],
+    ["\u03c3", function (s) { return s ? (s > 0 ? "+" : "") + s : "0"; }],
+    /* Cumulative, not per shell: the figure against +/-2 sigma is everything
+       inside it, which is the number a reader wants to quote. It sits on its
+       own axis row because inside the plot the three figures were 74 px apart
+       and the outer two overlapped at the right edge. */
+    ["within \u00b1", function (s) {
+      return s ? ((1 - normOutside(Math.abs(s))) * 100).toFixed(2) + " %" : "";
+    }],
+    [spec.vlabel, function (s) {
+      const v = spec.mid * (1 + s * spec.sigma);
+      return spec.mid < 2 ? v.toFixed(4) : v.toFixed(3);
+    }]
+  ];
+  rows.forEach(function (r, i) {
+    const y = DIST_MT + DIST_PH + 13 + i * DIST_ROW;
+    out.push('<path class="ax" d="M' + DIST_ML + " " + y + "H" + (DIST_ML + DIST_PW) + '"/>');
+    out.push('<text class="axname" x="' + (DIST_ML - 8) + '" y="' + (y + 4) + '" text-anchor="end">' + r[0] + "</text>");
+    [-3, -2, -1, 0, 1, 2, 3].forEach(function (s) {
+      out.push('<text class="axval" x="' + X(s).toFixed(1) + '" y="' + (y + 14) + '" text-anchor="middle">' + r[1](s) + "</text>");
+    });
+  });
+  out.push("</svg>");
+  host.innerHTML = out.join("");
+  host.setAttribute("aria-label", spec.aria);
+}
+
 function calcAccuracy() {
   miniClear("div-tol-graph");
   const r1 = val("div-r1"), r2 = val("div-r2"), vin = val("div-vin");
@@ -1756,14 +1862,17 @@ function calcAccuracy() {
      figure is a property of the regulator you have already chosen. Resistor
      drift is off by default - a divider is usually specified on tolerance
      alone first, and switching it on is the deliberate second question. */
-  const rTemp = document.getElementById("div-rtemp").value === "on";
-  const regTemp = document.getElementById("div-regtemp").value === "on";
+  const rTemp = document.getElementById("div-rtemp").checked;
+  const regOn = document.getElementById("div-reg").checked;
+  const regTemp = regOn && document.getElementById("div-regtemp").checked;
   /* Never show a field the maths is currently ignoring. The temperature span
      is shared, so it survives as long as either effect is switched on. */
   const show = function (id, on) { const e = document.getElementById(id); if (e) e.hidden = !on; };
   show("div-f-tcr1", rTemp);
   show("div-f-tcr2", rTemp);
   show("div-f-vfbtc", regTemp);
+  show("div-f-vfbtol", regOn);
+  show("div-f-regtemp", regOn);
   show("div-f-tmin", rTemp || regTemp);
   show("div-f-tmax", rTemp || regTemp);
   show("div-f-tnom", rTemp || regTemp);
@@ -1835,6 +1944,19 @@ function calcAccuracy() {
      one for one, which is why it is usually the term that decides the answer.
      A 1 % reference puts a 1 % floor under the output however good the divider
      is, and no amount of 0.1 % resistor buys past it. */
+  /* sigmaOf turns a bound into a standard deviation. The k is an input
+     because nothing on a datasheet states it - see drawDistribution. */
+  const kSig = numOr("div-sig", 3, 0.5, 12);
+  const sigRatio = rss / (isFinite(kSig) && kSig > 0 ? kSig : 3);
+  if (!regOn) {
+    drawDistribution("div-dist", {
+      sigma: sigRatio, mid: isFinite(vin) && vin > 0 ? vin * k : NaN,
+      elabel: "ratio error", vlabel: "divider V out",
+      aria: "Probability distribution of the divider ratio error, to three sigma"
+    });
+    render("div-tol-out", rows);
+    return;
+  }
   const vref = num("div-vfbtol", 1) / 100;
   /* The reference drifts with temperature too, over the same span the
      resistors see. Datasheets split into two styles: a tempco in ppm/degC,
@@ -1876,6 +1998,15 @@ function calcAccuracy() {
         + "above are the other reading: a fixed source of that tolerance divided down.", ""]);
     }
   }
+  /* the reference is an independent term, so it widens sigma in quadrature
+     even though it widened the worst case linearly a few rows above */
+  const sigTot = Math.sqrt(sigRatio * sigRatio
+                           + Math.pow(vrefTot / (isFinite(kSig) && kSig > 0 ? kSig : 3), 2));
+  drawDistribution("div-dist", {
+    sigma: sigTot, mid: vreg,
+    elabel: "output error", vlabel: "regulator V out",
+    aria: "Probability distribution of the regulator output error, to three sigma"
+  });
   render("div-tol-out", rows);
 }
 
@@ -4714,7 +4845,7 @@ const CALCS = {
      end, after any leg it solved has been written back. */
   div: { calc: calcDivider, inputs: ["div-vin","div-vout","div-r1","div-r2","div-rtot","div-iload","div-series",
                                      "div-tol1","div-tol2","div-tcr1","div-tcr2","div-tmin","div-tmax","div-tnom","div-age",
-                                     "div-vintol","div-vfbtol","div-vfbtc","div-rtemp","div-regtemp"] },
+                                     "div-vintol","div-vfbtol","div-vfbtc","div-rtemp","div-reg","div-regtemp","div-sig"] },
   sp:  { calc: calcSP, inputs: ["sp-list","sp-type","sp-v"] },
   led: { calc: calcLED, inputs: ["led-vs","led-vf","led-if","led-r","led-series"] },
   ec:  { calc: calcTolerance, inputs: ["ec-type","ec-val","ec-diel","ec-code","ec-tol","ec-tc","ec-tmin","ec-tmax","ec-tnom","ec-age","ec-life","ec-bias","ec-hyst"] },

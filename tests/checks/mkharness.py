@@ -1,5 +1,6 @@
 """Build a node harness around the page JS with a DOM stub good enough to
 exercise the computed-field mechanics (value + classList are real)."""
+import json
 import re
 from pathlib import Path
 
@@ -27,6 +28,16 @@ for sid, body in selects.items():
         m = re.search(r'<option value="([^"]+)"', body)
     defaults[sid] = m.group(1) if m else ""
 
+# Checkboxes: id -> whether the markup ticks it. The page relies on these
+# defaults (resistor drift off, regulator on), so the harness must start where
+# the browser starts or every suite silently tests a different card.
+checkids = {}
+for m in re.finditer(r'<input([^>]*\btype="checkbox"[^>]*)>', html):
+    attrs = m.group(1)
+    mid = re.search(r'id="([^"]+)"', attrs)
+    if mid:
+        checkids[mid.group(1)] = bool(re.search(r'\bchecked\b', attrs))
+
 stub = """
 'use strict';
 const els = {};
@@ -34,6 +45,8 @@ function mkEl(id) {
   const cls = new Set();
   return {
     id: id, value: "", innerHTML: "", textContent: "", className: "", hidden: true,
+    checked: false,
+    type: %(checkids)s.hasOwnProperty(id) ? "checkbox" : "text",
     tagName: %(selids)s.indexOf(id) >= 0 ? "SELECT" : "INPUT",
     classList: {
       add: function () { for (const c of arguments) cls.add(c); },
@@ -56,6 +69,8 @@ function hasField(id) { return PAGE_IDS.has(id); }
 %(ids)s.forEach(function (i) { els[i] = mkEl(i); });
 const SEL_DEFAULTS = %(defaults)s;
 for (const k in SEL_DEFAULTS) els[k].value = SEL_DEFAULTS[k];
+const CHECK_DEFAULTS = %(checkids)s;
+for (const k in CHECK_DEFAULTS) if (els[k]) els[k].checked = CHECK_DEFAULTS[k];
 const MIRRORS = %(mirrors)s;         // group -> ids, in document order
 for (const g in MIRRORS) MIRRORS[g].forEach(function (i) { els[i].dataset = { mirror: g }; });
 globalThis.document = {
@@ -74,10 +89,24 @@ globalThis.location = { hash: "" };
 try { globalThis.navigator = {}; } catch (e) {}
 
 // test helpers
-function set(id, v) { const e = document.getElementById(id); e.value = String(v); e.classList.remove("computed"); }
+function set(id, v) {
+  const e = document.getElementById(id);
+  /* one spelling in the suites whatever the control is: "on"/"off", true/false
+     and 1/0 all tick a checkbox, and anything else is a value */
+  if (e.type === "checkbox") { e.checked = (v === true || v === "on" || v === 1 || v === "1"); return; }
+  e.value = String(v); e.classList.remove("computed");
+}
 function get(id) { return document.getElementById(id).value; }
 function isCalc(id) { return document.getElementById(id).classList.contains("computed"); }
-function clearAll(ids) { ids.forEach(function (i) { const e = document.getElementById(i); e.value = ""; e.classList.remove("computed"); }); }
+function clearAll(ids) {
+  ids.forEach(function (i) {
+    const e = document.getElementById(i);
+    /* a checkbox goes back to what the markup says, not to false: the card's
+       default state is part of what the suites are checking */
+    if (e.type === "checkbox") { e.checked = !!CHECK_DEFAULTS[i]; return; }
+    e.value = ""; e.classList.remove("computed");
+  });
+}
 function rows(id) {
   const h = document.getElementById(id).innerHTML;
   const out = [];
@@ -90,6 +119,7 @@ function show(t, id) { console.log(t, JSON.stringify(rows(id))); }
 """ % {
     "ids": repr(ids).replace("'", '"'),
     "selids": repr(sorted(selects)).replace("'", '"'),
+    "checkids": json.dumps(checkids),
     "mirrors": "{" + ",".join('"%s":[%s]' % (g, ",".join('"%s"' % i for i in ids)) for g, ids in mirrors.items()) + "}",
     "defaults": "{" + ",".join('"%s":"%s"' % (k, v) for k, v in defaults.items()) + "}",
 }

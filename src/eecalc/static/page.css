@@ -45,6 +45,16 @@
      by hue alone, so it survives any colour vision and a monochrome print */
   .chart .curve.alt { stroke-dasharray: 5 4; }
   .chart .band { fill: var(--a-link); opacity: .13; stroke: none; }
+  /* sequential shells, one hue at three strengths - a sequence, not a set of
+     categories, so shading rather than separate colours is the right encoding */
+  .chart .band.b1 { opacity: .34; } .chart .band.b2 { opacity: .22; } .chart .band.b3 { opacity: .13; }
+  /* a plate behind a label so the curve can pass under it. Not .plate: that is
+     the equation paragraph, and an SVG rect inheriting it gets a black fill. */
+  .chart .lblbg { fill: var(--a-bg-panel); stroke: none; }
+  .chart .ax { stroke: var(--a-line-strong); stroke-width: 1; fill: none; }
+  .chart text.axname { fill: var(--a-ink-muted); font-size: 10px; }
+  .chart text.axval { fill: var(--a-ink-secondary); font-size: 10px; }
+  .chart text.share { fill: var(--a-ink); font-size: 11px; }
   .chart text.tag { fill: var(--a-ink-secondary); font-size: 10px; }
   .chart .knob { fill: var(--a-link); stroke: var(--a-bg-panel); stroke-width: 2; }
   .chart text { fill: var(--a-ink-muted); font-size: 10px; font-family: var(--a-font-mono); }
@@ -81,6 +91,16 @@
   .foldout[open] > summary::before { transform: rotate(90deg); }
   .foldout > summary:focus-visible { outline: 2px solid var(--a-focus); outline-offset: 2px; border-radius: var(--a-radius-sm); }
   .foldbody { padding-top: .9rem; }
+  /* checkboxes rather than selects: three of them fit one strip where two
+     selects took two field slots, which is what left room for the chart */
+  .switches { display: flex; flex-wrap: wrap; gap: .55rem 1.6rem; margin: 0 0 1rem;
+    padding: .55rem .8rem; background: var(--a-bg-subtle);
+    border: var(--a-border) solid var(--a-line); border-radius: var(--a-radius-sm); }
+  .switches label { display: inline-flex; align-items: center; gap: .45rem;
+    font-size: var(--a-text-sm); color: var(--a-ink-secondary); cursor: pointer; }
+  .switches label.child { margin-left: 1rem; }
+  .switches label[hidden] { display: none; }
+  .switches input { accent-color: var(--a-link); cursor: pointer; }
   .note { font-size: var(--a-text-xs); color: var(--a-ink-muted); margin-top: .9rem; }
   .warn { color: var(--a-warning); }
   .err { color: var(--a-critical); }

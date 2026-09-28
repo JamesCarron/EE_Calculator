@@ -222,7 +222,9 @@ set("div-vin","3.3"); set("div-vout","0.8"); set("div-r1","31.25k"); set("div-r2
 
 setSw("off", "off");
 eq("resistor drift off by default is the shipped state",
-   document.getElementById("div-rtemp").value, "off");
+   document.getElementById("div-rtemp").checked, false);
+eq("and the regulator reading is on by default",
+   document.getElementById("div-reg").checked, true);
 eq("both off is tolerance only", /±2\.52/.test(regRow("Regulator output error — worst case")[1]), true);
 eq("and the excluded resistor term is stated, not dropped",
    /excluded/.test(regRow("Resistor TCR")[1]), true);

@@ -152,13 +152,12 @@
     <details class="foldout">
       <summary>Tolerance and drift &mdash; what the ratio actually settles to</summary>
       <div class="foldbody">
+        <div class="switches">
+          <label><input type="checkbox" id="div-rtemp"> Resistor drift over temperature</label>
+          <label><input type="checkbox" id="div-reg" checked> Regulator feedback network</label>
+          <label class="child" id="div-f-regtemp"><input type="checkbox" id="div-regtemp" checked> Reference drift over temperature</label>
+        </div>
         <div class="fields">
-          <div class="field"><label for="div-rtemp">Resistor drift over temperature</label>
-            <select id="div-rtemp"><option value="off" selected>Ignore</option><option value="on">Include</option></select>
-          </div>
-          <div class="field"><label for="div-regtemp">Reference drift over temperature</label>
-            <select id="div-regtemp"><option value="on" selected>Include</option><option value="off">Ignore</option></select>
-          </div>
           <div class="field"><label for="div-tol1">R1 tolerance (%)</label><input id="div-tol1" inputmode="decimal" placeholder="1"></div>
           <div class="field"><label for="div-tol2">R2 tolerance (%)</label><input id="div-tol2" inputmode="decimal" placeholder="1"></div>
           <div class="field" id="div-f-tcr1" hidden><label for="div-tcr1">R1 TCR (ppm/&deg;C)</label><input id="div-tcr1" inputmode="decimal" placeholder="100"></div>
@@ -168,13 +167,16 @@
           <div class="field" id="div-f-tnom"><label for="div-tnom">T nominal (&deg;C)</label><input id="div-tnom" inputmode="decimal" placeholder="25"></div>
           <div class="field"><label for="div-age">Ageing / drift (ppm, optional)</label><input id="div-age" inputmode="decimal" placeholder="e.g. 500"></div>
           <div class="field"><label for="div-vintol">V<sub>in</sub> tolerance (%, optional)</label><input id="div-vintol" inputmode="decimal" placeholder="e.g. 5"></div>
-          <div class="field"><label for="div-vfbtol">Regulator V<sub>fb</sub> tolerance (%)</label><input id="div-vfbtol" inputmode="decimal" placeholder="1"></div>
+          <div class="field" id="div-f-vfbtol"><label for="div-vfbtol">Regulator V<sub>fb</sub> tolerance (%)</label><input id="div-vfbtol" inputmode="decimal" placeholder="1"></div>
           <div class="field" id="div-f-vfbtc"><label for="div-vfbtc">Regulator V<sub>fb</sub> TCR (ppm/&deg;C)</label><input id="div-vfbtc" inputmode="decimal" placeholder="50"></div>
+          <div class="field"><label for="div-sig">&plusmn;tolerance is how many &sigma;</label><input id="div-sig" inputmode="decimal" placeholder="3"></div>
         </div>
         <div id="div-tol-graph" class="chart" tabindex="0" role="img" aria-label="Ratio error across temperature"></div>
+        <div id="div-dist" class="chart" tabindex="0" role="img" aria-label="Probability distribution of the error"></div>
         <dl class="results" id="div-tol-out"></dl>
         <p class="note">R1, R2 and the two voltages come from the divider above, including values the solver filled in &mdash; so a pair chosen up there is costed down here without retyping it. Worst case is exact, both legs pushed to opposing extremes; RSS treats the contributions as independent random variables, which is the realistic production spread but assumes the two TCRs are uncorrelated. Blank fields default to 1 %, 100 ppm/&deg;C, &minus;40/+85/25 &deg;C, a 1 % reference and 50 ppm/&deg;C on it, and are used at those values whether this section is open or closed.</p>
         <p class="note"><b>Read as a regulator feedback network</b>, V<sub>in</sub> above is the regulator&rsquo;s output and V<sub>out</sub> is the feedback pin, so V<sub>out(reg)</sub> = V<sub>fb</sub> &middot; (R1 + R2) / R2. The reference tolerance lands on the output directly and is usually the largest single term &mdash; a 1 % reference puts a floor of 1 % under the output no matter how good the divider is, which is why a 0.1 % divider on a 2 % reference buys nothing. The two temperature effects switch independently because they come from different places: the resistor figure is a choice of part, the reference figure is a property of the regulator already chosen. Resistor drift starts switched off, so the first answer is the tolerance-only one. <b>Datasheets quote the reference two ways</b> &mdash; a tempco in ppm/&deg;C, which is the field here, or one feedback-voltage tolerance already taken over the whole temperature range. For the second kind, put that figure in the tolerance box and switch reference drift off, or it is counted twice.</p>
+        <p class="note"><b>The distribution assumes a &plusmn;tolerance is a 3&nbsp;&sigma; bound</b>, which is why that is an input rather than a constant. No resistor maker states a sigma, a distribution shape or a Cpk &mdash; the convention comes from tolerance-stack and simulator tooling, imposed by users of components rather than by the people who make them. Vishay&rsquo;s own stability note defines tolerance as a deviation of a <i>fresh</i> part, combines parameters <i>additively</i> rather than in quadrature, and screens parts to the limit. So the worst case is a real, attainable bound and nothing ships outside it; only its rarity <i>within</i> that bound is modelled here. If a supplier quotes a Cpk, the true sigma is tighter and every figure on the chart is conservative. The chart is capped at 3&nbsp;&sigma; and names nothing beyond it; the worst case sits further out than that and is in the results above.</p>
       </div>
     </details>
     <button class="reset" data-reset="div">Reset</button>
