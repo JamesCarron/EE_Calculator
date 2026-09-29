@@ -41,16 +41,20 @@ shows("two sigma holds 95.45 %", "div-dist", /95\.45 %/);
 shows("three sigma holds 99.73 %", "div-dist", /99\.73 %/);
 hides("the per-shell 27.2 % figure is gone", "div-dist", /27\.2 %/);
 hides("so is the per-shell 4.28 %", "div-dist", /4\.28 %/);
-/* the page files carry literal Unicode, not entities, so the row name is
-   an actual plus-minus sign */
-shows("and the row says what the figures mean", "div-dist", /within ±/);
+/* sigma is marked inside the plot now, at the shell it describes, rather
+   than as two more rows of numbers under the axis */
+shows("each shell is labelled where it is", "div-dist", /±1σ/);
+shows("and so are the other two", "div-dist", /±2σ/);
 
 console.log("\n== nothing wider than three sigma is drawn or named ==");
 hides("no worst-case marker", "div-dist", /worst case/);
 hides("no off-scale annotation", "div-dist", /off scale/);
 hides("no edge tag", "div-dist", /edge = /);
-shows("the axis stops at three sigma", "div-dist", /&gt;\+3&lt;|>\+3</);
-hides("and never reaches four", "div-dist", /&gt;\+4&lt;|>\+4</);
+shows("the outermost shell is three sigma", "div-dist", /±3σ/);
+hides("and there is no fourth", "div-dist", /±4σ/);
+/* the error axis is still scaled by sigma: three sigma of 0.5004 % is
+   +1.50 %, which is what pins the scale now that k is not an input */
+shows("the error axis ends at three sigma", "div-dist", /\+1\.50%/);
 
 console.log("\n== one curve, never an overlay ==");
 eq("exactly one curve path",
@@ -78,15 +82,12 @@ shows("and the volts axis is the divider output", "div-dist", /divider V out/);
 shows("reading 0.8086 V at three sigma", "div-dist", /0\.8086/);
 hides("the regulator rows go with it", "div-tol-out", /Regulator output error/);
 
-console.log("\n== sigma per tolerance is an input, not a constant ==");
-/* nothing on a datasheet states it, so it has to be changeable and has to move
-   the axis when it changes: k = 6 halves sigma, so 3 sigma is +0.54 % */
-feedback(); set("div-reg", "off"); set("div-sig", "6"); calcDivider();
-shows("k = 6 halves the axis", "div-dist", /\+0\.54%/);
-feedback(); set("div-reg", "off"); set("div-sig", "1.5"); calcDivider();
-shows("k = 1.5 doubles it", "div-dist", /\+2\.14%/);
+console.log("\n== the bound is fixed at three sigma ==");
+/* it is no longer an input, so what is pinned is that the scale really is
+   rss/3: the ratio-only sigma is 0.3571 % and three of them is +1.07 % */
 feedback(); set("div-reg", "off"); calcDivider();
-shows("and blank falls back to three", "div-dist", /\+1\.07%/);
+shows("three sigma of the ratio is +1.07 %", "div-dist", /\+1\.07%/);
+eq("and there is no field to change it", hasField("div-sig"), false);
 
 console.log("\n== it never claims certainty ==");
 hides("99.73 is never rounded to 100", "div-dist", /100 %/);

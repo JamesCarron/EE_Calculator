@@ -1768,8 +1768,11 @@ function band(plus, minus) {
 
 /* ML holds the widest row name, which is "regulator V out" at about 98 px;
    at 92 it was clipped to "egulator V out". */
-const DIST_W = 560, DIST_H = 262, DIST_ML = 106, DIST_MR = 26, DIST_MT = 16;
-const DIST_ROW = 22, DIST_AXES = 4;
+/* Two axis rows now - the error and the voltage. Sigma and its cumulative
+   share moved inside the plot, where they mark the shells they describe
+   instead of being two more rows of numbers to scan. */
+const DIST_W = 560, DIST_H = 224, DIST_ML = 106, DIST_MR = 26, DIST_MT = 16;
+const DIST_ROW = 22, DIST_AXES = 2;
 const DIST_MB = 14 + DIST_ROW * DIST_AXES;
 const DIST_PW = DIST_W - DIST_ML - DIST_MR, DIST_PH = DIST_H - DIST_MT - DIST_MB;
 const DIST_X = 3;
@@ -1820,16 +1823,27 @@ function drawDistribution(hostId, spec) {
   out.push('<path class="band b1" d="' + shell(0, 1) + '"/>');
   out.push('<path class="curve" d="' + d + '"/>');
 
+  /* The shells, labelled where they are rather than in an axis row. Near
+     the top because that is where the curve is low at one, two and three
+     sigma; at the baseline the outermost label had the curve through it. */
+  [1, 2, 3].forEach(function (n) {
+    const inside = (1 - normOutside(n)) * 100;
+    const anchor = n === 3 ? "end" : "middle";
+    const x = X(n);
+    out.push('<path class="shellmark" d="M' + x.toFixed(1) + ' ' + (DIST_MT + 6) +
+             'V' + Y(dens(n)).toFixed(1) + '"/>');
+    out.push('<text class="share" x="' + x.toFixed(1) + '" y="' + (DIST_MT + 20) +
+             '" text-anchor="' + anchor + '">\u00b1' + n + '\u03c3</text>');
+    out.push('<text class="axval" x="' + x.toFixed(1) + '" y="' + (DIST_MT + 33) +
+             '" text-anchor="' + anchor + '">' + inside.toFixed(2) + ' %</text>');
+  });
+
   const rows = [
     [spec.elabel, function (s) { return s ? (s > 0 ? "+" : "") + (s * spec.sigma * 100).toFixed(2) + "%" : "0"; }],
-    ["\u03c3", function (s) { return s ? (s > 0 ? "+" : "") + s : "0"; }],
     /* Cumulative, not per shell: the figure against +/-2 sigma is everything
        inside it, which is the number a reader wants to quote. It sits on its
        own axis row because inside the plot the three figures were 74 px apart
        and the outer two overlapped at the right edge. */
-    ["within \u00b1", function (s) {
-      return s ? ((1 - normOutside(Math.abs(s))) * 100).toFixed(2) + " %" : "";
-    }],
     [spec.vlabel, function (s) {
       const v = spec.mid * (1 + s * spec.sigma);
       return spec.mid < 2 ? v.toFixed(4) : v.toFixed(3);
@@ -1897,6 +1911,17 @@ function calcAccuracy() {
   if (rTemp) drawErrorBand(k, tol1, tol2, tcr1, tcr2, age, tmin, tmax, tnom);
 
   const pc = function (x) { return (x * 100).toPrecision(3) + " %"; };
+  /* Fixed-width right-aligned cells so the three columns line up down the
+     list - as plain text, "30.94 kOhm" and "9.9 kOhm" started at different
+     widths and R1 and R2 did not align. */
+  const trio = function (lo, mid, hi) {
+    /* the separator gets its own centred cell: sitting directly after a
+       right-aligned value it hugged that value and left a gap before the
+       next, which read as belonging to the left-hand number */
+    const sep = '<span class="cs">…</span>';
+    return '<span class="c3">' + lo + '</span>' + sep + '<span class="c3">' + mid
+           + '</span>' + sep + '<span class="c3">' + hi + "</span>";
+  };
   const pm = function (x) { return (x * 1e6).toFixed(0) + " ppm"; };
   /* Each leg's own spread, referred to the ratio by the (1 - k) sensitivity.
      Reported per term so the reader can see which one dominates, then combined
@@ -1925,20 +1950,21 @@ function calcAccuracy() {
     if (vinTol > 0) {
       rows.push(["V<sub>out</sub> error", "±" + pc(outErr) + " — ratio ±" + pc(rss) + " with source ±" + pc(vinTol)]);
     }
-    rows.push(["V<sub>out</sub>", fmt(vin * k * (1 - outErr), "V") + " … " + fmt(vin * k, "V")
-               + " … " + fmt(vin * k * (1 + outErr), "V")]);
+    rows.push(["V<sub>out</sub>", trio(fmt(vin * k * (1 - outErr), "V"), fmt(vin * k, "V"),
+                                      fmt(vin * k * (1 + outErr), "V"))]);
   }
 
   /* Reference information rather than an answer, so it goes last on whichever
      path runs - pushed here it sat between the divider and regulator groups. */
   const partRows = [
     ["Components", "", "grp"],
-    ["R1", fmt(r1 * (1 - d1), "Ω") + " … " + fmt(r1, "Ω") + " … " + fmt(r1 * (1 + d1), "Ω")],
-    ["R2", fmt(r2 * (1 - d2), "Ω") + " … " + fmt(r2, "Ω") + " … " + fmt(r2 * (1 + d2), "Ω")]
+    ["R1", trio(fmt(r1 * (1 - d1), "Ω"), fmt(r1, "Ω"), fmt(r1 * (1 + d1), "Ω"))],
+    ["R2", trio(fmt(r2 * (1 - d2), "Ω"), fmt(r2, "Ω"), fmt(r2 * (1 + d2), "Ω"))]
   ];
 
-  const kSig = numOr("div-sig", 3, 0.5, 12);
-  const sigRatio = rss / (isFinite(kSig) && kSig > 0 ? kSig : 3);
+  /* Fixed at three sigma. It is still an assumption - nothing on a
+     datasheet states it - but not one the card invites you to tune. */
+  const sigRatio = rss / 3;
   if (!regOn) {
     drawDistribution("div-dist", {
       sigma: sigRatio, mid: isFinite(vin) && vin > 0 ? vin * k : NaN,
@@ -1973,8 +1999,7 @@ function calcAccuracy() {
   const vreg = isFinite(vin) && vin > 0 ? vin : (isFinite(vfb) && vfb > 0 ? vfb / k : NaN);
   if (isFinite(vreg) && vreg > 0) {
     rows.push(["Regulator V<sub>out</sub>",
-               fmt(vreg * (1 - regErr), "V") + " … " + fmt(vreg, "V")
-               + " … " + fmt(vreg * (1 + regErr), "V")]);
+               trio(fmt(vreg * (1 - regErr), "V"), fmt(vreg, "V"), fmt(vreg * (1 + regErr), "V"))]);
     /* The two readings are alternatives, not layers. In a feedback network the
        top of the divider is the regulator's output, so its spread is what this
        group computes; a figure in the Vin tolerance box is a separate scenario
@@ -1988,8 +2013,7 @@ function calcAccuracy() {
   }
   /* the reference is independent of the divider, so it widens sigma in
      quadrature exactly as it widened the error above */
-  const sigTot = Math.sqrt(sigRatio * sigRatio
-                           + Math.pow(refTot / (isFinite(kSig) && kSig > 0 ? kSig : 3), 2));
+  const sigTot = Math.sqrt(sigRatio * sigRatio + Math.pow(refTot / 3, 2));
   drawDistribution("div-dist", {
     sigma: sigTot, mid: vreg,
     elabel: "output error", vlabel: "regulator V out",
@@ -4835,7 +4859,7 @@ const CALCS = {
      end, after any leg it solved has been written back. */
   div: { calc: calcDivider, inputs: ["div-vin","div-vout","div-r1","div-r2","div-rtot","div-iload","div-series",
                                      "div-tol1","div-tol2","div-tcr1","div-tcr2","div-tmin","div-tmax","div-tnom","div-age",
-                                     "div-vintol","div-vfbtol","div-vfbtc","div-rtemp","div-reg","div-regtemp","div-sig"] },
+                                     "div-vintol","div-vfbtol","div-vfbtc","div-rtemp","div-reg","div-regtemp"] },
   sp:  { calc: calcSP, inputs: ["sp-list","sp-type","sp-v"] },
   led: { calc: calcLED, inputs: ["led-vs","led-vf","led-if","led-r","led-series"] },
   ec:  { calc: calcTolerance, inputs: ["ec-type","ec-val","ec-diel","ec-code","ec-tol","ec-tc","ec-tmin","ec-tmax","ec-tnom","ec-age","ec-life","ec-bias","ec-hyst"] },

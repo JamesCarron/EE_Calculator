@@ -55,6 +55,12 @@
   .chart text.axname { fill: var(--a-ink-muted); font-size: 10px; }
   .chart text.axval { fill: var(--a-ink-secondary); font-size: 10px; }
   .chart text.share { fill: var(--a-ink); font-size: 11px; }
+  /* the tick from a shell label down to the curve it marks */
+  .chart .shellmark { stroke: var(--a-line-strong); stroke-width: 1; fill: none; stroke-dasharray: 2 3; }
+  /* one fixed-width cell per value, so a low/nominal/high row lines up
+     with the row under it instead of drifting with the number widths */
+  .results .c3 { display: inline-block; min-width: 5.2em; text-align: right; }
+  .results .cs { display: inline-block; width: 1.5em; text-align: center; }
   .chart text.tag { fill: var(--a-ink-secondary); font-size: 10px; }
   .chart .knob { fill: var(--a-link); stroke: var(--a-bg-panel); stroke-width: 2; }
   .chart text { fill: var(--a-ink-muted); font-size: 10px; font-family: var(--a-font-mono); }
