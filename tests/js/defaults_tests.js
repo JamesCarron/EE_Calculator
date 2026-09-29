@@ -30,6 +30,13 @@ const CASES = [
     seed: { "via-d": "0.3" }, fields: { "via-tp": "25", "via-h": "1.6", "via-er": "4.3", "via-dt": "10" },
     all: ["via-d", "via-tp", "via-h", "via-pad", "via-anti", "via-er", "via-i", "via-n", "via-arlimit", "via-stub", "via-dt"] },
 
+  { name: "attenuator pad", calc: function () { calcPad(); }, out: "pad-out",
+    // power is only reported once it is given, so it is seeded rather than
+    // left to a default - there is no sensible default watt figure
+    seed: { "pad-a": "10", "pad-zin": "50", "pad-zout": "50", "pad-p": "1" },
+    fields: { "pad-tol": "1" },
+    all: ["pad-a", "pad-zin", "pad-zout", "pad-tol", "pad-p"] },
+
   { name: "fusing current", calc: function () { calcFuse(); }, out: "fu-out",
     seed: { "fu-w": "1", "fu-t": "1" }, fields: { "fu-k": "1", "fu-ta": "25" },
     all: ["fu-w", "fu-t", "fu-k", "fu-ta"] },

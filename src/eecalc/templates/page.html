@@ -426,14 +426,16 @@
       <div class="field"><label for="pad-a">Attenuation (dB)</label><input id="pad-a" inputmode="decimal" placeholder="e.g. 6"></div>
       <div class="field"><label for="pad-zin">Source Z<sub>in</sub> (&Omega;)</label><input id="pad-zin" inputmode="decimal" placeholder="50"></div>
       <div class="field"><label for="pad-zout">Load Z<sub>out</sub> (&Omega;)</label><input id="pad-zout" inputmode="decimal" placeholder="50"></div>
-          <div class="field"><label for="pad-series">E-series</label>
+          <div class="field"><label for="pad-series">E-series (value grid)</label>
         <select id="pad-series" data-mirror="series"><option value="E12">E12 (10 %)</option><option value="E24">E24 (5 %)</option><option value="E96" selected>E96 (1 %)</option></select>
       </div>
+      <div class="field"><label for="pad-tol">Resistor tolerance (%)</label><input id="pad-tol" inputmode="decimal" placeholder="1"></div>
+      <div class="field"><label for="pad-p">Input power (W, optional)</label><input id="pad-p" inputmode="decimal" placeholder="e.g. 100m"></div>
     </div>
     <div class="diagram" id="pad-diagram"></div>
     </div>
     <dl class="results" id="pad-out"></dl>
-    <p class="note">PI and T match <em>any</em> two impedances, not just equal ones, and reduce to the familiar symmetric formulas when Z<sub>in</sub> = Z<sub>out</sub>. Between unequal impedances every topology has a minimum attenuation set by their ratio, 10&middot;log<sub>10</sub>(2r &minus; 1 + 2&radic;(r(r&minus;1))) with r the larger over the smaller; ask for less and no resistive network can match both ends, so use a transformer. A bridged T and a splitter are symmetric only. The delivered attenuation for stock parts is a full transducer-loss calculation against the actual source and load, so it stays right when the impedances differ.</p>
+    <p class="note">PI and T match <em>any</em> two impedances, not just equal ones, and reduce to the familiar symmetric formulas when Z<sub>in</sub> = Z<sub>out</sub>. Between unequal impedances every topology has a minimum attenuation set by their ratio, 10&middot;log<sub>10</sub>(2r &minus; 1 + 2&radic;(r(r&minus;1))) with r the larger over the smaller; ask for less and no resistive network can match both ends, so use a transformer. A bridged T and a splitter are symmetric only. The delivered attenuation for stock parts is a full transducer-loss calculation against the actual source and load, so it stays right when the impedances differ. <b>The E-series picks the value grid and the tolerance is set separately</b>, so an E96 grid does not force a 1 % assumption. The attenuation and power ranges come from evaluating the network at every corner of the tolerance box, each resistor treated as its own part &mdash; so the two arms of a bridged T can pull in opposite directions, which is what sets the real spread. Input power is what the source delivers into the pad&rsquo;s input port.</p>
     <button class="reset" data-reset="pad">Reset</button>
   </div>
 </div>

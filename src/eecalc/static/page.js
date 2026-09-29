@@ -1911,17 +1911,6 @@ function calcAccuracy() {
   if (rTemp) drawErrorBand(k, tol1, tol2, tcr1, tcr2, age, tmin, tmax, tnom);
 
   const pc = function (x) { return (x * 100).toPrecision(3) + " %"; };
-  /* Fixed-width right-aligned cells so the three columns line up down the
-     list - as plain text, "30.94 kOhm" and "9.9 kOhm" started at different
-     widths and R1 and R2 did not align. */
-  const trio = function (lo, mid, hi) {
-    /* the separator gets its own centred cell: sitting directly after a
-       right-aligned value it hugged that value and left a gap before the
-       next, which read as belonging to the left-hand number */
-    const sep = '<span class="cs">…</span>';
-    return '<span class="c3">' + lo + '</span>' + sep + '<span class="c3">' + mid
-           + '</span>' + sep + '<span class="c3">' + hi + "</span>";
-  };
   const pm = function (x) { return (x * 1e6).toFixed(0) + " ppm"; };
   /* Each leg's own spread, referred to the ratio by the (1 - k) sensitivity.
      Reported per term so the reader can see which one dominates, then combined
@@ -3160,23 +3149,53 @@ function padMinLoss(zin, zout) {
 
 /* Branch list for a topology, as [nodeA, nodeB, ohms]. Node 0 is ground, 1 the
    input, 2 the output, 3 an internal node. */
-function padBranches(topo, d) {
-  if (topo === "pi") return [[1, 0, d.sh1], [1, 2, d.ser], [2, 0, d.sh2]];
-  if (topo === "t") return [[1, 3, d.se1], [3, 0, d.sh], [3, 2, d.se2]];
-  if (topo === "bridge") return [[1, 3, d.arm], [3, 2, d.arm], [1, 2, d.bridge], [3, 0, d.sh]];
-  /* the third arm feeds the third port, which is terminated in z0; arm plus
-     termination in series to ground is the same thing seen from the junction */
-  if (topo === "split") return [[1, 3, d.arm], [3, 2, d.arm], [3, 0, d.arm + d.term]];
-  return [[1, 2, d.ser], [2, 0, d.sh]];
+/* One entry per physical resistor: a and b are its nodes (0 is ground, 1 the
+   input, 2 the output), r is the part that carries a tolerance, and fixed is
+   any resistance in the same branch that does not - the splitter's third arm
+   sits in series with the third port's termination, which is external.
+
+   The bridged T's two arms and the splitter's three are separate entries even
+   though they share a value, because they are separate parts and each has its
+   own tolerance. That is what makes an opposing-extremes calculation mean
+   anything. */
+/* Fixed-width right-aligned cells with the separator in its own centred cell,
+   so a low/nominal/high row lines up with the row under it however wide the
+   numbers are. Top level because more than one card lays a range out this way. */
+function trio(lo, mid, hi) {
+  const sep = '<span class="cs">…</span>';
+  return '<span class="c3">' + lo + '</span>' + sep + '<span class="c3">' + mid
+         + '</span>' + sep + '<span class="c3">' + hi + "</span>";
 }
 
-/* Transducer loss of a resistive network driven from zin and loaded by zout:
-   available power from the source over the power actually delivered. Solving
-   the node equations rather than using a per-topology formula means the same
-   routine covers the bridged T and the splitter, and stays correct when the
-   two impedances differ. */
-function padLoss(topo, d, zin, zout) {
-  const N = 3;                               // nodes 1..3
+function padBranches(topo, d) {
+  if (topo === "pi") return [
+    { a: 1, b: 0, r: d.sh1, label: "Shunt, source side" },
+    { a: 1, b: 2, r: d.ser, label: "Series" },
+    { a: 2, b: 0, r: d.sh2, label: "Shunt, load side" }];
+  if (topo === "t") return [
+    { a: 1, b: 3, r: d.se1, label: "Series, source side" },
+    { a: 3, b: 0, r: d.sh, label: "Shunt" },
+    { a: 3, b: 2, r: d.se2, label: "Series, load side" }];
+  if (topo === "bridge") return [
+    { a: 1, b: 3, r: d.arm, label: "Series arm, source side" },
+    { a: 3, b: 2, r: d.arm, label: "Series arm, load side" },
+    { a: 1, b: 2, r: d.bridge, label: "Bridging" },
+    { a: 3, b: 0, r: d.sh, label: "Shunt" }];
+  if (topo === "split") return [
+    { a: 1, b: 3, r: d.arm, label: "Arm, source side" },
+    { a: 3, b: 2, r: d.arm, label: "Arm, output 1" },
+    { a: 3, b: 0, r: d.arm, fixed: d.term, label: "Arm, output 2" }];
+  return [
+    { a: 1, b: 2, r: d.ser, label: "Series" },
+    { a: 2, b: 0, r: d.sh, label: "Shunt" }];
+}
+
+/* Solve the pad at a 1 V source behind zin and return the node voltages, so
+   both the loss and the per-resistor dissipation come from one model rather
+   than from two derivations that can drift apart. `mult` scales each branch's
+   tolerancing part, one entry per branch. */
+function padNodes(topo, d, zin, zout, mult) {
+  const N = 3;
   const G = [[0, 0, 0], [0, 0, 0], [0, 0, 0]];
   const I = [0, 0, 0];
   const add = function (x, y, r) {
@@ -3186,10 +3205,13 @@ function padLoss(topo, d, zin, zout) {
     if (y) G[y - 1][y - 1] += g;
     if (x && y) { G[x - 1][y - 1] -= g; G[y - 1][x - 1] -= g; }
   };
-  padBranches(topo, d).forEach(function (br) { add(br[0], br[1], br[2]); });
-  add(1, 0, zin);                            // source resistance
-  add(2, 0, zout);                           // load
-  I[0] = 1 / zin;                            // 1 V source behind zin
+  const brs = padBranches(topo, d);
+  brs.forEach(function (br, i) {
+    add(br.a, br.b, br.r * (mult ? mult[i] : 1) + (br.fixed || 0));
+  });
+  add(1, 0, zin);
+  add(2, 0, zout);
+  I[0] = 1 / zin;
 
   /* Gaussian elimination on a 3x3 - small enough to be exact and obvious */
   const M = [[G[0][0], G[0][1], G[0][2], I[0]],
@@ -3208,7 +3230,16 @@ function padLoss(topo, d, zin, zout) {
   }
   const v = [0, 0, 0];
   for (let c = 0; c < N; c++) v[c] = Math.abs(M[c][c]) < 1e-15 ? 0 : M[c][N] / M[c][c];
-  const vout = v[1];
+  return { v: v, brs: brs };
+}
+
+/* Transducer loss of a resistive network driven from zin and loaded by zout:
+   available power from the source over the power actually delivered. Solving
+   the node equations rather than using a per-topology formula means the same
+   routine covers the bridged T and the splitter, and stays correct when the
+   two impedances differ. */
+function padLoss(topo, d, zin, zout, mult) {
+  const vout = padNodes(topo, d, zin, zout, mult).v[1];
   const pLoad = vout * vout / zout;
   const pAvail = 1 / (4 * zin);              // from a 1 V source behind zin
   if (!(pLoad > 0)) return Infinity;
@@ -3251,6 +3282,9 @@ function calcPad() {
 
   const d = padDesign(topo, a, zin, zout);
   const R = function (x) { return fmt(x, "\u03a9"); };
+  /* the exact values the equations give, before anything is snapped to a grid
+     - headed, because two more groups follow it */
+  rows.push(["Design values", "", "grp"]);
   if (topo === "pi") {
     rows.push(["Series", R(d.ser)]);
     rows.push(["Shunt, source side", R(d.sh1)]);
@@ -3293,8 +3327,82 @@ function calcPad() {
   const got = padLoss(topo, dn, zin, zout);
   const parts = [];
   for (const k in dn) parts.push(R(dn[k]));
+  rows.push(["Stock parts", "", "grp"]);
   rows.push(["Nearest " + series, parts.join(" \u00b7 ")]);
   rows.push(["Those parts give", got.toFixed(2) + " dB, against " + a.toFixed(2) + " asked for"]);
+
+  /* Every corner of the tolerance box. One entry per physical resistor, so a
+     bridged T has sixteen; the network is monotonic in each resistance over a
+     box this small, so the extremes sit at corners and enumerating them is
+     exact rather than an optimisation. */
+  const tol = numOr("pad-tol", 1, 0, 50) / 100;
+  const nBr = padBranches(topo, dn).length;
+  const corners = [];
+  for (let m = 0; m < (1 << nBr); m++) {
+    const mult = [];
+    for (let i = 0; i < nBr; i++) mult.push(1 + ((m >> i) & 1 ? tol : -tol));
+    corners.push(mult);
+  }
+  if (tol > 0) {
+    let lo = Infinity, hi = -Infinity;
+    corners.forEach(function (mult) {
+      const L = padLoss(topo, dn, zin, zout, mult);
+      if (isFinite(L)) { if (L < lo) lo = L; if (L > hi) hi = L; }
+    });
+    if (isFinite(lo) && isFinite(hi)) {
+      rows.push(["Attenuation at \u00b1" + (tol * 100).toPrecision(3) + " %",
+                 trio(lo.toFixed(2) + " dB", got.toFixed(2) + " dB", hi.toFixed(2) + " dB")]);
+      rows.push(["Spread", "\u00b1" + ((hi - lo) / 2).toFixed(2) + " dB about the nominal"]);
+    }
+  }
+
+  /* Power. The figure entered is what the source delivers into the pad's input
+     port, which is what a link budget gives you. Each leg gets its own min and
+     max across the same corners, because tolerance moves the division between
+     the legs as well as the total. */
+  const pin = val("pad-p");
+  if (isFinite(pin) && pin > 0) {
+    const brs = padBranches(topo, dn);
+    const per = brs.map(function () { return { lo: Infinity, hi: -Infinity, nom: 0 }; });
+    let loadLo = Infinity, loadHi = -Infinity, loadNom = 0;
+    const evaluate = function (mult, keep) {
+      const sol = padNodes(topo, dn, zin, zout, mult);
+      const v = sol.v;
+      const nodeV = function (n) { return n === 0 ? 0 : v[n - 1]; };
+      /* scale so the power entering the pad equals the figure asked for */
+      const vin = nodeV(1);
+      const pPad = (1 - vin) / zin * vin;
+      if (!(pPad > 0)) return;
+      const kP = pin / pPad;
+      sol.brs.forEach(function (br, i) {
+        const rEff = br.r * mult[i] + (br.fixed || 0);
+        const dv = nodeV(br.a) - nodeV(br.b);
+        /* only the tolerancing part dissipates in the component itself; the
+           splitter's series termination is the far port's load, not our part */
+        const pBr = dv * dv / rEff * (br.r * mult[i] / rEff) * kP;
+        if (pBr < per[i].lo) per[i].lo = pBr;
+        if (pBr > per[i].hi) per[i].hi = pBr;
+        if (keep) per[i].nom = pBr;
+      });
+      const vo = nodeV(2);
+      const pL = vo * vo / zout * kP;
+      if (pL < loadLo) loadLo = pL;
+      if (pL > loadHi) loadHi = pL;
+      if (keep) loadNom = pL;
+    };
+    evaluate(brs.map(function () { return 1; }), true);
+    if (tol > 0) corners.forEach(function (mult) { evaluate(mult, false); });
+
+    rows.push(["Power", "", "grp"]);
+    brs.forEach(function (br, i) {
+      rows.push([br.label, trio(fmt(per[i].lo, "W"), fmt(per[i].nom, "W"), fmt(per[i].hi, "W"))]);
+    });
+    const totNom = per.reduce(function (t, p) { return t + p.nom; }, 0);
+    rows.push(["Dissipated in the pad", fmt(totNom, "W") + " of " + fmt(pin, "W") + " in"]);
+    rows.push(["Delivered to the load", trio(fmt(loadLo, "W"), fmt(loadNom, "W"), fmt(loadHi, "W"))]);
+    rows.push(["", "Each leg is shown at its own worst corner, so the three figures in a row do "
+      + "not come from one build \u2014 size every part for its own maximum.", ""]);
+  }
   render("pad-out", rows);
 }
 
@@ -3696,7 +3804,7 @@ const HELP = {
   },
   "pad": {
     "title": "PI, T and L pads",
-    "body": "<p>Attenuation is a voltage ratio, so first convert decibels:</p><span class=\"eq\">N = 10<sup>A/20</sup></span><p>A PI or T pad is symmetric: it presents Z₀ at both ports while attenuating by A, so the source and load both stay matched. That is the whole reason to use a resistive pad rather than a divider.</p><span class=\"eq\">PI: &nbsp; R<sub>series</sub> = Z₀(N² − 1)/(2N), &nbsp; R<sub>shunt</sub> = Z₀(N + 1)/(N − 1)<br>T: &nbsp;&nbsp; R<sub>series</sub> = Z₀(N − 1)/(N + 1), &nbsp; R<sub>shunt</sub> = 2Z₀·N/(N² − 1)</span><p>Both give the same attenuation and the same match; choose whichever lands closer to values you can buy. At small attenuations the T pad's series resistors get very small and the PI pad's shunt resistors get very large, and vice versa at large attenuations.</p><p><b>An L pad</b> matches two <i>different</i> impedances, and cannot do so at an arbitrary attenuation. There is a minimum loss set purely by the impedance ratio:</p><span class=\"eq\">A<sub>min</sub> = 20·log₁₀(√(Z1/Z2) + √(Z1/Z2 − 1))</span><p>which is about 5.7 dB for 75 Ω to 50 Ω. Ask for less and no resistive network can match both ends; you need a transformer or a matching network.</p><p><b>Remember what a pad costs.</b> It is resistive, so it attenuates signal and noise together and adds thermal noise of its own — a 10 dB pad ahead of a receiver raises the system noise figure by 10 dB. Pads belong after gain, not before it.</p>"
+    "body": "<p>Attenuation is a voltage ratio, so first convert decibels:</p><span class=\"eq\">N = 10<sup>A/20</sup></span><p>A PI or T pad is symmetric: it presents Z₀ at both ports while attenuating by A, so the source and load both stay matched. That is the whole reason to use a resistive pad rather than a divider.</p><span class=\"eq\">PI: &nbsp; R<sub>series</sub> = Z₀(N² − 1)/(2N), &nbsp; R<sub>shunt</sub> = Z₀(N + 1)/(N − 1)<br>T: &nbsp;&nbsp; R<sub>series</sub> = Z₀(N − 1)/(N + 1), &nbsp; R<sub>shunt</sub> = 2Z₀·N/(N² − 1)</span><p>Both give the same attenuation and the same match; choose whichever lands closer to values you can buy. At small attenuations the T pad's series resistors get very small and the PI pad's shunt resistors get very large, and vice versa at large attenuations.</p><p><b>An L pad</b> matches two <i>different</i> impedances, and cannot do so at an arbitrary attenuation. There is a minimum loss set purely by the impedance ratio:</p><span class=\"eq\">A<sub>min</sub> = 20·log₁₀(√(Z1/Z2) + √(Z1/Z2 − 1))</span><p>which is about 5.7 dB for 75 Ω to 50 Ω. Ask for less and no resistive network can match both ends; you need a transformer or a matching network.</p><p><b>Remember what a pad costs.</b> It is resistive, so it attenuates signal and noise together and adds thermal noise of its own — a 10 dB pad ahead of a receiver raises the system noise figure by 10 dB. Pads belong after gain, not before it.</p><p><b>The E-series and the tolerance are separate choices.</b> The series decides which values exist to buy; the tolerance decides how far the part you buy may sit from the one printed on it. E96 parts are commonly 1 %, but 0.1 % and 0.5 % parts are made on the same grid and 5 % parts are cheaper on it than off it, so the card asks for both rather than inferring one from the other.</p><p><b>The attenuation window is found by enumeration, not by a sensitivity formula.</b> Each resistor is a separate part with its own tolerance, so an n-resistor pad has 2<sup>n</sup> corners — four for an L pad, sixteen for a bridged T. Over a box this small the transfer function is monotonic in every resistance, so the extremes must lie at corners and evaluating all of them is exact. The two arms of a bridged T are counted separately even though they share a value: they are two parts, and the worst case is one high while the other is low.</p><p><b>Power.</b> The figure you enter is what the source delivers into the pad's input port, which is what a link budget hands you — not the source's available power, which would be larger by whatever mismatch exists. Each leg's dissipation comes from the same node solution as the loss, so the legs plus the load always sum to the input.</p><p><b>Each leg is shown at its own worst corner</b>, so the three figures across a row do not come from one build and the maxima do not sum to anything meaningful. That is deliberate: you size each resistor against the worst it will ever see, and the corner that maximises one leg is generally not the corner that maximises the next. A symmetric pad hides this — asymmetric ones, and the input-side shunt of a PI pad in particular, do not. In a 10 dB 50 Ω PI pad the source-side shunt takes over half the input power and the load-side shunt about 5 %, so they are not the same part.</p>"
   },
   "tw": {
     "title": "Trace width and current",
@@ -4849,7 +4957,7 @@ function calcIEC() {
 const CALCS = {
   th:  { calc: calcThermal, inputs: ["th-p","th-jc","th-cs","th-sa","th-ja","th-tjmax","th-tjtarget","th-tj","th-ta"] },
   pdn: { calc: calcPDN, inputs: ["pdn-v","pdn-ripple","pdn-i","pdn-tr","pdn-fmax"] },
-  pad: { calc: calcPad, inputs: ["pad-topo","pad-a","pad-zin","pad-zout","pad-series"] },
+  pad: { calc: calcPad, inputs: ["pad-topo","pad-a","pad-zin","pad-zout","pad-series","pad-tol","pad-p"] },
   ee:  { calc: calcEreff, inputs: ["ee-w","ee-h","ee-er","ee-f","ee-oz"] },
   dp:  { calc: calcDiff, inputs: ["dp-struct","dp-w","dp-s","dp-h","dp-er","dp-target","dp-oz"] },
   bat: { calc: calcBattery, inputs: ["bat-chem","bat-mah","bat-vfull","bat-v","bat-vmin","bat-s","bat-p","bat-load","bat-loadunit","bat-usable","bat-crate"] },
