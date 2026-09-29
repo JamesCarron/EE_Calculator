@@ -81,6 +81,12 @@
   .results { display: grid; grid-template-columns: max-content 1fr; gap: .35rem 1.2rem; margin-top: 1.1rem; font-size: var(--a-text-sm); }
   .results dt { color: var(--a-ink-secondary); margin: 0; }
   .results dd { margin: 0; font-family: var(--a-font-mono); }
+  /* a group heading spans both columns; the rule above it does the separating,
+     so the label itself stays quiet */
+  .results dt.grp { grid-column: 1 / -1; margin-top: .55rem; padding-top: .5rem;
+    border-top: var(--a-border) solid var(--a-line); color: var(--a-ink);
+    font-weight: 600; font-size: var(--a-text-xs); letter-spacing: .02em; }
+  .results dt.grp:first-child { margin-top: 0; padding-top: 0; border-top: 0; }
   /* A secondary question folded into a card: closed by default, so the card
      reads as it did before, and the marker is the only affordance needed. */
   .foldout { margin-top: 1.1rem; border-top: var(--a-border) solid var(--a-line); }

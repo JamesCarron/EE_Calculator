@@ -64,9 +64,11 @@ console.log("\n== the regulator switch changes what is plotted ==");
    sigma is 0.5679 % - the 3 sigma end is +1.70 % and Vout 3.356. */
 feedback(); calcDivider();
 shows("with the regulator on the axis is the output error", "div-dist", /output error/);
-shows("scaled by the combined sigma", "div-dist", /\+1\.70%/);
+/* the reference now joins in quadrature rather than being added, so the
+   combined sigma is 0.500 % and three sigma is +1.50 % */
+shows("scaled by the combined sigma", "div-dist", /\+1\.50%/);
 shows("and the volts axis is the regulator output", "div-dist", /regulator V out/);
-shows("reading 3.356 V at three sigma", "div-dist", /3\.356/);
+shows("reading 3.350 V at three sigma", "div-dist", /3\.350/);
 
 /* off: ratio sigma 0.3571 %, so +1.07 % and the divider's own 0.8086 V */
 set("div-reg", "off"); calcDivider();

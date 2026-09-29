@@ -110,7 +110,7 @@ set("div-tcr1","100"); set("div-tcr2","100"); set("div-tmin","-40"); set("div-tm
 calcAccuracy();
 const tcrRow = rows("div-tol-out").filter(function (r) { return r[0].indexOf("TCR contribution") === 0; })[0];
 console.log("  TCR row:", JSON.stringify(tcrRow));
-eq("matched TCR cancels", tcrRow[1].indexOf("0 % if the parts truly track") >= 0, true);
+eq("matched TCR cancels", tcrRow[1].indexOf("cancelling entirely if the parts track") >= 0, true);
 
 /* The tolerance fold lives inside the divider card and has no R1/R2/Vin of its
    own. These three cover what the merge actually bought, and what it risks. */
@@ -159,15 +159,15 @@ set("div-vin","3.3"); set("div-vout","0.8"); set("div-r1","31.25k"); set("div-r2
 calcDivider();
 /* the reference lands on the output one for one, so worst case simply adds */
 eq("reference tolerance adds to the ratio error",
-   /3\.52/.test(regRow("Regulator output error — worst case")[1]), true);
-eq("RSS combines them in quadrature, not linearly",
-   /1\.62/.test(regRow("Regulator output error — RSS")[1]), true);
+   /1\.62/.test(regRow("Regulator output error")[1]), true);
+eq("and the reference joins in quadrature, not linearly",
+   parseFloat(regRow("Regulator output error")[1].replace(/[^0-9.]/g, "")) < 2.28, true);
 eq("the output window is reported in volts",
-   /3\.18\d* V … 3\.41\d* V/.test(regRow("Regulator output window")[1]), true);
+   /3\.24\d* V … 3\.35\d* V/.test(regRow("Regulator output window")[1]), true);
 
 /* sign check: a worse reference can only widen the output error, and once it
    passes the divider it becomes the term that decides the answer */
-const wcOf = function () { return parseFloat(regRow("Regulator output error — worst case")[1].replace(/[^0-9.]/g, "")); };
+const wcOf = function () { return parseFloat(regRow("Regulator output error")[1].replace(/[^0-9.]/g, "")); };
 const onePct = wcOf();
 set("div-vfbtol","3"); calcDivider();
 eq("a worse reference widens the output error", wcOf() > onePct, true);
@@ -182,18 +182,19 @@ eq("a precision reference hands dominance back to the divider",
 clearAll(DIVREG); clearAll(["div-vintol"]);
 set("div-rtemp","on"); set("div-regtemp","off");
 set("div-vin","12"); set("div-r1","10k"); set("div-r2","4k7"); calcDivider();
-const noSrc = regRow("Vout worst-case window")[1];
+const noSrc = regRow("Vout window")[1];
 eq("with no source tolerance the window is the ratio alone",
-   /3\.75\d* V … 3\.92\d* V/.test(noSrc), true);
-eq("and no source breakdown row is shown", regRow("Vout error — worst case"), undefined);
+   /3\.79\d* V … 3\.88\d* V/.test(noSrc), true);
+eq("and no source breakdown row is shown", regRow("Vout error"), undefined);
 
 set("div-vintol","5"); calcDivider();
-eq("the source tolerance adds to the ratio error",
-   /7\.26/.test(regRow("Vout error — worst case")[1]), true);
-eq("RSS combines them in quadrature", /5\.13/.test(regRow("Vout error — RSS")[1]), true);
+/* in quadrature now: sqrt(1.147 %^2 + 5 %^2) = 5.13 %, not the 6.15 % of
+   adding them */
+eq("the source tolerance joins the ratio error",
+   /5\.13/.test(regRow("Vout error")[1]), true);
 /* fmt trims trailing zeros, so 4.1195 prints as 4.12 rather than 4.120 */
 eq("and the window widens to match",
-   /3\.56\d* V … 4\.12/.test(regRow("Vout worst-case window")[1]), true);
+   /3\.64\d* V … 4\.03\d*/.test(regRow("Vout window")[1]), true);
 
 /* It must not leak into the regulator block, where the divider's top IS the
    computed output and adding the same spread again would count it twice.
@@ -203,12 +204,12 @@ clearAll(DIVREG); clearAll(["div-vintol"]);
 set("div-rtemp","on"); set("div-regtemp","off");
 set("div-vin","3.3"); set("div-vout","0.8"); set("div-r1","31.25k"); set("div-r2","10k");
 set("div-vintol","5"); calcDivider();
-const regWcRow = regRow("Regulator output error — worst case")[1];
-eq("the regulator rows ignore it", /±3\.52/.test(regWcRow), true);
-eq("rather than adding it on top", /±8\.5/.test(regWcRow), false);
+const regWcRow = regRow("Regulator output error")[1];
+eq("the regulator rows ignore it", /±1\.62/.test(regWcRow), true);
+eq("rather than combining it in", /±5\./.test(regWcRow), false);
 /* rows() strips markup, so the note reads Vin rather than V<sub>in</sub> */
 eq("and the card says why rather than leaving it to be guessed",
-   rows("div-tol-out").some(function (r) { return /ignore the Vin tolerance/.test(r[1]); }), true);
+   rows("div-tol-out").some(function (r) { return /ignores the Vin tolerance/.test(r[1]); }), true);
 
 /* The two temperature effects switch independently. On 31.25k/10k with 1 %
    parts, ratio worst case is 1.5230 % with resistor drift off and 2.5214 %
@@ -225,26 +226,26 @@ eq("resistor drift off by default is the shipped state",
    document.getElementById("div-rtemp").checked, false);
 eq("and the regulator reading is on by default",
    document.getElementById("div-reg").checked, true);
-eq("both off is tolerance only", /±2\.52/.test(regRow("Regulator output error — worst case")[1]), true);
-eq("and the excluded resistor term is stated, not dropped",
-   /excluded/.test(regRow("Resistor TCR")[1]), true);
-eq("as is the excluded reference term", /excluded/.test(regRow("Reference drift")[1]), true);
+eq("both off is tolerance only", /±1\.47/.test(regRow("Regulator output error")[1]), true);
+/* a switched-off term is absent now, not carried as an "excluded" row */
+eq("the resistor TCR row is gone entirely", regRow("Resistor TCR"), undefined);
+eq("and so is the reference drift row", regRow("Reference drift"), undefined);
 
 setSw("off", "on");
-eq("the reference drift alone adds 0.325 %", /±2\.85/.test(regRow("Regulator output error — worst case")[1]), true);
-eq("and is reported against its initial tolerance",
-   /0\.325 % on top of its ±1\.00 %/.test(regRow("Reference drift over")[1]), true);
+eq("the reference drift alone widens it to 1.50 %", /±1\.50/.test(regRow("Regulator output error")[1]), true);
+eq("and appears as its own row once switched on",
+   /0\.325/.test(regRow("Reference drift over")[1]), true);
 
 setSw("on", "on");
-eq("both on gives the full figure", /±3\.85/.test(regRow("Regulator output error — worst case")[1]), true);
+eq("both on gives the full figure", /±1\.65/.test(regRow("Regulator output error")[1]), true);
 
 setSw("on", "off");
-eq("resistor drift alone", /±3\.52/.test(regRow("Regulator output error — worst case")[1]), true);
+eq("resistor drift alone", /±1\.62/.test(regRow("Regulator output error")[1]), true);
 
 /* monotonic: switching either effect on can only widen the budget */
 const wcFor = function (r, g) {
   setSw(r, g);
-  return parseFloat(regRow("Regulator output error — worst case")[1].replace(/[^0-9.]/g, ""));
+  return parseFloat(regRow("Regulator output error")[1].replace(/[^0-9.]/g, ""));
 };
 eq("neither switch can narrow the budget",
    wcFor("off","off") <= wcFor("off","on") && wcFor("off","on") <= wcFor("on","on"), true);

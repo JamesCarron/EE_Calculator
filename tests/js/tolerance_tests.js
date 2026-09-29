@@ -40,20 +40,21 @@ console.log("\n== resistor: the three sources add up ==");
 setType("R"); set("ec-val", "10k"); calcTolerance();
 near("1 % tolerance", pctOf("Initial tolerance"), 0.01, 0.5);
 near("100 ppm over the wider 65 degree leg", pctOf("^Temperature"), 0.0065, 0.5);
-near("worst case is the sum", pctOf("Worst case"), 0.0165, 0.5);
-near("RSS is the root sum square", pctOf("RSS$"), Math.sqrt(0.01 * 0.01 + 0.0065 * 0.0065), 0.5);
-eq("RSS is never worse than worst case", pctOf("RSS$") <= pctOf("Worst case"), true);
+/* the total is the quadrature combination now that the linear sum has gone:
+   sqrt(1 %^2 + 0.65 %^2) = 1.193 %, not the 1.65 % of adding them */
+near("the total is the root sum square", pctOf("^Total"), Math.sqrt(0.01 * 0.01 + 0.0065 * 0.0065), 0.5);
+eq("which is smaller than adding the terms", pctOf("^Total") < 0.0165, true);
 has("the range is given in the component's own unit", /kΩ/);
 
-/* one contribution alone: the two methods must agree exactly */
+/* one contribution alone: quadrature of a single term is that term */
 setType("R"); set("ec-val", "1k"); set("ec-tc", "0"); calcTolerance();
-near("with a single term, RSS equals worst case", pctOf("RSS$"), pctOf("Worst case"), 0.01);
+near("a single term passes through untouched", pctOf("^Total"), pctOf("Initial tolerance"), 0.01);
 
 /* monotonic in temperature span */
 setType("R"); set("ec-val", "1k"); set("ec-tmax", "85"); calcTolerance();
-const narrow = pctOf("Worst case");
+const narrow = pctOf("^Total");
 setType("R"); set("ec-val", "1k"); set("ec-tmax", "125"); calcTolerance();
-eq("a wider temperature range can only widen the budget", pctOf("Worst case") > narrow, true);
+eq("a wider temperature range can only widen the budget", pctOf("^Total") > narrow, true);
 
 console.log("\n== EIA codes are decoded, not looked up ==");
 setType("C", "X7R"); set("ec-val", "100n"); calcTolerance();
@@ -91,19 +92,23 @@ near("40 % loss subtracts 40 %", minusOf("DC bias"), 0.40, 0.5);
 eq("and never adds", pctOf("DC bias"), 0);
 
 console.log("\n== a budget that eats the whole part says so ==");
-setType("C", "Y5V"); set("ec-val", "10u"); set("ec-bias", "40"); calcTolerance();
-has("the low end is clamped at zero", /"Worst-case range","0 to/);
-has("with the reason given", /worst case leaves nothing/);
+/* 40 % bias no longer reaches the clamp: in quadrature Y5V and 40 % come to
+   0.912, not over 1. It takes 95 % to get there, which is why this branch is
+   close to unreachable with real parts now. */
+setType("C", "Y5V"); set("ec-val", "10u"); set("ec-bias", "95"); calcTolerance();
+has("the low end is clamped at zero", /"Range","0 to/);
+has("with the reason given", /low end clamps/);
 
 console.log("\n== crystal: everything in ppm, answer in hertz ==");
 setType("X"); set("ec-val", "16M"); calcTolerance();
 near("20 ppm initial", pctOf("Initial tolerance"), 20e-6, 1);
 near("30 ppm over temperature", pctOf("stability"), 30e-6, 1);
 near("3 ppm/year for ten years", pctOf("^Ageing"), 30e-6, 1);
-near("80 ppm all told", pctOf("Worst case"), 80e-6, 1);
-has("the window is whole hertz, which 4 figures cannot show", /15,998,720 to 16,001,280 Hz/);
+/* 20, 30 and 30 ppm in quadrature is 46.9 ppm, not the 80 of adding them */
+near("46.9 ppm all told", pctOf("^Total"), 46.9e-6, 2);
+has("the window is whole hertz, which 4 figures cannot show", /15,999,250 to 16,000,750 Hz/);
 eq("the window is symmetric about nominal", (function () {
-  const r = rows("ec-out").find(function (q) { return /Worst-case window/.test(q[0]); })[1];
+  const r = rows("ec-out").find(function (q) { return /^Window/.test(q[0]); })[1];
   const n = r.match(/[\d,]+/g).map(function (v) { return parseInt(v.replace(/,/g, ""), 10); });
   return (n[0] + n[1]) / 2;
 })(), 16000000);

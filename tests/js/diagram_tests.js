@@ -43,7 +43,9 @@ calcAccuracy();
 eq("no divider, no band", drawn("div-tol-graph"), false);
 set("div-r1", "10k"); set("div-r2", "10k"); calcAccuracy();
 eq("a divider gets a band", drawn("div-tol-graph"), true);
-eq("both estimates are labelled", shows("div-tol-graph", /worst case/) && shows("div-tol-graph", /RSS/), true);
+/* one series now that the linear bound has gone, so there is nothing to
+   tell apart and no legend to draw */
+eq("a single unlabelled series", shows("div-tol-graph", /class="tag"/), false);
 eq("the band is drawn, not implied", shows("div-tol-graph", /class="band"/), true);
 /* the band plots ratio against temperature, so with resistor drift switched
    off there is nothing for it to plot and it must not be left on screen */

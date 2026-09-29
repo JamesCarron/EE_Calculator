@@ -63,9 +63,13 @@ function val(id) {
   return v;
 }
 
+/* A row is [label, value, class]. Class "grp" makes it a heading spanning both
+   columns instead, so a long results list can be grouped by what the reader is
+   asking rather than left as one flat run of twenty lines. */
 function render(id, rows) {
   const dl = document.getElementById(id);
   dl.innerHTML = rows.map(function (r) {
+    if (r[2] === "grp") return '<dt class="grp">' + r[0] + "</dt>";
     return "<dt>" + r[0] + "</dt><dd" + (r[2] ? ' class="' + r[2] + '"' : "") + ">" + r[1] + "</dd>";
   }).join("");
 }
@@ -1168,9 +1172,10 @@ const MINI = {};
 function miniPlot(hostId, spec) {
   /* MT leaves a line above the plot for the unit, which otherwise lands on
      top of the highest y tick label */
-  /* MR has to hold the longest direct label, because the series are labelled at
-     the end of the curve rather than in a legend. At 62 it was two pixels short
-     of "worst case" and clipped the final character. */
+  /* MR has to hold the longest direct label, because a series is labelled at
+     the end of its curve rather than in a legend. 62 was two pixels short of
+     the longest label this page has ever carried, and clipped its last
+     character; the margin stays generous so the next one fits too. */
   const W = 520, H = 198, ML = 54, MR = 72, MT = 26, MB = 32;
   const pw = W - ML - MR, ph = H - MT - MB;
   const all = [];
@@ -1213,9 +1218,14 @@ function miniPlot(hostId, spec) {
     let d = "M";
     se.pts.forEach(function (q, i) { d += (i ? " L" : "") + X(q[0]).toFixed(1) + " " + Y(q[1]).toFixed(1); });
     out.push('<path class="curve' + (se.alt ? " alt" : "") + '" d="' + d + '"/>');
-    const last = se.pts[se.pts.length - 1];
-    out.push('<text class="tag" x="' + (X(last[0]) + 6).toFixed(1) + '" y="' + (Y(last[1]) + 3.5).toFixed(1) +
-             '">' + se.name + "</text>");
+    /* A lone series needs no direct label - the card heading names it - and
+       labelling it anyway printed the literal word "undefined" on the chart
+       once the second series was removed. */
+    if (se.name) {
+      const last = se.pts[se.pts.length - 1];
+      out.push('<text class="tag" x="' + (X(last[0]) + 6).toFixed(1) + '" y="' + (Y(last[1]) + 3.5).toFixed(1) +
+               '">' + se.name + "</text>");
+    }
   });
   (spec.hlines || []).forEach(function (m) {
     out.push('<path class="hair" d="M' + ML + " " + Y(m.at).toFixed(1) + " H" + (ML + pw) + '"/>');
@@ -1384,28 +1394,25 @@ function drawFusePlot(aCmil, ta, kOn, tNow) {
 
    Tolerance sets the width of the band at T nominal; TCR opens it out either
    side. Seeing the wedge is what makes the case for matched parts over tight
-   parts. No crosshair here: the band is two series wide and the extremes,
-   which are the numbers anyone acts on, are already in the results list. */
+   parts. One series now that the linear worst-case bound has gone from the
+   tool, so no legend is needed either. No crosshair: the numbers anyone acts
+   on are already in the results list. */
 
 function drawErrorBand(k, tol1, tol2, tcr1, tcr2, age, tmin, tmax, tnom) {
   const N = 41;
-  const hi = [], lo = [], rssHi = [], rssLo = [];
+  const hi = [], lo = [];
   for (let i = 0; i < N; i++) {
     const T = tmin + (tmax - tmin) * i / (N - 1);
     const dT = Math.abs(T - tnom);
-    const d1 = tol1 + Math.abs(tcr1) * 1e-6 * dT + age;
-    const d2 = tol2 + Math.abs(tcr2) * 1e-6 * dT + age;
-    const wc = (1 - k) * (d1 + d2) * 100;
     const s1 = Math.sqrt(tol1 * tol1 + Math.pow(Math.abs(tcr1) * 1e-6 * dT, 2) + age * age);
     const s2 = Math.sqrt(tol2 * tol2 + Math.pow(Math.abs(tcr2) * 1e-6 * dT, 2) + age * age);
     const rs = (1 - k) * Math.sqrt(s1 * s1 + s2 * s2) * 100;
-    hi.push([T, wc]); lo.push([T, -wc]);
-    rssHi.push([T, rs]); rssLo.push([T, -rs]);
+    hi.push([T, rs]); lo.push([T, -rs]);
   }
   const peak = Math.max(hi[0][1], hi[N - 1][1]);
   const step = peak / 2;
   miniPlot("div-tol-graph", {
-    series: [{ pts: hi, name: "worst case" }, { pts: rssHi, name: "RSS", alt: true }],
+    series: [{ pts: hi }],
     band: [hi, lo],
     yMin: -peak * 1.1, yMax: peak * 1.1,
     xTicks: [{ at: tmin, label: tmin.toFixed(0) + " \u00b0C" },
@@ -1659,20 +1666,20 @@ function calcTolerance() {
     if (hyst > 0) parts.push(["Thermal hysteresis", hyst * 1e-6, hyst * 1e-6]);
   }
 
-  let wcP = 0, wcM = 0, ssP = 0, ssM = 0;
-  const rows = [];
+  let ssP = 0, ssM = 0;
+  const rows = [["Contributions", "", "grp"]];
   parts.forEach(function (q) {
-    wcP += q[1]; wcM += q[2];
     ssP += q[1] * q[1]; ssM += q[2] * q[2];
     rows.push([q[0], (q[1] === q[2] ? "\u00b1" + pct(q[1]) : "+" + pct(q[1]) + " / \u2212" + pct(q[2]))]);
   });
   const rssP = Math.sqrt(ssP), rssM = Math.sqrt(ssM);
 
-  rows.push(["Worst case", band(wcP, wcM)]);
-  rows.push(["RSS", band(rssP, rssM)]);
+  rows.push(["Combined", "", "grp"]);
+  rows.push(["Total", band(rssP, rssM)]);
 
   if (isFinite(nominal) && nominal > 0) {
     rows.unshift(["Nominal", fmt(nominal, t.unit)]);
+    rows.unshift(["Part", "", "grp"]);
     if (xtal) {
       /* Four significant figures cannot resolve tens of ppm on a megahertz
          part - it would print "16 MHz to 16 MHz" - so a crystal gets whole
@@ -1681,21 +1688,18 @@ function calcTolerance() {
         return Math.round(nominal * (1 - m)).toLocaleString("en-GB") + " to " +
                Math.round(nominal * (1 + pl)).toLocaleString("en-GB") + " Hz";
       };
-      rows.push(["Worst-case window", win(wcM, wcP)]);
-      rows.push(["RSS window", win(rssM, rssP)]);
+      rows.push(["Window", win(rssM, rssP)]);
     } else {
       /* Contributions are summed, so a stack of large ones can subtract more
          than the whole part. Clamping and saying so beats printing a negative
          capacitance as though it meant something. */
-      const gone = wcM >= 1;
-      rows.push(["Worst-case range", (gone ? "0" : fmt(nominal * (1 - wcM), t.unit)) +
-                 " to " + fmt(nominal * (1 + wcP), t.unit)]);
-      rows.push(["RSS range", fmt(Math.max(0, nominal * (1 - rssM)), t.unit) + " to " +
-                 fmt(nominal * (1 + rssP), t.unit)]);
+      const gone = rssM >= 1;
+      rows.push(["Range", (gone ? "0" : fmt(nominal * (1 - rssM), t.unit)) +
+                 " to " + fmt(nominal * (1 + rssP), t.unit)]);
       if (gone) {
-        rows.push(["", "The negative contributions total more than the whole value, so worst case leaves nothing. " +
-                   "Stacking every limit this far is past the point of being useful — work from the RSS figure, or from " +
-                   "the manufacturer’s own curves for the conditions you actually have.", "warn"]);
+        rows.push(["", "The negative contributions combine to more than the whole value, so the low end clamps "
+                   + "at zero. A stack this deep is past the point of being useful — work from the "
+                   + "manufacturer’s own curves for the conditions you actually have.", "warn"]);
       }
     }
   }
@@ -1733,8 +1737,8 @@ function band(plus, minus) {
    consequences worth seeing: the (1-k) factor means a lightly-dividing
    network is inherently more accurate than a heavy one, and matched parts
    with a common TCR contribute nothing at all, because their drift cancels
-   in the difference. Worst case here is exact rather than first-order --
-   both legs are evaluated at their opposing extremes. */
+   in the difference. The contributions are combined in quadrature, as
+   independent terms; this tool does not report a linear sum of the limits. */
 
 /* The tolerance fold inside the divider card. It takes R1, R2 and Vin from the
    divider itself rather than asking for them again, so a pair the solver chose
@@ -1754,11 +1758,9 @@ function band(plus, minus) {
    additively rather than in quadrature, and screens parts to the limit. So the
    bound is real and attainable; only its rarity within the bound is modelled.
 
-   Capped at three sigma and nothing beyond it is drawn or named. The worst
-   case lands outside that - 4.26 sigma for the ratio alone, 5.16 with the
-   reference - and pointing at it from inside the plot only invited the reader
-   to compare two things drawn at different scales. The results list carries
-   the worst case in full.
+   Capped at three sigma and nothing beyond it is drawn or named. Three sigma
+   is where the shells end, so the plot fills its own box, and the cumulative
+   row underneath answers the question the chart exists for.
 
    One curve, always the current settings. An overlaid comparison made the
    reader work out which curve they were looking at before they could read
@@ -1878,15 +1880,12 @@ function calcAccuracy() {
   show("div-f-tnom", rTemp || regTemp);
   const drift1 = rTemp ? Math.abs(tcr1) * 1e-6 * dT : 0;
   const drift2 = rTemp ? Math.abs(tcr2) * 1e-6 * dT : 0;
-  const d1 = tol1 + drift1 + age, d2 = tol2 + drift2 + age;   // worst-case relative spread per leg
+  /* the guaranteed window on each part, which is what the R1 and R2 spread
+     rows report - the part's own limit, not a combined error figure */
+  const d1 = tol1 + drift1 + age, d2 = tol2 + drift2 + age;
   const k = r2 / (r1 + r2);
 
-  // exact worst case: legs pushed to opposing extremes
-  const kLo = (r2 * (1 - d2)) / (r1 * (1 + d1) + r2 * (1 - d2));
-  const kHi = (r2 * (1 + d2)) / (r1 * (1 - d1) + r2 * (1 + d2));
-  const wc = Math.max(Math.abs(kHi / k - 1), Math.abs(kLo / k - 1));
-
-  // RSS: contributions treated as independent
+  // contributions treated as independent and combined in quadrature
   const s1 = Math.sqrt(tol1 * tol1 + drift1 * drift1 + age * age);
   const s2 = Math.sqrt(tol2 * tol2 + drift2 * drift2 + age * age);
   const rss = (1 - k) * Math.sqrt(s1 * s1 + s2 * s2);
@@ -1899,53 +1898,47 @@ function calcAccuracy() {
 
   const pc = function (x) { return (x * 100).toPrecision(3) + " %"; };
   const pm = function (x) { return (x * 1e6).toFixed(0) + " ppm"; };
+  /* Each leg's own spread, referred to the ratio by the (1 - k) sensitivity.
+     Reported per term so the reader can see which one dominates, then combined
+     in quadrature - the terms are independent, and a linear sum of them is the
+     conservative bound this tool deliberately no longer quotes. */
+  const each = (1 - k) * tol1;
   const rows = [
+    ["Ratio", "", "grp"],
     ["Nominal ratio", k.toPrecision(5) + " (" + pc(k) + " of V<sub>in</sub>)"],
-    ["Tolerance contribution", "±" + pc((1 - k) * (tol1 + tol2)) + " worst case"]
+    ["Tolerance contribution", "±" + pc((1 - k) * tol1) + " and ±" + pc((1 - k) * tol2) + " per leg"]
   ];
-  /* An excluded term is stated rather than silently dropped: a results list
-     that is quietly missing a contribution is how a budget gets believed. */
+  /* A term that is switched off is simply absent - no placeholder row. */
   if (rTemp) {
     rows.push(["TCR contribution over ΔT " + dT.toFixed(0) + " °C",
-      "±" + pc((1 - k) * (drift1 + drift2)) + " worst case, " +
-      (tcr1 === tcr2 ? "0 % if the parts truly track" : "±" + pc((1 - k) * Math.abs(tcr2 - tcr1) * 1e-6 * dT) + " if they track")]);
-  } else {
-    rows.push(["Resistor TCR", "excluded — the figures below are at one temperature only"]);
+      "±" + pc((1 - k) * drift1) + " and ±" + pc((1 - k) * drift2) + " per leg" +
+      (tcr1 === tcr2 ? ", cancelling entirely if the parts track" : "")]);
   }
-  if (age > 0) rows.push(["Ageing contribution", "±" + pc((1 - k) * 2 * age) + " worst case"]);
-  rows.push(["Total ratio error — worst case", "±" + pc(wc) + " (±" + pm(wc) + ")"]);
-  rows.push(["Total ratio error — RSS", "±" + pc(rss) + " (±" + pm(rss) + ")"]);
-  /* A tolerance on the voltage feeding the top of the divider. It passes
-     straight through, because the midpoint is just Vin scaled by k, so the
-     relative errors add. Defaults to zero: a source with no stated spread
-     contributes none, and silently widening the window would be worse than
-     saying nothing. */
+  if (age > 0) rows.push(["Ageing contribution", "±" + pc((1 - k) * age) + " per leg"]);
+  rows.push(["Total ratio error", "±" + pc(rss) + " (±" + pm(rss) + ")"]);
+  rows.push(["Ratio resolved to", Math.max(0, Math.log2(1 / (2 * rss))).toFixed(1) + " bits"]);
+
   const vinTol = num("div-vintol", 0) / 100;
+  /* the source's own spread passes straight through the ratio, and is
+     independent of it, so it joins in quadrature like everything else */
+  const outErr = Math.sqrt(rss * rss + vinTol * vinTol);
   if (isFinite(vin) && vin > 0) {
+    rows.push(["Divider output", "", "grp"]);
     rows.push(["V<sub>out</sub> nominal", fmt(vin * k, "V")]);
     if (vinTol > 0) {
-      rows.push(["V<sub>out</sub> error — worst case",
-                 "±" + pc(wc + vinTol) + " — ratio ±" + pc(wc) + " plus source ±" + pc(vinTol)]);
-      rows.push(["V<sub>out</sub> error — RSS", "±" + pc(Math.sqrt(rss * rss + vinTol * vinTol))]);
+      rows.push(["V<sub>out</sub> error", "±" + pc(outErr) + " — ratio ±" + pc(rss) + " with source ±" + pc(vinTol)]);
     }
-    rows.push(["V<sub>out</sub> worst-case window",
-               fmt(vin * (1 - vinTol) * kLo, "V") + " … " + fmt(vin * (1 + vinTol) * kHi, "V")]);
+    rows.push(["V<sub>out</sub> window", fmt(vin * k * (1 - outErr), "V") + " … " + fmt(vin * k * (1 + outErr), "V")]);
   }
-  rows.push(["Effective bits", "ratio resolved to " + Math.max(0, Math.log2(1 / (2 * wc))).toFixed(1) + " bits worst case"]);
-  rows.push(["R1 spread", fmt(r1 * (1 - d1), "Ω") + " … " + fmt(r1 * (1 + d1), "Ω")]);
-  rows.push(["R2 spread", fmt(r2 * (1 - d2), "Ω") + " … " + fmt(r2 * (1 + d2), "Ω")]);
 
-  /* Read as a regulator feedback network: the divider's top is the regulator
-     output and its midpoint is the feedback pin, so
+  /* Reference information rather than an answer, so it goes last on whichever
+     path runs - pushed here it sat between the divider and regulator groups. */
+  const partRows = [
+    ["Components", "", "grp"],
+    ["R1 spread", fmt(r1 * (1 - d1), "Ω") + " … " + fmt(r1 * (1 + d1), "Ω")],
+    ["R2 spread", fmt(r2 * (1 - d2), "Ω") + " … " + fmt(r2 * (1 + d2), "Ω")]
+  ];
 
-         Vout(reg) = Vfb / k
-
-     Relative errors therefore add directly - the reference lands on the output
-     one for one, which is why it is usually the term that decides the answer.
-     A 1 % reference puts a 1 % floor under the output however good the divider
-     is, and no amount of 0.1 % resistor buys past it. */
-  /* sigmaOf turns a bound into a standard deviation. The k is an input
-     because nothing on a datasheet states it - see drawDistribution. */
   const kSig = numOr("div-sig", 3, 0.5, 12);
   const sigRatio = rss / (isFinite(kSig) && kSig > 0 ? kSig : 3);
   if (!regOn) {
@@ -1954,60 +1947,57 @@ function calcAccuracy() {
       elabel: "ratio error", vlabel: "divider V out",
       aria: "Probability distribution of the divider ratio error, to three sigma"
     });
-    render("div-tol-out", rows);
+    render("div-tol-out", rows.concat(partRows));
     return;
   }
   const vref = num("div-vfbtol", 1) / 100;
-  /* The reference drifts with temperature too, over the same span the
-     resistors see. Datasheets split into two styles: a tempco in ppm/degC,
-     which is this field, or a single feedback-voltage tolerance already taken
-     over the whole range - for that one, put the figure in the tolerance box
-     and switch this off, or it is counted twice. */
+  /* The reference drifts with temperature as well as having an initial
+     tolerance. Datasheets split two ways: a tempco in ppm/degC, which is this
+     field, or one feedback-voltage tolerance already taken over the whole
+     range - for that one, put the figure in the tolerance box and switch this
+     off, or it is counted twice. */
   const refDrift = regTemp ? Math.abs(num("div-vfbtc", 50)) * 1e-6 * dT : 0;
-  const vrefTot = vref + refDrift;
-  const regWc = wc + vrefTot;
-  const regRss = Math.sqrt(rss * rss + vref * vref + refDrift * refDrift);
+  const refTot = Math.sqrt(vref * vref + refDrift * refDrift);
+  const regErr = Math.sqrt(rss * rss + refTot * refTot);
+
+  rows.push(["Regulator output", "", "grp"]);
+  rows.push(["Reference tolerance", "±" + pc(vref)]);
   if (regTemp) {
-    rows.push(["Reference drift over ΔT " + dT.toFixed(0) + " °C",
-               "±" + pc(refDrift) + " on top of its ±" + pc(vref) + " initial tolerance"]);
-  } else {
-    rows.push(["Reference drift", "excluded — the ±" + pc(vref) + " tolerance is taken as covering temperature"]);
+    rows.push(["Reference drift over ΔT " + dT.toFixed(0) + " °C", "±" + pc(refDrift)]);
   }
-  rows.push(["Regulator output error — worst case",
-             "±" + pc(regWc) + " (±" + pm(regWc) + ") — reference ±" + pc(vrefTot) + " plus ratio ±" + pc(wc)]);
-  rows.push(["Regulator output error — RSS", "±" + pc(regRss) + " (±" + pm(regRss) + ")"]);
+  rows.push(["Regulator output error", "±" + pc(regErr) + " (±" + pm(regErr) + ")"]);
+  rows.push(["Dominant term", refTot >= rss
+    ? "the reference, at ±" + pc(refTot) + " against the divider's ±" + pc(rss)
+    : "the divider, at ±" + pc(rss) + " against the reference's ±" + pc(refTot)]);
   /* vin is the regulator output and vout the feedback pin; either one plus the
      ratio fixes the other, so take whichever the solver has. */
   const vfb = val("div-vout");
   const vreg = isFinite(vin) && vin > 0 ? vin : (isFinite(vfb) && vfb > 0 ? vfb / k : NaN);
   if (isFinite(vreg) && vreg > 0) {
     rows.push(["Regulator output window",
-               fmt(vreg * (1 - regWc), "V") + " … " + fmt(vreg * (1 + regWc), "V") +
-               " around " + fmt(vreg, "V") + " worst case"]);
-    rows.push(["Dominant term", vrefTot >= wc
-      ? "the reference, at ±" + pc(vrefTot) + " against the divider's ±" + pc(wc)
-      : "the divider, at ±" + pc(wc) + " against the reference's ±" + pc(vrefTot)]);
+               fmt(vreg * (1 - regErr), "V") + " … " + fmt(vreg * (1 + regErr), "V") +
+               " around " + fmt(vreg, "V")]);
     /* The two readings are alternatives, not layers. In a feedback network the
-       top of the divider is the regulator's output, so its spread is what the
-       block above computes; a figure typed into the Vin tolerance box is a
-       separate scenario and adding the two together counts it twice. */
+       top of the divider is the regulator's output, so its spread is what this
+       group computes; a figure in the Vin tolerance box is a separate scenario
+       and combining the two would count it twice. */
     if (vinTol > 0) {
-      rows.push(["", "These regulator rows ignore the V<sub>in</sub> tolerance on purpose. In a feedback "
-        + "network the top of the divider <em>is</em> the regulator output, so its spread is the "
-        + "±" + pc(regWc) + " computed here rather than something to add on top. The V<sub>out</sub> rows "
-        + "above are the other reading: a fixed source of that tolerance divided down.", ""]);
+      rows.push(["", "This group ignores the V<sub>in</sub> tolerance on purpose. In a feedback network the "
+        + "top of the divider <em>is</em> the regulator output, so its spread is the ±" + pc(regErr)
+        + " here rather than something to add on top. The divider output group above is the other "
+        + "reading: a fixed source of that tolerance divided down.", ""]);
     }
   }
-  /* the reference is an independent term, so it widens sigma in quadrature
-     even though it widened the worst case linearly a few rows above */
+  /* the reference is independent of the divider, so it widens sigma in
+     quadrature exactly as it widened the error above */
   const sigTot = Math.sqrt(sigRatio * sigRatio
-                           + Math.pow(vrefTot / (isFinite(kSig) && kSig > 0 ? kSig : 3), 2));
+                           + Math.pow(refTot / (isFinite(kSig) && kSig > 0 ? kSig : 3), 2));
   drawDistribution("div-dist", {
     sigma: sigTot, mid: vreg,
     elabel: "output error", vlabel: "regulator V out",
     aria: "Probability distribution of the regulator output error, to three sigma"
   });
-  render("div-tol-out", rows);
+  render("div-tol-out", rows.concat(partRows));
 }
 
 /* ---------- number bases ---------- */
@@ -2911,7 +2901,9 @@ function calcPPM() {
   }
   render("pp-out", ppmRows.concat([
     ["Clock drift", "±" + (p * 0.0864).toPrecision(3) + " s/day, ±" + (p * 0.0864 * 365.25 / 60).toPrecision(3) + " min/year"],
-    ["Worst-case pair separation", "±" + (2 * p).toPrecision(3) + " ppm between two such parts"]
+    /* two parts at opposite ends of the same spec: not an error budget, but
+       the separation a link has to tolerate, so it stays as a plain bound */
+    ["Separation between two such parts", "up to ±" + (2 * p).toPrecision(3) + " ppm"]
   ]));
 }
 
@@ -3658,7 +3650,7 @@ const HELP = {
   },
   "div": {
     "title": "Divider solver and ratio error",
-    "body": "<p>Unloaded, the midpoint sits at</p><span class=\"eq\">V<sub>out</sub> = V<sub>in</sub> · R2 / (R1 + R2)</span><p>Draw a current I<sub>L</sub> out of that midpoint and the node equation becomes</p><span class=\"eq\">(V<sub>in</sub> − V<sub>out</sub>) / R1 = V<sub>out</sub> / R2 + I<sub>L</sub></span><p>which the card solves for whichever quantity you left out. Give it any three of V<sub>in</sub>, V<sub>out</sub>, R1 and R2 and it finds the fourth; give it only the two voltages and it searches E-series pairs, optionally against a total resistance you specify.</p><p><b>Source impedance.</b> Looking back into the midpoint you see R1 ∥ R2. That is what the next stage loads, and it is what sets how much a load current disturbs the output. It also forms a pole with any capacitance hanging on the node, which is how a feedback divider ends up slowing a regulator's loop.</p><p><b>The usual rule of thumb</b> is to make the divider's own bleed current at least ten times the load current, which keeps the loading error under about 10 %. You do not need the rule here, because the card accounts for the load exactly — but you still need it when someone hands you a divider and asks whether it is sane.</p><p><b>The trade.</b> High resistances waste less power but pick up more noise and are more affected by input bias current and by leakage across a dirty board. Low resistances are quiet but burn current continuously — on a battery product a 10 kΩ divider across the pack is a real part of the standby budget.</p><p><b>The tolerance fold.</b> The section below the results answers a different question about the same two resistors: not what ratio they produce, but how far that ratio moves once real parts, a temperature range and a few years are allowed for. It reads R1, R2 and V<sub>in</sub> from the solver above, so a pair the search chose is costed without being retyped.</p><p>A divider does not care what its resistors are, only about their ratio:</p><span class=\"eq\">k = R2 / (R1 + R2)</span><p>Differentiating with respect to each leg gives the sensitivities</p><span class=\"eq\">∂k/k ÷ ∂R2/R2 = (1 − k) &nbsp;&nbsp; ∂k/k ÷ ∂R1/R1 = −(1 − k)</span><p>which is the whole point of the card: they are <b>equal and opposite</b>. A change common to both legs cancels exactly. Only the <i>difference</i> between them shows up at the output.</p><p>That is why matched parts beat tight parts. Two 1 % resistors from the same thin-film array, tracking to 5 ppm/°C, give a far better divider than two individually-trimmed 0.1 % parts with 100 ppm/°C coefficients that drift apart. If you only remember one thing from this card, remember to specify <i>tracking</i> TCR for a divider, not absolute TCR.</p><p><b>Worst case</b> here is computed exactly, by pushing the two legs to opposing extremes and recomputing k, rather than by adding sensitivities — the linearised form drifts from the truth once the tolerances are large. <b>RSS</b> combines the contributions as independent random variables, which is the realistic production spread but assumes the two TCRs are uncorrelated; for parts in one array they are strongly correlated, and the real answer is better than either figure.</p><p>Note the (1 − k) factor: a divider close to unity (k → 1, R1 → 0) is insensitive to both legs, and a heavy divider (k small) passes nearly the full component error through.</p><p><b>As a regulator feedback network.</b> Read V<sub>in</sub> as the regulator's output and V<sub>out</sub> as the feedback pin, and the divider is running backwards:</p><span class=\"eq\">V<sub>out(reg)</sub> = V<sub>fb</sub> · (R1 + R2) / R2 = V<sub>fb</sub> / k</span><p>The reference tolerance therefore lands on the output one for one, and adds to the ratio error rather than being divided down by anything. That makes it the term that usually decides the answer: a 1 % reference puts a 1 % floor under the output however good the divider is, so specifying 0.1 % resistors against a 2 % reference buys nothing at all. The card names whichever term dominates, because that is the one worth spending money on.</p><p><b>Two things this does not cover.</b> Feedback-pin input bias current flowing in the divider shifts the output, which is why regulator datasheets specify a maximum divider impedance — keep the bleed current well above the bias current, typically 100 times. And line and load regulation, which are the regulator's own terms rather than the divider's, sit on top of everything computed here.</p>"
+    "body": "<p>Unloaded, the midpoint sits at</p><span class=\"eq\">V<sub>out</sub> = V<sub>in</sub> · R2 / (R1 + R2)</span><p>Draw a current I<sub>L</sub> out of that midpoint and the node equation becomes</p><span class=\"eq\">(V<sub>in</sub> − V<sub>out</sub>) / R1 = V<sub>out</sub> / R2 + I<sub>L</sub></span><p>which the card solves for whichever quantity you left out. Give it any three of V<sub>in</sub>, V<sub>out</sub>, R1 and R2 and it finds the fourth; give it only the two voltages and it searches E-series pairs, optionally against a total resistance you specify.</p><p><b>Source impedance.</b> Looking back into the midpoint you see R1 ∥ R2. That is what the next stage loads, and it is what sets how much a load current disturbs the output. It also forms a pole with any capacitance hanging on the node, which is how a feedback divider ends up slowing a regulator's loop.</p><p><b>The usual rule of thumb</b> is to make the divider's own bleed current at least ten times the load current, which keeps the loading error under about 10 %. You do not need the rule here, because the card accounts for the load exactly — but you still need it when someone hands you a divider and asks whether it is sane.</p><p><b>The trade.</b> High resistances waste less power but pick up more noise and are more affected by input bias current and by leakage across a dirty board. Low resistances are quiet but burn current continuously — on a battery product a 10 kΩ divider across the pack is a real part of the standby budget.</p><p><b>The tolerance fold.</b> The section below the results answers a different question about the same two resistors: not what ratio they produce, but how far that ratio moves once real parts, a temperature range and a few years are allowed for. It reads R1, R2 and V<sub>in</sub> from the solver above, so a pair the search chose is costed without being retyped.</p><p>A divider does not care what its resistors are, only about their ratio:</p><span class=\"eq\">k = R2 / (R1 + R2)</span><p>Differentiating with respect to each leg gives the sensitivities</p><span class=\"eq\">∂k/k ÷ ∂R2/R2 = (1 − k) &nbsp;&nbsp; ∂k/k ÷ ∂R1/R1 = −(1 − k)</span><p>which is the whole point of the card: they are <b>equal and opposite</b>. A change common to both legs cancels exactly. Only the <i>difference</i> between them shows up at the output.</p><p>That is why matched parts beat tight parts. Two 1 % resistors from the same thin-film array, tracking to 5 ppm/°C, give a far better divider than two individually-trimmed 0.1 % parts with 100 ppm/°C coefficients that drift apart. If you only remember one thing from this card, remember to specify <i>tracking</i> TCR for a divider, not absolute TCR.</p><p><b>The card combines the contributions in quadrature</b>, treating them as independent random variables, which is the realistic spread across a production run. It assumes they are uncorrelated — for two resistors in one array the TCRs track each other and the real answer is better still. The conservative alternative is a linear sum of every term at its limit; this tool does not report one, so if you need a guaranteed bound rather than a distribution, add the contributions by hand. A manufacturer’s own stability notes generally do exactly that.</p><p>Note the (1 − k) factor: a divider close to unity (k → 1, R1 → 0) is insensitive to both legs, and a heavy divider (k small) passes nearly the full component error through.</p><p><b>As a regulator feedback network.</b> Read V<sub>in</sub> as the regulator's output and V<sub>out</sub> as the feedback pin, and the divider is running backwards:</p><span class=\"eq\">V<sub>out(reg)</sub> = V<sub>fb</sub> · (R1 + R2) / R2 = V<sub>fb</sub> / k</span><p>The reference tolerance therefore lands on the output one for one, and adds to the ratio error rather than being divided down by anything. That makes it the term that usually decides the answer: a 1 % reference puts a 1 % floor under the output however good the divider is, so specifying 0.1 % resistors against a 2 % reference buys nothing at all. The card names whichever term dominates, because that is the one worth spending money on.</p><p><b>Two things this does not cover.</b> Feedback-pin input bias current flowing in the divider shifts the output, which is why regulator datasheets specify a maximum divider impedance — keep the bleed current well above the bias current, typically 100 times. And line and load regulation, which are the regulator's own terms rather than the divider's, sit on top of everything computed here.</p>"
   },
   "led": {
     "title": "LED series resistor",
@@ -3666,7 +3658,7 @@ const HELP = {
   },
   "ec": {
     "title": "Component tolerance budget",
-    "body": "<p>Every error source is expressed as a fractional deviation from nominal, and they are combined two ways:</p><span class=\"eq\">worst case = Σ|e<sub>i</sub>| &nbsp;&nbsp; RSS = √(Σe<sub>i</sub>²)</span><p><b>Which to use.</b> Worst case is what a single unit must survive if you cannot screen it: every contribution at its limit, in the same direction. RSS treats the contributions as independent random variables and gives the realistic spread of a production run. RSS assumes independence, and parts from one reel are <i>not</i> independent — a whole batch can sit at the same end of the distribution — so RSS understates lot-to-lot risk.</p><p><b>Temperature.</b> For a part with a linear coefficient,</p><span class=\"eq\">e<sub>T</sub> = TCR [ppm/°C] × ΔT × 10⁻⁶, &nbsp; ΔT = max(|T<sub>max</sub> − T<sub>nom</sub>|, |T<sub>nom</sub> − T<sub>min</sub>|)</span><p>The wider leg is used because the budget must cover the worst excursion from where the part was trimmed.</p><p><b>Class 2 ceramic capacitors are different</b>, and this is the part that catches people out. X7R, X5R, Y5V and the rest are EIA-198 codes, decoded character by character: the first is the low temperature (X = −55 °C, Y = −30, Z = +10), the second the high (5 = +85, 6 = +105, 7 = +125, 8 = +150), and the third the permitted capacitance change over that whole range (R = ±15 %, S = ±22 %, T = +22/−33 %, V = +22/−82 %). It is a bound over the full range, not a slope, so it cannot be scaled down for a narrower operating range — the curve is not linear. Note also that this is <i>on top of</i> the initial tolerance, not instead of it.</p><p><b>DC bias</b> applies to class 2 ceramics only, and it is usually the largest term of all. A 10 µF 0603 X5R at its rated voltage can be under 3 µF. The datasheet capacitance is measured at a small signal with no bias, so a budget that omits this is not conservative, it is wrong. Enter the loss from the manufacturer's bias curve at your working voltage.</p><p><b>Time.</b> Three different laws, because three different mechanisms:</p><ul><li>Class 2 ceramics lose capacitance as the ferroelectric structure relaxes, at a fixed percentage per decade of hours, referred to the 1000 h point the datasheet measures at: ΔC = k · log₁₀(t/1000). Reflow resets it.</li><li>A voltage reference drifts as a random walk, so it accumulates with the <i>square root</i> of time — hence the ppm/√1000 h units. Four times the time is twice the drift.</li><li>A crystal ages roughly linearly, and worst in its first year.</li></ul><p><b>Crystals</b> are quoted in ppm throughout: initial tolerance at 25 °C, stability over the temperature range (a separate line, because an AT-cut's frequency-temperature curve is cubic rather than a slope) and ageing per year. The card adds them and gives the frequency window in whole hertz, because four significant figures cannot show 20 ppm on a 16 MHz part.</p>"
+    "body": "<p>Every error source is expressed as a fractional deviation from nominal, and they are combined two ways:</p><span class=\"eq\">total = √(Σe<sub>i</sub>²)</span><p><b>What this assumes.</b> That the contributions are independent random variables, which gives the realistic spread of a production run. Parts from one reel are <i>not</i> independent — a whole batch can sit at the same end of the distribution — so this understates lot-to-lot risk. The conservative alternative is a linear sum, every contribution at its limit in the same direction, which is what a single unscreened unit must survive. This card does not print one; a manufacturer’s own stability notes generally do, so check theirs before treating this figure as a guarantee.</p><p><b>Temperature.</b> For a part with a linear coefficient,</p><span class=\"eq\">e<sub>T</sub> = TCR [ppm/°C] × ΔT × 10⁻⁶, &nbsp; ΔT = max(|T<sub>max</sub> − T<sub>nom</sub>|, |T<sub>nom</sub> − T<sub>min</sub>|)</span><p>The wider leg is used because the budget must cover the worst excursion from where the part was trimmed.</p><p><b>Class 2 ceramic capacitors are different</b>, and this is the part that catches people out. X7R, X5R, Y5V and the rest are EIA-198 codes, decoded character by character: the first is the low temperature (X = −55 °C, Y = −30, Z = +10), the second the high (5 = +85, 6 = +105, 7 = +125, 8 = +150), and the third the permitted capacitance change over that whole range (R = ±15 %, S = ±22 %, T = +22/−33 %, V = +22/−82 %). It is a bound over the full range, not a slope, so it cannot be scaled down for a narrower operating range — the curve is not linear. Note also that this is <i>on top of</i> the initial tolerance, not instead of it.</p><p><b>DC bias</b> applies to class 2 ceramics only, and it is usually the largest term of all. A 10 µF 0603 X5R at its rated voltage can be under 3 µF. The datasheet capacitance is measured at a small signal with no bias, so a budget that omits this is not conservative, it is wrong. Enter the loss from the manufacturer's bias curve at your working voltage.</p><p><b>Time.</b> Three different laws, because three different mechanisms:</p><ul><li>Class 2 ceramics lose capacitance as the ferroelectric structure relaxes, at a fixed percentage per decade of hours, referred to the 1000 h point the datasheet measures at: ΔC = k · log₁₀(t/1000). Reflow resets it.</li><li>A voltage reference drifts as a random walk, so it accumulates with the <i>square root</i> of time — hence the ppm/√1000 h units. Four times the time is twice the drift.</li><li>A crystal ages roughly linearly, and worst in its first year.</li></ul><p><b>Crystals</b> are quoted in ppm throughout: initial tolerance at 25 °C, stability over the temperature range (a separate line, because an AT-cut's frequency-temperature curve is cubic rather than a slope) and ageing per year. The card adds them and gives the frequency window in whole hertz, because four significant figures cannot show 20 ppm on a 16 MHz part.</p>"
   },
   "flt": {
     "title": "Filter design",
