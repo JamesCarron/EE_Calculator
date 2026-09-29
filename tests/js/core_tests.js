@@ -126,7 +126,7 @@ eq("the fold reads the divider's own legs",
    rows("div-tol-out").filter(function (r) { return r[0] === "Nominal ratio"; })[0][1].indexOf("0.5") === 0, true);
 /* rows() strips markup, so the label reads Vout rather than V<sub>out</sub> */
 eq("and picks up Vin from the divider",
-   rows("div-tol-out").some(function (r) { return r[0] === "Vout nominal"; }), true);
+   rows("div-tol-out").some(function (r) { return r[0] === "Vout"; }), true);
 
 /* the identity that made the merge worth doing: a leg the SOLVER worked out is
    costed without being retyped, because the fold reads the computed box */
@@ -151,6 +151,11 @@ const DIVREG = ["div-vin","div-vout","div-r1","div-r2","div-rtot","div-iload",
 function regRow(label) {
   return rows("div-tol-out").filter(function (r) { return r[0].indexOf(label) === 0; })[0];
 }
+/* regRow matches on prefix, so "Vout" also hits "Vout error"; use this where
+   the shorter label is a prefix of a longer one in the same list */
+function exactRow(label) {
+  return rows("div-tol-out").filter(function (r) { return r[0] === label; })[0];
+}
 clearAll(DIVREG);
 /* state both switches rather than leaning on the defaults: these figures are
    resistor drift included, reference drift excluded */
@@ -163,7 +168,8 @@ eq("reference tolerance adds to the ratio error",
 eq("and the reference joins in quadrature, not linearly",
    parseFloat(regRow("Regulator output error")[1].replace(/[^0-9.]/g, "")) < 2.28, true);
 eq("the output window is reported in volts",
-   /3\.24\d* V … 3\.35\d* V/.test(regRow("Regulator output window")[1]), true);
+/* low, nominal, high on one line now */
+   /3\.24\d* V … 3\.3 V … 3\.35\d* V/.test(regRow("Regulator Vout")[1]), true);
 
 /* sign check: a worse reference can only widen the output error, and once it
    passes the divider it becomes the term that decides the answer */
@@ -182,9 +188,9 @@ eq("a precision reference hands dominance back to the divider",
 clearAll(DIVREG); clearAll(["div-vintol"]);
 set("div-rtemp","on"); set("div-regtemp","off");
 set("div-vin","12"); set("div-r1","10k"); set("div-r2","4k7"); calcDivider();
-const noSrc = regRow("Vout window")[1];
+const noSrc = exactRow("Vout")[1];
 eq("with no source tolerance the window is the ratio alone",
-   /3\.79\d* V … 3\.88\d* V/.test(noSrc), true);
+   /3\.79\d* V … 3\.83\d* V … 3\.88\d* V/.test(noSrc), true);
 eq("and no source breakdown row is shown", regRow("Vout error"), undefined);
 
 set("div-vintol","5"); calcDivider();
@@ -194,7 +200,7 @@ eq("the source tolerance joins the ratio error",
    /5\.13/.test(regRow("Vout error")[1]), true);
 /* fmt trims trailing zeros, so 4.1195 prints as 4.12 rather than 4.120 */
 eq("and the window widens to match",
-   /3\.64\d* V … 4\.03\d*/.test(regRow("Vout window")[1]), true);
+   /3\.64\d* V … 3\.83\d* V … 4\.03\d*/.test(exactRow("Vout")[1]), true);
 
 /* It must not leak into the regulator block, where the divider's top IS the
    computed output and adding the same spread again would count it twice.
