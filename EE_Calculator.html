@@ -690,7 +690,10 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
         <select id="led-series" data-mirror="series"><option value="E12">E12 (10 %)</option><option value="E24">E24 (5 %)</option><option value="E96" selected>E96 (1 %)</option></select>
       </div>
     </div>
-    <svg class="schem" width="250" height="125" viewBox="0 0 250 125" role="img" aria-label="Supply, series resistor, LED to ground">
+    <!-- viewBox trimmed to the drawing: content runs x 8 to 204, so a 250-wide box
+     left 46 units of dead space on the right against 8 on the left, and the
+     circuit sat visibly off-centre in its own panel. -->
+    <svg class="schem" width="212" height="125" viewBox="0 0 212 125" role="img" aria-label="Supply, series resistor, LED to ground">
       <circle class="wire" cx="18" cy="45" r="3.5"/>
       <text x="8" y="30">Vs</text>
       <path class="wire" d="M21.5 45 H50"/>
@@ -699,9 +702,13 @@ td.a-num, th.a-num { text-align: right; font-variant-numeric: tabular-nums; }
       <path class="wire" d="M90 45 H128"/>
       <path class="wire" d="M128 31 L128 59 L154 45 Z"/>
       <path class="wire" d="M154 31 V59"/>
-      <path class="wire" d="M146 26 L157 15 M153 29 L164 18"/>
-      <path class="dot" d="M157 15 L159 21 L163 17 Z"/>
-      <path class="dot" d="M164 18 L166 24 L170 20 Z"/>
+      <!-- Emission arrows: two parallel shafts at 45 degrees, each head built
+           from the shaft direction so tip and base line up. The previous pair
+           had heads offset from their shafts and rotated off-axis, which read
+           as a scribble beside the symbol rather than as light coming out. -->
+      <path class="wire" d="M132 26 L141 17 M140 26 L149 17"/>
+      <path class="dot" d="M141 17 L139 22.1 L135.9 19 Z"/>
+      <path class="dot" d="M149 17 L147 22.1 L143.9 19 Z"/>
       <text x="126" y="76">LED</text>
       <path class="wire" d="M154 45 H190 V80"/>
       <path class="wire" d="M176 80 H204 M181 87 H199 M186 94 H194"/>
