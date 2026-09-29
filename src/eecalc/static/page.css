@@ -61,6 +61,8 @@
      with the row under it instead of drifting with the number widths */
   .results .c3 { display: inline-block; min-width: 5.2em; text-align: right; }
   .results .cs { display: inline-block; width: 1.5em; text-align: center; }
+  /* the nominal / worst-build column captions over a two-column power row */
+  .results dd.colhead { color: var(--a-ink-secondary); font-size: 0.85em; letter-spacing: 0.02em; }
   .chart text.tag { fill: var(--a-ink-secondary); font-size: 10px; }
   .chart .knob { fill: var(--a-link); stroke: var(--a-bg-panel); stroke-width: 2; }
   .chart text { fill: var(--a-ink-muted); font-size: 10px; font-family: var(--a-font-mono); }

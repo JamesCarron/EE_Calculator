@@ -137,14 +137,22 @@ function padRow(name) {
 /* fmt writes engineering notation, so "522.5 mW" has to come back as 0.5225 -
    comparing the printed number alone would pass a milliwatt off as a watt */
 const SI = { p: 1e-12, n: 1e-9, "\u00b5": 1e-6, u: 1e-6, m: 1e-3, k: 1e3, M: 1e6, G: 1e9 };
-function padNum(name, i) {
-  const m = padRow(name).split("\u2026");
-  if (m.length <= i) return NaN;
-  const t = m[i].trim();
+function padCell(t) {
   const v = parseFloat(t);
   const pre = (t.match(/[0-9.]\s*([pn\u00b5umkMG])W/) || [])[1];
   return pre ? v * SI[pre] : v;
 }
+/* an attenuation range is three cells separated by an ellipsis; a power row is
+   two - nominal and worst build - separated by a middle dot */
+function padNum(name, i) {
+  const m = padRow(name).split("\u2026");
+  return m.length > i ? padCell(m[i].trim()) : NaN;
+}
+function padW(name, i) {
+  const m = padRow(name).split("\u00b7");
+  return m.length > i ? padCell(m[i].trim()) : NaN;
+}
+const NOM = 0, WORST = 1;
 
 padSet("pi", 10, 50, 50, 1);
 /* interior value: the nominal E96 pi pad is 71.5 / 95.3 / 95.3, and evaluating
@@ -175,13 +183,22 @@ console.log("\n== the power budget accounts for every watt ==");
 /* identity, and the check that carries the most weight here: the legs plus the
    load must equal what was put in, or the node solution is wrong somewhere. */
 padSet("pi", 10, 50, 50, 1, 1);
-near("shunt on the source side takes the most", padNum("Shunt, source side", 1), 0.5225, 0.2);
-near("the series element next", padNum("Series", 1), 0.3273, 0.2);
-near("the load-side shunt least", padNum("Shunt, load side", 1), 0.05166, 0.2);
-near("and the load gets the rest", padNum("Delivered to the load", 1), 0.09847, 0.2);
-near("which all adds to the 1 W entered",
-     padNum("Shunt, source side", 1) + padNum("Series", 1) + padNum("Shunt, load side", 1)
-     + padNum("Delivered to the load", 1), 1, 0.2);
+near("shunt on the source side takes the most", padW("Shunt, source side", NOM), 0.5225, 0.2);
+near("the series element next", padW("Series", NOM), 0.3273, 0.2);
+near("the load-side shunt least", padW("Shunt, load side", NOM), 0.05166, 0.2);
+near("and the load gets the rest", padW("Delivered to the load", NOM), 0.09847, 0.2);
+
+/* both columns sum, which is the point of reporting one build rather than each
+   leg's own corner - under the old shape the column came from three builds and
+   this assertion could not be made at all */
+[NOM, WORST].forEach(function (col) {
+  near((col === NOM ? "the nominal" : "the worst-build") + " column adds to the 1 W entered",
+       padW("Shunt, source side", col) + padW("Series", col) + padW("Shunt, load side", col)
+       + padW("Delivered to the load", col), 1, 0.2);
+});
+near("and the pad total is the legs without the load",
+     padW("Dissipated in the pad", WORST),
+     padW("Shunt, source side", WORST) + padW("Series", WORST) + padW("Shunt, load side", WORST), 0.2);
 
 /* identity: the delivered power is pinned by the attenuation the stock parts
    actually give. Comparing against the 10 dB asked for instead would be loose
@@ -190,33 +207,42 @@ near("which all adds to the 1 W entered",
   padSet(topo, 10, 50, 50, 0, 1);
   const got = parseFloat(padRow("Those parts give"));
   near(topo + " delivers exactly what its loss says",
-       padNum("Delivered to the load", 1), Math.pow(10, -got / 10), 0.2);
+       padW("Delivered to the load", NOM), Math.pow(10, -got / 10), 0.2);
 });
 
 /* monotonicity: more attenuation burns more in the pad and delivers less */
 padSet("pi", 3, 50, 50, 0, 1);
-const d3 = padNum("Delivered to the load", 1);
+const d3 = padW("Delivered to the load", NOM);
 padSet("pi", 20, 50, 50, 0, 1);
-const d20 = padNum("Delivered to the load", 1);
+const d20 = padW("Delivered to the load", NOM);
 eq("a 20 dB pad delivers far less than a 3 dB one", d20 < d3 / 10, true);
 
-/* the legs really do spread, and the minimum can never exceed the nominal */
+console.log("\n== the worst build is one corner, and it is named ==");
 padSet("pi", 10, 50, 50, 5, 1);
-eq("each leg's minimum is at or below its nominal",
-   padNum("Shunt, source side", 0) <= padNum("Shunt, source side", 1)
-   && padNum("Series", 0) <= padNum("Series", 1), true);
-eq("and its maximum at or above",
-   padNum("Shunt, source side", 2) >= padNum("Shunt, source side", 1)
-   && padNum("Series", 2) >= padNum("Series", 1), true);
-has("the note says the corners are per leg", /size every part for its own maximum/);
+/* by definition it dissipates more in the pad than the nominal build does */
+eq("it burns more in the pad than nominal",
+   padW("Dissipated in the pad", WORST) > padW("Dissipated in the pad", NOM), true);
+/* and therefore delivers less to the load, since the input is fixed */
+eq("so it delivers less to the load",
+   padW("Delivered to the load", WORST) < padW("Delivered to the load", NOM), true);
+/* every leg is named with the direction it moved, one entry per resistor */
+eq("the corner names all three resistors",
+   (padRow("Worst build").match(/[+\u2212]5\.00 %/g) || []).length, 3);
+has("and says it is one build", /every leg is the same build/);
+
+/* with perfect parts there is no other corner, so no worst build is offered */
+padSet("pi", 10, 50, 50, 0, 1);
+eq("perfect parts get no worst-build corner", padRow("Worst build"), "");
+near("and the two columns agree",
+     padW("Series", WORST), padW("Series", NOM), 0.01);
 
 console.log("\n== power is optional and scales linearly ==");
 padSet("pi", 10, 50, 50, 1);
 eq("no power in, no power rows", padRow("Delivered to the load"), "");
 padSet("pi", 10, 50, 50, 0, 1);
-const p1 = padNum("Series", 1);
+const p1 = padW("Series", NOM);
 padSet("pi", 10, 50, 50, 0, 2);
-near("doubling the input doubles every leg", padNum("Series", 1), p1 * 2, 0.1);
+near("doubling the input doubles every leg", padW("Series", NOM), p1 * 2, 0.1);
 
 console.log("\n== every topology carries a leg for every physical part ==");
 /* The bridged T has four resistors and the splitter three, and each is a
@@ -231,7 +257,7 @@ eq("the splitter lists three arms",
 /* the splitter's two outputs are symmetric, so their arms must dissipate
    the same to within the E96 rounding of the external termination */
 near("its two output arms dissipate alike",
-     padNum("Arm, output 1", 1), padNum("Arm, output 2", 1), 2);
+     padW("Arm, output 1", NOM), padW("Arm, output 2", NOM), 2);
 
 console.log("\n" + pass + " passed, " + f + " failed");
 process.exitCode = f ? 1 : 0;

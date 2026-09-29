@@ -3357,51 +3357,72 @@ function calcPad() {
   }
 
   /* Power. The figure entered is what the source delivers into the pad's input
-     port, which is what a link budget gives you. Each leg gets its own min and
-     max across the same corners, because tolerance moves the division between
-     the legs as well as the total. */
+     port, which is what a link budget gives you.
+
+     One build, not one corner per leg: the corner reported is the single one
+     that dissipates the most in the pad overall, and every leg is shown at
+     that same corner. Giving each leg its own worst corner would put three
+     numbers in a column that came from three different builds and did not sum
+     to anything, which is the harder thing to read correctly. */
   const pin = val("pad-p");
   if (isFinite(pin) && pin > 0) {
     const brs = padBranches(topo, dn);
-    const per = brs.map(function () { return { lo: Infinity, hi: -Infinity, nom: 0 }; });
-    let loadLo = Infinity, loadHi = -Infinity, loadNom = 0;
-    const evaluate = function (mult, keep) {
+    const solve = function (mult) {
       const sol = padNodes(topo, dn, zin, zout, mult);
       const v = sol.v;
       const nodeV = function (n) { return n === 0 ? 0 : v[n - 1]; };
       /* scale so the power entering the pad equals the figure asked for */
       const vin = nodeV(1);
       const pPad = (1 - vin) / zin * vin;
-      if (!(pPad > 0)) return;
+      if (!(pPad > 0)) return null;
       const kP = pin / pPad;
-      sol.brs.forEach(function (br, i) {
+      const legs = sol.brs.map(function (br, i) {
         const rEff = br.r * mult[i] + (br.fixed || 0);
         const dv = nodeV(br.a) - nodeV(br.b);
         /* only the tolerancing part dissipates in the component itself; the
            splitter's series termination is the far port's load, not our part */
-        const pBr = dv * dv / rEff * (br.r * mult[i] / rEff) * kP;
-        if (pBr < per[i].lo) per[i].lo = pBr;
-        if (pBr > per[i].hi) per[i].hi = pBr;
-        if (keep) per[i].nom = pBr;
+        return dv * dv / rEff * (br.r * mult[i] / rEff) * kP;
       });
       const vo = nodeV(2);
-      const pL = vo * vo / zout * kP;
-      if (pL < loadLo) loadLo = pL;
-      if (pL > loadHi) loadHi = pL;
-      if (keep) loadNom = pL;
+      return { legs: legs, load: vo * vo / zout * kP, mult: mult,
+               total: legs.reduce(function (t, p) { return t + p; }, 0) };
     };
-    evaluate(brs.map(function () { return 1; }), true);
-    if (tol > 0) corners.forEach(function (mult) { evaluate(mult, false); });
-
-    rows.push(["Power", "", "grp"]);
-    brs.forEach(function (br, i) {
-      rows.push([br.label, trio(fmt(per[i].lo, "W"), fmt(per[i].nom, "W"), fmt(per[i].hi, "W"))]);
-    });
-    const totNom = per.reduce(function (t, p) { return t + p.nom; }, 0);
-    rows.push(["Dissipated in the pad", fmt(totNom, "W") + " of " + fmt(pin, "W") + " in"]);
-    rows.push(["Delivered to the load", trio(fmt(loadLo, "W"), fmt(loadNom, "W"), fmt(loadHi, "W"))]);
-    rows.push(["", "Each leg is shown at its own worst corner, so the three figures in a row do "
-      + "not come from one build \u2014 size every part for its own maximum.", ""]);
+    const nom = solve(brs.map(function () { return 1; }));
+    let worst = nom;
+    if (tol > 0) {
+      corners.forEach(function (mult) {
+        const c = solve(mult);
+        if (c && c.total > worst.total) worst = c;
+      });
+    }
+    if (nom) {
+      /* the separator has to be a real character, not an empty spacer: the
+         results list is also what Copy results emits as plain text, and there
+         the two cells would run together into "522.5 mW526.5 mW" */
+      const two = function (a, b) {
+        return '<span class="c3">' + a + '</span><span class="cs">·</span><span class="c3">'
+               + b + "</span>";
+      };
+      rows.push(["Power", "", "grp"]);
+      rows.push(["", two("nominal", "worst build"), "colhead"]);
+      brs.forEach(function (br, i) {
+        rows.push([br.label, two(fmt(nom.legs[i], "W"), fmt(worst.legs[i], "W"))]);
+      });
+      rows.push(["Dissipated in the pad", two(fmt(nom.total, "W"), fmt(worst.total, "W"))]);
+      rows.push(["Delivered to the load", two(fmt(nom.load, "W"), fmt(worst.load, "W"))]);
+      /* restating the input as the last row of the column is what lets the eye
+         check that the legs and the load add up to it */
+      rows.push(["Input power", two(fmt(pin, "W"), fmt(pin, "W"))]);
+      if (worst !== nom) {
+        const sgn = brs.map(function (br, i) {
+          return br.label + " " + (worst.mult[i] > 1 ? "+" : "\u2212") + (tol * 100).toPrecision(3) + " %";
+        });
+        rows.push(["Worst build", sgn.join(", ")]);
+        rows.push(["", "That is the one corner of the tolerance box that dissipates the most in the pad "
+          + "as a whole, so the column sums and every leg is the same build. A leg can still be "
+          + "fractionally hotter in some other build; size against this one and the margin covers it.", ""]);
+      }
+    }
   }
   render("pad-out", rows);
 }
@@ -3804,7 +3825,7 @@ const HELP = {
   },
   "pad": {
     "title": "PI, T and L pads",
-    "body": "<p>Attenuation is a voltage ratio, so first convert decibels:</p><span class=\"eq\">N = 10<sup>A/20</sup></span><p>A PI or T pad is symmetric: it presents Z₀ at both ports while attenuating by A, so the source and load both stay matched. That is the whole reason to use a resistive pad rather than a divider.</p><span class=\"eq\">PI: &nbsp; R<sub>series</sub> = Z₀(N² − 1)/(2N), &nbsp; R<sub>shunt</sub> = Z₀(N + 1)/(N − 1)<br>T: &nbsp;&nbsp; R<sub>series</sub> = Z₀(N − 1)/(N + 1), &nbsp; R<sub>shunt</sub> = 2Z₀·N/(N² − 1)</span><p>Both give the same attenuation and the same match; choose whichever lands closer to values you can buy. At small attenuations the T pad's series resistors get very small and the PI pad's shunt resistors get very large, and vice versa at large attenuations.</p><p><b>An L pad</b> matches two <i>different</i> impedances, and cannot do so at an arbitrary attenuation. There is a minimum loss set purely by the impedance ratio:</p><span class=\"eq\">A<sub>min</sub> = 20·log₁₀(√(Z1/Z2) + √(Z1/Z2 − 1))</span><p>which is about 5.7 dB for 75 Ω to 50 Ω. Ask for less and no resistive network can match both ends; you need a transformer or a matching network.</p><p><b>Remember what a pad costs.</b> It is resistive, so it attenuates signal and noise together and adds thermal noise of its own — a 10 dB pad ahead of a receiver raises the system noise figure by 10 dB. Pads belong after gain, not before it.</p><p><b>The E-series and the tolerance are separate choices.</b> The series decides which values exist to buy; the tolerance decides how far the part you buy may sit from the one printed on it. E96 parts are commonly 1 %, but 0.1 % and 0.5 % parts are made on the same grid and 5 % parts are cheaper on it than off it, so the card asks for both rather than inferring one from the other.</p><p><b>The attenuation window is found by enumeration, not by a sensitivity formula.</b> Each resistor is a separate part with its own tolerance, so an n-resistor pad has 2<sup>n</sup> corners — four for an L pad, sixteen for a bridged T. Over a box this small the transfer function is monotonic in every resistance, so the extremes must lie at corners and evaluating all of them is exact. The two arms of a bridged T are counted separately even though they share a value: they are two parts, and the worst case is one high while the other is low.</p><p><b>Power.</b> The figure you enter is what the source delivers into the pad's input port, which is what a link budget hands you — not the source's available power, which would be larger by whatever mismatch exists. Each leg's dissipation comes from the same node solution as the loss, so the legs plus the load always sum to the input.</p><p><b>Each leg is shown at its own worst corner</b>, so the three figures across a row do not come from one build and the maxima do not sum to anything meaningful. That is deliberate: you size each resistor against the worst it will ever see, and the corner that maximises one leg is generally not the corner that maximises the next. A symmetric pad hides this — asymmetric ones, and the input-side shunt of a PI pad in particular, do not. In a 10 dB 50 Ω PI pad the source-side shunt takes over half the input power and the load-side shunt about 5 %, so they are not the same part.</p>"
+    "body": "<p>Attenuation is a voltage ratio, so first convert decibels:</p><span class=\"eq\">N = 10<sup>A/20</sup></span><p>A PI or T pad is symmetric: it presents Z₀ at both ports while attenuating by A, so the source and load both stay matched. That is the whole reason to use a resistive pad rather than a divider.</p><span class=\"eq\">PI: &nbsp; R<sub>series</sub> = Z₀(N² − 1)/(2N), &nbsp; R<sub>shunt</sub> = Z₀(N + 1)/(N − 1)<br>T: &nbsp;&nbsp; R<sub>series</sub> = Z₀(N − 1)/(N + 1), &nbsp; R<sub>shunt</sub> = 2Z₀·N/(N² − 1)</span><p>Both give the same attenuation and the same match; choose whichever lands closer to values you can buy. At small attenuations the T pad's series resistors get very small and the PI pad's shunt resistors get very large, and vice versa at large attenuations.</p><p><b>An L pad</b> matches two <i>different</i> impedances, and cannot do so at an arbitrary attenuation. There is a minimum loss set purely by the impedance ratio:</p><span class=\"eq\">A<sub>min</sub> = 20·log₁₀(√(Z1/Z2) + √(Z1/Z2 − 1))</span><p>which is about 5.7 dB for 75 Ω to 50 Ω. Ask for less and no resistive network can match both ends; you need a transformer or a matching network.</p><p><b>Remember what a pad costs.</b> It is resistive, so it attenuates signal and noise together and adds thermal noise of its own — a 10 dB pad ahead of a receiver raises the system noise figure by 10 dB. Pads belong after gain, not before it.</p><p><b>The E-series and the tolerance are separate choices.</b> The series decides which values exist to buy; the tolerance decides how far the part you buy may sit from the one printed on it. E96 parts are commonly 1 %, but 0.1 % and 0.5 % parts are made on the same grid and 5 % parts are cheaper on it than off it, so the card asks for both rather than inferring one from the other.</p><p><b>The attenuation window is found by enumeration, not by a sensitivity formula.</b> Each resistor is a separate part with its own tolerance, so an n-resistor pad has 2<sup>n</sup> corners — four for an L pad, sixteen for a bridged T. Over a box this small the transfer function is monotonic in every resistance, so the extremes must lie at corners and evaluating all of them is exact. The two arms of a bridged T are counted separately even though they share a value: they are two parts, and the worst case is one high while the other is low.</p><p><b>Power.</b> The figure you enter is what the source delivers into the pad's input port, which is what a link budget hands you — not the source's available power, which would be larger by whatever mismatch exists. Each leg's dissipation comes from the same node solution as the loss, so the legs plus the load always sum to the input.</p><p><b>The worst build is one corner, not one per leg.</b> Of all the corners, the card picks the single one that dissipates the most in the pad as a whole and shows every leg at that same corner, so the column sums and you are looking at a board that could actually be built. Taking each leg's own maximum instead would put three numbers in a column that came from three different builds — a leg can still be fractionally hotter in some other corner, but it is within the margin you already carry, and the column that adds up is the one you can check a thermal budget against.</p><p><b>Legs are not interchangeable.</b> A symmetric pad hides this; asymmetric ones do not. In a 10 dB 50 Ω PI pad the source-side shunt takes over half the input power and the load-side shunt about 5 %, so the same part number in both positions is either over-specified in one place or under-specified in the other. At 20 dB in a bridged T the source-side arm carries most of the input and the load-side arm almost nothing at all.</p>"
   },
   "tw": {
     "title": "Trace width and current",
